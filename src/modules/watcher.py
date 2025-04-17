@@ -68,7 +68,7 @@ async def chat_member(client: Client, update: types.UpdateChatMember) -> None:
     demotions, bans, and unbans)."""
     chat_id = update.chat_id
     if chat_id > 0:
-        return  # Skip private chats
+        return None
 
     if not is_valid_supergroup(chat_id):
         return await handle_non_supergroup(client, chat_id)
@@ -80,7 +80,7 @@ async def chat_member(client: Client, update: types.UpdateChatMember) -> None:
         new_status = update.new_chat_member.status["@type"]
 
         if user_id == 0:
-            return
+            return None
 
         if old_status == "chatMemberStatusLeft" and new_status in {
             "chatMemberStatusMember",
@@ -90,7 +90,7 @@ async def chat_member(client: Client, update: types.UpdateChatMember) -> None:
                 return await handle_bot_join(client, chat_id)
 
             LOGGER.info("User %s joined the chat %s.", user_id, chat_id)
-            return
+            return None
 
         # User left or kicked
         if (
@@ -100,23 +100,23 @@ async def chat_member(client: Client, update: types.UpdateChatMember) -> None:
             LOGGER.info("User %s left or was kicked from %s.", user_id, chat_id)
             ub = await call.get_client(chat_id)
             if isinstance(ub, (types.Error, NoneType)):
-                return
+                return None
             user_key = f"{chat_id}:{ub.me.id}"
             if user_id == ub.me.id:
                 user_status_cache[user_key] = "chatMemberStatusLeft"
-            return
+            return None
 
         # User banned
         if new_status == "chatMemberStatusBanned":
             LOGGER.info("User %s was banned in %s.", user_id, chat_id)
             ub = await call.get_client(chat_id)
             if isinstance(ub, (types.Error, NoneType)):
-                return
+                return None
 
             user_key = f"{chat_id}:{ub.me.id}"
             if user_id == ub.me.id:
                 user_status_cache[user_key] = "chatMemberStatusBanned"
-            return
+            return None
 
         # User unbanned
         if (
@@ -126,11 +126,11 @@ async def chat_member(client: Client, update: types.UpdateChatMember) -> None:
             LOGGER.info("User %s was unbanned in %s.", user_id, chat_id)
             ub = await call.get_client(chat_id)
             if isinstance(ub, (types.Error, NoneType)):
-                return
+                return None
             user_key = f"{chat_id}:{ub.me.id}"
             if user_id == ub.me.id:
                 user_status_cache[user_key] = "chatMemberStatusLeft"
-            return
+            return None
 
         # Promotions/Demotions
         is_promoted = (
@@ -145,15 +145,18 @@ async def chat_member(client: Client, update: types.UpdateChatMember) -> None:
         if user_id == client.options["my_id"] and is_promoted:
             LOGGER.info("Bot promoted in %s. Reloading admin cache.", chat_id)
             await load_admin_cache(client, chat_id, True)
-            return
+            return None
 
         if is_promoted or is_demoted:
             action = "promoted" if is_promoted else "demoted"
             LOGGER.info("User %s was %s in %s.", user_id, action, chat_id)
             await load_admin_cache(client, chat_id, True)
+            return None
+        return None
 
     except Exception as e:
         LOGGER.error("Error processing chat member update in %s: %s", chat_id, e)
+        return None
 
 
 @Client.on_updateNewMessage(position=1)
@@ -168,11 +171,13 @@ async def new_message(client: Client, update: types.UpdateNewMessage) -> None:
         LOGGER.info("Video chat ended in %s", chat_id)
         chat_cache.clear_chat(chat_id)
         await client.sendTextMessage(chat_id, "Video chat ended!\nall queues cleared")
-    elif isinstance(content, types.MessageVideoChatStarted):
+        return None
+    if isinstance(content, types.MessageVideoChatStarted):
         LOGGER.info("Video chat started in %s", chat_id)
         chat_cache.clear_chat(chat_id)
         await client.sendTextMessage(
             chat_id, "Video chat started!\nuse /play song name to play a song"
         )
-    else:
-        LOGGER.debug("New message in %s: %s", chat_id, message)
+        return None
+    LOGGER.debug("New message in %s: %s", chat_id, message)
+    return None

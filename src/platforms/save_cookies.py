@@ -14,6 +14,7 @@ from src.logger import LOGGER
 
 
 async def fetch_content(session: aiohttp.ClientSession, url: str) -> str | None:
+    """Fetches content from BatBin."""
     paste_id = url.strip("/").split("/")[-1]
     raw_url = f"https://batbin.me/raw/{paste_id}"
 

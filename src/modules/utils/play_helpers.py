@@ -2,7 +2,6 @@
 #  Licensed under the GNU AGPL v3.0: https://www.gnu.org/licenses/agpl-3.0.html
 #  Part of the TgMusicBot project. All rights reserved where applicable.
 
-import contextlib
 from types import NoneType
 from typing import Any, Literal, Optional, Union
 
@@ -13,13 +12,22 @@ from pytdbot import Client, types
 
 from src.logger import LOGGER
 
-user_status_cache = TTLCache(maxsize=5000, ttl=600)
-chat_invite_cache = TTLCache(maxsize=1000, ttl=600)
+user_status_cache = TTLCache(maxsize=5000, ttl=1000)
+chat_invite_cache = TTLCache(maxsize=1000, ttl=1000)
 
 
 async def get_url(
     msg: types.Message, reply: Union[types.Message, None]
 ) -> Optional[str]:
+    """Extracts a URL from the given message or its reply.
+
+    Args:
+    msg: The message object to extract the URL from.
+    reply: The reply message objects to extract the URL from, if any.
+
+    Returns:
+    The extracted URL string, or `None` if no URL was found.
+    """
     if reply:
         text_content = reply.text or ""
         entities = reply.entities or []
@@ -57,6 +65,14 @@ def extract_argument(text: str, enforce_digit: bool = False) -> str | None:
 
 
 async def del_msg(msg: types.Message):
+    """Deletes the given message.
+
+    Args:
+        msg (types.Message): The message to delete.
+
+    Returns:
+        None
+    """
     delete = await msg.delete()
     if isinstance(delete, types.Error):
         if delete.code == 400:
@@ -67,6 +83,21 @@ async def del_msg(msg: types.Message):
 async def edit_text(
     reply_message: types.Message, *args: Any, **kwargs: Any
 ) -> Union["types.Error", "types.Message"]:
+    """Edits the given message and returns the result.
+
+    If the given message is an Error, logs the error and returns it.
+    If an exception occurs while editing the message, logs the exception and
+    returns the original message.
+
+    Args:
+        reply_message (types.Message): The message to edit.
+        *args: Passed to `Message.edit_text`.
+        **kwargs: Passed to `Message.edit_text`.
+
+    Returns:
+        Union["types.Error", "types.Message"]: The edited message, or the
+        original message if an exception occurred.
+    """
     if isinstance(reply_message, types.Error):
         LOGGER.warning("Error getting message: %s", reply_message)
         return reply_message
@@ -100,22 +131,25 @@ async def join_ub(chat_id: int, c: Client, ub: pyrogram.Client):
     try:
         await ub.join_chat(invite_link)
         user_status_cache[user_key] = "chatMemberStatusMember"
+        return None
     except errors.InviteHashExpired:
         return types.Error(
             message=f"looks like my assistant ({ub.me.id}) is banned from chat {chat_id}\nor I don't have rights to unban\n\nPlease use /reload to check status"
         )
     except errors.InviteRequestSent:
-        with contextlib.suppress(Exception):
-            await c.processChatJoinRequest(
-                chat_id=chat_id, user_id=ub.me.id, approve=True
-            )
+        ok = await c.processChatJoinRequest(
+            chat_id=chat_id, user_id=ub.me.id, approve=True
+        )
+        return ok if isinstance(ok, types.Error) else None
     except errors.UserAlreadyParticipant:
         user_status_cache[user_key] = "chatMemberStatusMember"
+        return None
     except Exception as e:
         return types.Error(code=400, message=f"Failed to join chat {chat_id}: {e}")
 
 
 async def unban_ub(c: Client, chat_id: int, user_id: int):
+    """Unbans a user from a chat."""
     await c.setChatMemberStatus(
         chat_id=chat_id,
         member_id=types.MessageSenderUser(user_id),
@@ -136,6 +170,7 @@ async def check_user_status(
     ]
     | Any
 ):
+    """Checks the status of a user in a chat."""
     user_status = user_status_cache.get((chat_id, user_id))
     if not user_status:
         user = await c.getChatMember(

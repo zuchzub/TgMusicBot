@@ -57,6 +57,7 @@ def format_exception(
 
 @Client.on_message(filters=Filter.command("eval"))
 async def exec_eval(c: Client, m: types.Message):
+    """Run python code."""
     if int(m.from_id) != OWNER_ID:
         return None
 
@@ -75,6 +76,7 @@ async def exec_eval(c: Client, m: types.Message):
             if "file" not in kwargs:
                 kwargs["file"] = out_buf
                 return print(*args, **kwargs)
+            return None
 
         eval_vars = {
             "loop": c.loop,
@@ -145,10 +147,12 @@ async def exec_eval(c: Client, m: types.Message):
         return None
 
     await m.reply_text(str(result), parse_mode="html")
+    return None
 
 
 @Client.on_message(filters=Filter.command("stats"))
 async def sys_stats(client: Client, message: types.Message):
+    """Get bot and system stats."""
     if int(message.from_id) != OWNER_ID:
         await del_msg(message)
         return None
@@ -217,18 +221,20 @@ async def sys_stats(client: Client, message: types.Message):
 <b>Total Cores:</b> {t_core}
 <b>CPU Frequency:</b> {cpu_freq}""",
     )
+    return None
 
 
 @Client.on_message(filters=Filter.command("activevc"))
 async def active_vc(_: Client, message: types.Message):
+    """Get active voice chats."""
     if message.from_id != OWNER_ID:
         await del_msg(message)
-        return
+        return None
 
     active_chats = chat_cache.get_active_chats()
     if not active_chats:
         await message.reply_text("No active voice chats.")
-        return
+        return None
 
     text = f"🎵 <b>Active Voice Chats</b> ({len(active_chats)}):\n\n"
 
@@ -251,13 +257,15 @@ async def active_vc(_: Client, message: types.Message):
     reply = await message.reply_text(text, disable_web_page_preview=True)
     if isinstance(reply, types.Error):
         return await message.reply_text(reply.message)
+    return None
 
 
 @Client.on_message(filters=Filter.command("logger"))
 async def logger(c: Client, message: types.Message):
+    """Enable or disable logging."""
     if message.from_id != OWNER_ID:
         await del_msg(message)
-        return
+        return None
 
     if config.LOGGER_ID == 0 or not config.LOGGER_ID:
         await message.reply_text("Please set LOGGER_ID in .env first.")
@@ -270,15 +278,17 @@ async def logger(c: Client, message: types.Message):
             "Usage: /logger [enable|disable|on|off]\n\nCurrent status: "
             + ("enabled" if enabled else "disabled")
         )
-        return
+        return None
 
     if args.lower() in ["on", "enable"]:
         await db.set_logger_status(c.me.id, True)
         await message.reply_text("Logger enabled.")
-    elif args.lower() in ["off", "disable"]:
+        return None
+    if args.lower() in ["off", "disable"]:
         await db.set_logger_status(c.me.id, False)
         await message.reply_text("Logger disabled.")
-    else:
-        await message.reply_text(
-            f"Usage: /logger [enable|disable]\n\nYour argument is {args}"
-        )
+        return None
+    await message.reply_text(
+        f"Usage: /logger [enable|disable]\n\nYour argument is {args}"
+    )
+    return None

@@ -57,6 +57,17 @@ def _get_platform_url(platform: str, track_id: str) -> str:
 def build_song_selection_message(
     user_by: str, tracks: list[MusicTrack]
 ) -> tuple[str, types.ReplyMarkupInlineKeyboard]:
+    """Build a message and inline keyboard for song selection.
+
+    Args:
+        user_by: The username of the person requesting the song selection.
+        tracks: A list of MusicTrack objects representing available tracks.
+
+    Returns:
+        A tuple containing:
+        - A text prompt for song selection.
+        - A ReplyMarkupInlineKeyboard object with buttons for track selection.
+    """
     text = f"{user_by}, select a song to play:" if user_by else "Select a song to play:"
     buttons = [
         [
@@ -79,7 +90,7 @@ async def _update_msg_with_thumb(
     thumb: str,
     button: types.ReplyMarkupInlineKeyboard,
 ):
-    """Update message with thumbnail if available."""
+    """Update a message with thumbnail if available."""
     if not thumb:
         return await edit_text(msg, text=text, reply_markup=button)
 
@@ -180,6 +191,7 @@ async def _handle_single_track(
     if isinstance(reply, types.Error):
         LOGGER.info("sending reply: %s", reply)
         return None
+    return None
 
 
 async def _handle_multiple_tracks(
@@ -262,7 +274,7 @@ async def _handle_recommendations(
         await edit_text(msg, text=text, reply_markup=SupportButton)
         return
 
-    ptext, keyboard = build_song_selection_message("", recommendations.tracks)
+    text, keyboard = build_song_selection_message("", recommendations.tracks)
     await edit_text(
         msg, text=text, reply_markup=keyboard, disable_web_page_preview=True
     )
@@ -307,6 +319,7 @@ async def _handle_telegram_file(
     )
 
     await play_music(c, reply_message, _song, user_by, file_path.path, is_video)
+    return None
 
 
 async def _handle_text_search(
@@ -340,6 +353,7 @@ async def _handle_text_search(
     await edit_text(
         msg, text=text, reply_markup=keyboard, disable_web_page_preview=True
     )
+    return None
 
 
 async def handle_play_command(c: Client, msg: types.Message, is_video: bool = False):
@@ -370,7 +384,7 @@ async def handle_play_command(c: Client, msg: types.Message, is_video: bool = Fa
     reply_message = await msg.reply_text("🔎 Searching...")
     if isinstance(reply_message, types.Error):
         LOGGER.warning("Error sending reply: %s", reply_message)
-        return
+        return None
 
     # Assistant checks
     ub = await call.get_client(chat_id)
@@ -454,9 +468,27 @@ async def handle_play_command(c: Client, msg: types.Message, is_video: bool = Fa
 
 @Client.on_message(filters=Filter.command("play"))
 async def play_audio(c: Client, msg: types.Message) -> None:
+    """Handle the /play command to play audio.
+
+    This function listens for the /play command and invokes the
+    handle_play_command function with the is_video flag set to False,
+    indicating that the request is to play audio.
+
+    Returns:
+        None
+    """
     await handle_play_command(c, msg, is_video=False)
 
 
 @Client.on_message(filters=Filter.command("vplay"))
 async def play_video(c: Client, msg: types.Message) -> None:
+    """Handle the /vplay command to play videos.
+
+    This function listens for the /vplay command and invokes the
+    handle_play_command function with the is_video flag set to True,
+    indicating that the request is to play a video.
+
+    Returns:
+        None
+    """
     await handle_play_command(c, msg, is_video=True)

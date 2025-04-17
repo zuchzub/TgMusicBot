@@ -57,6 +57,16 @@ def resize_jiosaavn_thumbnail(img: Image.Image) -> Image.Image:
 
 
 async def fetch_image(url: str) -> Image.Image | None:
+    """Fetches an image from the given URL, resizes it if necessary for
+    JioSaavn and YouTube thumbnails, and returns the loaded image as a PIL
+    Image object, or None on failure.
+
+    Args:
+        url (str): URL of the image to fetch.
+
+    Returns:
+        Image.Image | None: The fetched and possibly resized image, or None if the fetch fails.
+    """
     if not url:
         return None
 

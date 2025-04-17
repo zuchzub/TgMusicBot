@@ -16,13 +16,22 @@ from src.modules.utils.play_helpers import del_msg, extract_argument
 REQUEST_LIMIT = 50
 BATCH_SIZE = 500
 BATCH_DELAY = 2
-MAX_RETRIES = 3
+MAX_RETRIES = 2
 
 semaphore = asyncio.Semaphore(REQUEST_LIMIT)
 VALID_TARGETS = {"all", "users", "chats"}
 
 
 async def get_broadcast_targets(target: str) -> tuple[list[int], list[int]]:
+    """Get user and chat IDs to broadcast to based on the target.
+
+    Args:
+    target: str, one of "all", "users", or "chats".
+
+    Returns:
+    tuple[list[int], list[int]]: (users, chats) where users is a list of user IDs and
+        chats is a list of chat IDs.
+    """
     users = await db.get_all_users() if target in {"all", "users"} else []
     chats = await db.get_all_chats() if target in {"all", "chats"} else []
     return users, chats
@@ -31,6 +40,19 @@ async def get_broadcast_targets(target: str) -> tuple[list[int], list[int]]:
 async def send_message_with_retry(
     target_id: int, message: types.Message, is_copy: bool
 ) -> int:
+    """Send a message to a target with retrying on 429 errors.
+
+    Args:
+    target_id: int, the target ID to send the message to.
+    message: types.Message, the message to send.
+    is_copy: bool, whether to copy the message instead of forwarding it.
+
+    Returns:
+    int: 1 on success, 0 on failure.
+
+    Raises:
+    Exception: if there's an unexpected error.
+    """
     for attempt in range(1, MAX_RETRIES + 1):
         try:
             async with semaphore:
@@ -57,6 +79,7 @@ async def send_message_with_retry(
                 elif result.code == 400:
                     LOGGER.warning("Bad request for %s: %s", target_id, result.message)
                     return 0
+                LOGGER.error("[Error] %s: %s", target_id, result.message)
                 return 0
 
             return 1
@@ -71,9 +94,33 @@ async def send_message_with_retry(
 async def broadcast_to_targets(
     targets: list[int], message: types.Message, is_copy: bool
 ) -> tuple[int, int]:
+    """Broadcast a message to a list of targets (user or chat IDs).
+
+    Args:
+    targets: list[int], the list of target IDs to broadcast to.
+    message: types.Message, the message to broadcast.
+    is_copy: bool, whether to copy the message instead of forwarding it.
+
+    Returns:
+    tuple[int, int]: (sent, failed), where sent is the number of targets the message
+        was successfully sent to and failed is the number of targets the message
+        failed to be sent to.
+    """
     sent = failed = 0
 
     async def process_batch(_batch: list[int], index: int):
+        """Process a batch of target IDs by sending the given message to each
+        one.
+
+        Args:
+        _batch: list[int], the list of target IDs to process in this batch.
+        index: int, the index of this batch in the list of batches.
+
+        Returns:
+        tuple[int, int]: (sent, failed), where sent is the number of targets the message
+            was successfully sent to and failed is the number of targets the message
+            failed to be sent to.
+        """
         results = await asyncio.gather(
             *[send_message_with_retry(tid, message, is_copy) for tid in _batch]
         )
@@ -99,19 +146,29 @@ async def broadcast_to_targets(
 
 @Client.on_message(filters=Filter.command("broadcast"))
 async def broadcast(_: Client, message: types.Message):
+    """Broadcast a message to all users and/or chats.
+
+    Notes:
+    This function only responds to the owner of the bot.
+    The message to broadcast must be replied to with this command.
+    The mode of broadcast can be specified as "copy" to send the message as a copy
+        instead of forwarding it.
+    The targets of the broadcast can be specified as "all", "users", or "chats".
+    """
     if int(message.from_id) != OWNER_ID:
         await del_msg(message)
-        return
+        return None
 
     args = extract_argument(message.text)
     if not args:
-        return await message.reply_text(
+        await message.reply_text(
             "Usage: <code>/broadcast [all|users|chats] [copy]</code>\n"
             "• <b>all</b>: All users and chats\n"
             "• <b>users</b>: Only users\n"
             "• <b>chats</b>: Only groups/channels\n"
             "• <b>copy</b>: Send as copy (no forward tag)"
         )
+        return None
 
     parts = args.lower().split()
     is_copy = "copy" in parts
@@ -142,7 +199,7 @@ async def broadcast(_: Client, message: types.Message):
 
     if isinstance(started, types.Error):
         LOGGER.warning("Error starting broadcast: %s", started)
-        return
+        return None
 
     start_time = time.monotonic()
 
@@ -162,3 +219,4 @@ async def broadcast(_: Client, message: types.Message):
         f"🕒 Time Taken: <code>{end_time - start_time:.2f} sec</code>",
         disable_web_page_preview=True,
     )
+    return None

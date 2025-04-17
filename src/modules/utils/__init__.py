@@ -27,7 +27,7 @@ from .buttons import PauseButton, PlayButton, ResumeButton, SupportButton
 
 
 def sec_to_min(seconds):
-    """Convert seconds to minutes:seconds format."""
+    """Convert seconds to minutes:second format."""
     try:
         minutes = int(seconds // 60)
         remaining_seconds = int(seconds % 60)
@@ -38,6 +38,16 @@ def sec_to_min(seconds):
 
 
 async def send_logger(client: Client, chat_id, song: CachedTrack):
+    """Send a message to the logger channel when a song is played.
+
+    Args:
+        client (Client): The client to send the message with.
+        chat_id (int): The ID of the chat that the song is being played in.
+        song (CachedTrack): The song that is being played.
+
+    Returns:
+        None
+    """
     if not chat_id or not song or chat_id == config.LOGGER_ID or config.LOGGER_ID == 0:
         return
 
