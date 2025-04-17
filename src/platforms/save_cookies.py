@@ -14,7 +14,9 @@ from src.logger import LOGGER
 
 
 async def fetch_content(session: aiohttp.ClientSession, url: str) -> str | None:
-    """Fetches content from BatBin."""
+    """
+    Fetches content from BatBin.
+    """
     paste_id = url.strip("/").split("/")[-1]
     raw_url = f"https://batbin.me/raw/{paste_id}"
 
@@ -36,7 +38,9 @@ async def fetch_content(session: aiohttp.ClientSession, url: str) -> str | None:
 
 
 async def save_bin_content(session: aiohttp.ClientSession, url: str) -> str | None:
-    """Downloads content from BatBin and saves it as a .txt file."""
+    """
+    Downloads content from BatBin and saves it as a .txt file.
+    """
     parsed = urlparse(url)
     filename = (
         (parsed.path.strip("/").split("/")[-1] or str(uuid.uuid4()).split("-")[0])
@@ -60,7 +64,9 @@ async def save_bin_content(session: aiohttp.ClientSession, url: str) -> str | No
 
 
 async def save_all_cookies(cookie_urls: list[str]) -> list[str]:
-    """Processes multiple URLs concurrently and returns saved file paths."""
+    """
+    Processes multiple URLs concurrently and returns saved file paths.
+    """
     async with aiohttp.ClientSession() as session:
         tasks = [save_bin_content(session, url) for url in cookie_urls]
         results = await asyncio.gather(*tasks)

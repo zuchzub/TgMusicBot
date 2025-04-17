@@ -8,7 +8,6 @@ from typing import Optional, Union
 
 import config
 from src.logger import LOGGER
-
 from ._dl_helper import SpotifyDownload
 from ._httpx import HttpxClient
 from .dataclass import MusicTrack, PlatformTracks, TrackInfo
@@ -32,7 +31,9 @@ class ApiData(MusicService):
         self.client = HttpxClient()
 
     def is_valid(self, url: Optional[str]) -> bool:
-        """Check if the URL is a valid music service URL."""
+        """
+        Check if the URL is a valid music service URL.
+        """
         if not (self.API_URL and config.API_KEY):
             LOGGER.warning("API_URL or API_KEY is not configured.")
             return False
@@ -49,7 +50,9 @@ class ApiData(MusicService):
         )
 
     async def _fetch_data(self, endpoint: str) -> Optional[dict]:
-        """Helper method to make API requests and handle errors."""
+        """
+        Helper method to make API requests and handle errors.
+        """
         try:
             return await self.client.make_request(f"{self.API_URL}/{endpoint}")
         except Exception as e:
@@ -57,12 +60,16 @@ class ApiData(MusicService):
             return None
 
     async def get_recommendations(self, limit: int = 4) -> Optional[PlatformTracks]:
-        """Get recommended tracks."""
+        """
+        Get recommended tracks.
+        """
         data = await self._fetch_data(f"recommend_songs?lim={limit}")
         return self._create_platform_tracks(data) if data else None
 
     async def get_info(self) -> Optional[PlatformTracks]:
-        """Get track information from a URL."""
+        """
+        Get track information from a URL.
+        """
         if not self.query or not self.is_valid(self.query):
             return None
 
@@ -70,7 +77,9 @@ class ApiData(MusicService):
         return self._create_platform_tracks(data) if data else None
 
     async def search(self) -> Optional[PlatformTracks]:
-        """Search for tracks."""
+        """
+        Search for tracks.
+        """
         if not self.query:
             return None
 
@@ -78,7 +87,9 @@ class ApiData(MusicService):
         return self._create_platform_tracks(data) if data else None
 
     async def get_track(self) -> Optional[TrackInfo]:
-        """Get detailed information about a specific track."""
+        """
+        Get detailed information about a specific track.
+        """
         if not self.query:
             return None
 
@@ -88,7 +99,8 @@ class ApiData(MusicService):
     async def download_track(
         self, track: TrackInfo, video: bool = False
     ) -> Optional[Union[str, Path]]:
-        """Download a track based on its platform.
+        """
+        Download a track based on its platform.
 
         Returns the path to the downloaded file if successful.
         """
@@ -113,7 +125,9 @@ class ApiData(MusicService):
 
     @staticmethod
     def _create_platform_tracks(data: dict) -> Optional[PlatformTracks]:
-        """Create PlatformTracks object from API response data."""
+        """
+        Create PlatformTracks object from API response data.
+        """
         if not data or not isinstance(data, dict) or "results" not in data:
             return None
 

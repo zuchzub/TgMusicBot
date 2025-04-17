@@ -6,14 +6,14 @@ from abc import ABC, abstractmethod
 from typing import Optional
 
 import config
-
 from .dataclass import PlatformTracks, TrackInfo
 
 
 class MusicService(ABC):
     @abstractmethod
     def is_valid(self, url: str) -> bool:
-        """Determine the validity of a given URL for the music service.
+        """
+        Determine the validity of a given URL for the music service.
 
         Args:
             url (str): The URL to be checked for validity.
@@ -25,7 +25,8 @@ class MusicService(ABC):
 
     @abstractmethod
     async def get_info(self) -> Optional[PlatformTracks]:
-        """Get music track information from a given URL.
+        """
+        Get music track information from a given URL.
 
         Returns:
             Optional[PlatformTracks]: Track information or None if failed
@@ -34,7 +35,8 @@ class MusicService(ABC):
 
     @abstractmethod
     async def search(self) -> Optional[PlatformTracks]:
-        """Search for tracks on the music service.
+        """
+        Search for tracks on the music service.
 
         Returns:
             Optional[PlatformTracks]: Search results or None if failed
@@ -43,7 +45,8 @@ class MusicService(ABC):
 
     @abstractmethod
     async def get_recommendations(self) -> Optional[PlatformTracks]:
-        """Get recommended tracks from the music service.
+        """
+        Get recommended tracks from the music service.
 
         Returns:
             Optional[PlatformTracks]: Recommended tracks or None if failed
@@ -52,7 +55,8 @@ class MusicService(ABC):
 
     @abstractmethod
     async def get_track(self) -> Optional[TrackInfo]:
-        """Retrieve detailed information about a specific track.
+        """
+        Retrieve detailed information about a specific track.
 
         Returns:
             Optional[TrackInfo]: Track information if successful, or None if retrieval fails.
@@ -63,7 +67,8 @@ class MusicService(ABC):
     async def download_track(
         self, track_info: TrackInfo, video: bool = False
     ) -> Optional[str]:
-        """Download a track from the music service.
+        """
+        Download a track from the music service.
 
         Args:
             track_info: Track information containing the track ID or URL to download.
@@ -77,7 +82,8 @@ class MusicService(ABC):
 
 class MusicServiceWrapper(MusicService):
     def __init__(self, query: str = ""):
-        """Initialize a MusicServiceWrapper object.
+        """
+        Initialize a MusicServiceWrapper object.
 
         Args:
             query: The track or playlist URL/query to use for downloading or retrieving information.
@@ -86,8 +92,8 @@ class MusicServiceWrapper(MusicService):
         self.service = self._get_service()
 
     def _get_service(self) -> MusicService:
-        """Determine and return the appropriate music service handler based on
-        the query.
+        """
+        Determine and return the appropriate music service handler based on the query.
 
         This method checks the validity of the query against different music services
         (YouTube, JioSaavn, and various API-powered services) and returns an instance

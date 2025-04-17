@@ -16,7 +16,8 @@ from src.pytgcalls import call
 
 class InactiveCallManager:
     def __init__(self, bot: Client):
-        """Initialize the InactiveCallManager.
+        """
+        Initialize the InactiveCallManager.
 
         Args:
             bot (Client): The client instance
@@ -27,8 +28,9 @@ class InactiveCallManager:
         )
 
     async def _end_inactive_calls(self, chat_id: int, semaphore: asyncio.Semaphore):
-        """End the call in a chat if there are no active listeners and the call
-        has been active for more than 20 seconds.
+        """
+        End the call in a chat if there are no active listeners and the call has been
+        active for more than 20 seconds.
 
         Args:
             chat_id (int): The chat ID to check for active listeners.
@@ -62,15 +64,15 @@ class InactiveCallManager:
             await call.end(chat_id)
 
     async def end_inactive_calls(self):
-        """End calls in active chats with no listeners.
+        """
+        End calls in active chats with no listeners.
 
-        This function retrieves active chats from the chat cache and,
-        using semaphore to limit concurrency, checks each chat for
-        inactive calls. It processes tasks in batches of 3 with a
-        1-second delay between batches to avoid overwhelming the system.
-        If a call is inactive, it will be ended, and the chat will be
-        notified. The function logs the number of active chats found and
-        when inactive call checks are completed.
+        This function retrieves active chats from the chat cache and, using semaphore to
+        limit concurrency, checks each chat for inactive calls. It processes tasks in
+        batches of 3 with a 1-second delay between batches to avoid overwhelming the
+        system. If a call is inactive, it will be ended, and the chat will be notified.
+        The function logs the number of active chats found and when inactive call checks
+        are completed.
         """
         active_chats = chat_cache.get_active_chats()
         self.bot.logger.debug(
@@ -93,19 +95,19 @@ class InactiveCallManager:
         self.bot.logger.debug("Inactive call checks completed.")
 
     async def leave_all(self):
-        """Leave all chats for all userbot clients.
+        """
+        Leave all chats for all userbot clients.
 
-        This function iterates over all userbot clients and their
-        associated chats. It skips private chats and active chats (i.e.,
-        chats with an ongoing call). For each non-active chat, it
-        attempts to leave the chat using the associated userbot client.
-        The function logs the number of chats found for each client, any
-        FloodWait errors encountered, and any RPC errors encountered
-        while attempting to leave chats. Finally, it logs when leaving
-        all chats is completed for each client.
+        This function iterates over all userbot clients and their associated chats. It
+        skips private chats and active chats (i.e., chats with an ongoing call). For
+        each non-active chat, it attempts to leave the chat using the associated userbot
+        client. The function logs the number of chats found for each client, any
+        FloodWait errors encountered, and any RPC errors encountered while attempting to
+        leave chats. Finally, it logs when leaving all chats is completed for each
+        client.
 
-        Note that this function is intended to be used with caution, as
-        it will leave all non-active chats for all userbot clients.
+        Note that this function is intended to be used with caution, as it will leave
+        all non-active chats for all userbot clients.
         """
         for client_name, call_instance in call.calls.items():
             ub: PyroClient = call_instance.mtproto_client
@@ -156,7 +158,8 @@ class InactiveCallManager:
             self.bot.logger.info(f"[{client_name}] Leaving all chats completed.")
 
     async def start_scheduler(self):
-        """Start the scheduler.
+        """
+        Start the scheduler.
 
         This function schedules two jobs to run at the specified intervals:
             - A job to end inactive calls every 50 seconds
@@ -173,7 +176,8 @@ class InactiveCallManager:
         self.bot.logger.info("Scheduler started.")
 
     async def stop_scheduler(self):
-        """Stop the scheduler.
+        """
+        Stop the scheduler.
 
         This function stops the scheduler, causing all scheduled jobs to be
         unscheduled and not run again.

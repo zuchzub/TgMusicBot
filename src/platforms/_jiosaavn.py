@@ -11,15 +11,15 @@ import yt_dlp
 
 import config
 from src.logger import LOGGER
-
 from ._httpx import DownloadResult, HttpxClient
 from .dataclass import MusicTrack, PlatformTracks, TrackInfo
 from .downloader import MusicService
 
 
 class JiosaavnData(MusicService):
-    """JioSaavn music service handler for searching, parsing and downloading
-    tracks."""
+    """
+    JioSaavn music service handler for searching, parsing and downloading tracks.
+    """
 
     # URL patterns
     JIOSAAVN_SONG_PATTERN = re.compile(
@@ -47,7 +47,8 @@ class JiosaavnData(MusicService):
     DEFAULT_YEAR = 0
 
     def __init__(self, query: Optional[str] = None) -> None:
-        """Initialize JioSaavn service handler.
+        """
+        Initialize JioSaavn service handler.
 
         Args:
             query: Search query or URL to process
@@ -63,7 +64,8 @@ class JiosaavnData(MusicService):
         }
 
     def is_valid(self, url: str) -> bool:
-        """Check if the URL is a valid JioSaavn song or playlist URL.
+        """
+        Check if the URL is a valid JioSaavn song or playlist URL.
 
         Args:
             url: URL to validate
@@ -79,7 +81,8 @@ class JiosaavnData(MusicService):
         )
 
     async def _fetch_data(self, url: str) -> Optional[dict[str, Any]]:
-        """Fetch data based on URL type (song or playlist).
+        """
+        Fetch data based on URL type (song or playlist).
 
         Args:
             url: JioSaavn URL to fetch data from
@@ -98,7 +101,8 @@ class JiosaavnData(MusicService):
         return None
 
     async def search(self) -> Optional[PlatformTracks]:
-        """Search for tracks. Falls back to JioSaavn API if not a direct URL.
+        """
+        Search for tracks. Falls back to JioSaavn API if not a direct URL.
 
         Returns:
             Optional[PlatformTracks]: Search results or None if failed
@@ -120,12 +124,15 @@ class JiosaavnData(MusicService):
         return self._create_platform_tracks(data) if data else None
 
     async def get_recommendations(self) -> Optional[PlatformTracks]:
-        """Placeholder for recommendations functionality."""
+        """
+        Placeholder for recommendations functionality.
+        """
         # TODO: Implement recommendations using JioSaavn API
         return None
 
     async def get_info(self) -> Optional[PlatformTracks]:
-        """Get track or playlist info.
+        """
+        Get track or playlist info.
 
         Returns:
             Optional[PlatformTracks]: Track/playlist info or None if failed
@@ -137,7 +144,8 @@ class JiosaavnData(MusicService):
         return self._create_platform_tracks(data) if data else None
 
     async def get_track(self) -> Optional[TrackInfo]:
-        """Get detailed track information.
+        """
+        Get detailed track information.
 
         Returns:
             Optional[TrackInfo]: Track information or None if failed
@@ -157,7 +165,8 @@ class JiosaavnData(MusicService):
         return self._create_track_info(data["results"][0])
 
     async def get_track_data(self, url: str) -> Optional[dict[str, Any]]:
-        """Get track data using yt-dlp.
+        """
+        Get track data using yt-dlp.
 
         Args:
             url: Track URL to fetch
@@ -176,7 +185,8 @@ class JiosaavnData(MusicService):
         return None
 
     async def get_playlist_data(self, url: str) -> Optional[dict[str, Any]]:
-        """Get playlist data using yt-dlp.
+        """
+        Get playlist data using yt-dlp.
 
         Args:
             url: Playlist URL to fetch
@@ -206,7 +216,8 @@ class JiosaavnData(MusicService):
     async def download_track(
         self, track: TrackInfo, video: bool = False
     ) -> Optional[Path]:
-        """Download a track to local storage.
+        """
+        Download a track to local storage.
 
         Args:
             track: TrackInfo object containing download details
@@ -226,7 +237,8 @@ class JiosaavnData(MusicService):
 
     @staticmethod
     def format_jiosaavn_url(name_and_id: str) -> str:
-        """Format a JioSaavn URL from name and ID.
+        """
+        Format a JioSaavn URL from name and ID.
 
         Args:
             name_and_id: String in format "song_name/song_id"
@@ -248,7 +260,8 @@ class JiosaavnData(MusicService):
 
     @classmethod
     def _format_track(cls, track_data: dict[str, Any]) -> dict[str, Any]:
-        """Format track data into a standardized format.
+        """
+        Format track data into a standardized format.
 
         Args:
             track_data: Raw track data from API
@@ -287,7 +300,8 @@ class JiosaavnData(MusicService):
 
     @classmethod
     def _create_track_info(cls, track_data: dict[str, Any]) -> TrackInfo:
-        """Create TrackInfo object from raw track data.
+        """
+        Create TrackInfo object from raw track data.
 
         Args:
             track_data: Formatted track data
@@ -312,7 +326,8 @@ class JiosaavnData(MusicService):
 
     @staticmethod
     def _create_platform_tracks(data: dict[str, Any]) -> Optional[PlatformTracks]:
-        """Create PlatformTracks object from formatted data.
+        """
+        Create PlatformTracks object from formatted data.
 
         Args:
             data: Formatted tracks data
@@ -330,7 +345,8 @@ class JiosaavnData(MusicService):
     def _parse_search_response(
         self, response: dict[str, Any]
     ) -> Optional[dict[str, Any]]:
-        """Parse the search API response into standardized format.
+        """
+        Parse the search API response into standardized format.
 
         Args:
             response: Raw API response

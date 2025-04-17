@@ -20,7 +20,9 @@ from src.pytgcalls import call
 
 
 async def is_admin_or_reply(msg: types.Message) -> Union[int, types.Message]:
-    """Check if user is admin and if a song is playing."""
+    """
+    Check if user is admin and if a song is playing.
+    """
     chat_id = msg.chat_id
 
     if not chat_cache.is_active(chat_id):
@@ -35,7 +37,9 @@ async def is_admin_or_reply(msg: types.Message) -> Union[int, types.Message]:
 async def handle_playback_action(
     _: Client, msg: types.Message, action, success_msg: str, fail_msg: str
 ) -> None:
-    """Handle playback actions like stop, pause, resume, mute, unmute."""
+    """
+    Handle playback actions like stop, pause, resume, mute, unmute.
+    """
     chat_id = await is_admin_or_reply(msg)
     if isinstance(chat_id, types.Message):
         return
@@ -52,7 +56,8 @@ async def handle_playback_action(
 
 @Client.on_message(filters=Filter.command("setPlayType"))
 async def set_play_type(_: Client, msg: types.Message) -> None:
-    """Set the play type for a given chat.
+    """
+    Set the play type for a given chat.
 
     The play type is a preference for a given chat that determines how the
     bot should handle song requests. If the preference is 0, the bot will
@@ -93,7 +98,9 @@ async def set_play_type(_: Client, msg: types.Message) -> None:
 
 @Client.on_message(filters=Filter.command("queue"))
 async def queue_info(_: Client, msg: types.Message) -> None:
-    """Display information about the current queue."""
+    """
+    Display information about the current queue.
+    """
     if msg.chat_id > 0:
         return
 
@@ -145,7 +152,9 @@ async def queue_info(_: Client, msg: types.Message) -> None:
 
 @Client.on_message(filters=Filter.command("loop"))
 async def modify_loop(_: Client, msg: types.Message) -> None:
-    """Modify the loop count for the current song."""
+    """
+    Modify the loop count for the current song.
+    """
     chat_id = msg.chat_id
     if chat_id > 0:
         return None
@@ -179,7 +188,9 @@ async def modify_loop(_: Client, msg: types.Message) -> None:
 
 @Client.on_message(filters=Filter.command("seek"))
 async def seek_song(_: Client, msg: types.Message) -> None:
-    """Seek to a specific time in the current song."""
+    """
+    Seek to a specific time in the current song.
+    """
     chat_id = msg.chat_id
     if chat_id > 0:
         return
@@ -237,7 +248,9 @@ def extract_number(text: str) -> float | None:
 
 @Client.on_message(filters=Filter.command("speed"))
 async def change_speed(_: Client, msg: types.Message) -> None:
-    """Change the playback speed of the current song."""
+    """
+    Change the playback speed of the current song.
+    """
     chat_id = msg.chat_id
     if chat_id > 0:
         return
@@ -274,7 +287,9 @@ async def change_speed(_: Client, msg: types.Message) -> None:
 
 @Client.on_message(filters=Filter.command("remove"))
 async def remove_song(_: Client, msg: types.Message) -> None:
-    """Remove a track from the queue."""
+    """
+    Remove a track from the queue.
+    """
     chat_id = msg.chat_id
     if chat_id > 0:
         return None
@@ -319,7 +334,9 @@ async def remove_song(_: Client, msg: types.Message) -> None:
 
 @Client.on_message(filters=Filter.command("clear"))
 async def clear_queue(_: Client, msg: types.Message) -> None:
-    """Clear the queue."""
+    """
+    Clear the queue.
+    """
     chat_id = msg.chat_id
     if chat_id > 0:
         return None
@@ -348,7 +365,9 @@ async def clear_queue(_: Client, msg: types.Message) -> None:
 
 @Client.on_message(filters=Filter.command(["stop", "end"]))
 async def stop_song(_: Client, msg: types.Message) -> None:
-    """Stop the current song."""
+    """
+    Stop the current song.
+    """
     chat_id = await is_admin_or_reply(msg)
     if isinstance(chat_id, types.Message):
         return
@@ -369,7 +388,9 @@ async def stop_song(_: Client, msg: types.Message) -> None:
 
 @Client.on_message(filters=Filter.command("pause"))
 async def pause_song(_: Client, msg: types.Message) -> None:
-    """Pause the current song."""
+    """
+    Pause the current song.
+    """
     await handle_playback_action(
         _, msg, call.pause, "⏸️ <b>Stream Paused</b> 🥺", "Failed to pause the song"
     )
@@ -377,7 +398,9 @@ async def pause_song(_: Client, msg: types.Message) -> None:
 
 @Client.on_message(filters=Filter.command("resume"))
 async def resume(_: Client, msg: types.Message) -> None:
-    """Resume the current song."""
+    """
+    Resume the current song.
+    """
     await handle_playback_action(
         _, msg, call.resume, "🎶 <b>Stream Resumed</b> 💫", "Failed to resume the song"
     )
@@ -385,7 +408,9 @@ async def resume(_: Client, msg: types.Message) -> None:
 
 @Client.on_message(filters=Filter.command("mute"))
 async def mute_song(_: Client, msg: types.Message) -> None:
-    """Mute the current song."""
+    """
+    Mute the current song.
+    """
     await handle_playback_action(
         _, msg, call.mute, "🔇 <b>Stream Muted</b>", "Failed to mute the song"
     )
@@ -393,7 +418,9 @@ async def mute_song(_: Client, msg: types.Message) -> None:
 
 @Client.on_message(filters=Filter.command("unmute"))
 async def unmute_song(_: Client, msg: types.Message) -> None:
-    """Unmute the current song."""
+    """
+    Unmute the current song.
+    """
     await handle_playback_action(
         _, msg, call.unmute, "🔊 <b>Stream Unmuted</b>", "Failed to unmute the song"
     )
@@ -401,7 +428,9 @@ async def unmute_song(_: Client, msg: types.Message) -> None:
 
 @Client.on_message(filters=Filter.command("volume"))
 async def volume(_: Client, msg: types.Message) -> None:
-    """Change the volume of the current song."""
+    """
+    Change the volume of the current song.
+    """
     chat_id = await is_admin_or_reply(msg)
     if isinstance(chat_id, types.Message):
         return None
@@ -440,7 +469,9 @@ async def volume(_: Client, msg: types.Message) -> None:
 
 @Client.on_message(filters=Filter.command("skip"))
 async def skip_song(_: Client, msg: types.Message) -> None:
-    """Skip the current song."""
+    """
+    Skip the current song.
+    """
     chat_id = await is_admin_or_reply(msg)
     if isinstance(chat_id, types.Message):
         return None
@@ -460,8 +491,9 @@ async def skip_song(_: Client, msg: types.Message) -> None:
 
 @Client.on_updateNewCallbackQuery(filters=Filter.regex(r"play_\w+"))
 async def callback_query(c: Client, message: types.UpdateNewCallbackQuery) -> None:
-    """Handle all play control callback queries (skip, stop, pause, resume,
-    timer)."""
+    """
+    Handle all play control callback queries (skip, stop, pause, resume, timer).
+    """
     try:
         data = message.payload.data.decode()
         chat_id = message.chat_id
@@ -477,7 +509,9 @@ async def callback_query(c: Client, message: types.UpdateNewCallbackQuery) -> No
         async def send_response(
             msg: str, alert: bool = False, delete: bool = False, markup=None
         ) -> None:
-            """Helper function to send responses consistently."""
+            """
+            Helper function to send responses consistently.
+            """
             if alert:
                 await message.answer(msg, show_alert=True)
             else:
@@ -494,7 +528,9 @@ async def callback_query(c: Client, message: types.UpdateNewCallbackQuery) -> No
 
         # Check admin permissions for control actions
         def requires_admin(cb_data: str) -> bool:
-            """Check if the action requires admin privileges."""
+            """
+            Check if the action requires admin privileges.
+            """
             return cb_data in {
                 "play_skip",
                 "play_stop",
@@ -511,7 +547,9 @@ async def callback_query(c: Client, message: types.UpdateNewCallbackQuery) -> No
 
         # Check if chat is active for control actions
         def requires_active_chat(cb_data: str) -> bool:
-            """Check if the action requires an active chat session."""
+            """
+            Check if the action requires an active chat session.
+            """
             return cb_data in {
                 "play_skip",
                 "play_stop",

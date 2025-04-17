@@ -19,12 +19,12 @@ import psutil
 from meval import meval
 from ntgcalls import __version__ as ntgver
 from pyrogram import __version__ as pyrover
-from pytdbot import VERSION as pyTdVer
 from pytdbot import Client, types
+from pytdbot import VERSION as pyTdVer
+from pytgcalls import __version__ as pytgver
 
 import config
 from config import OWNER_ID
-from pytgcalls import __version__ as pytgver
 from src.database import db
 from src.logger import LOGGER
 from src.modules.utils import Filter
@@ -35,8 +35,9 @@ from src.modules.utils.play_helpers import del_msg, extract_argument
 def format_exception(
     exp: BaseException, tb: Optional[list[traceback.FrameSummary]] = None
 ) -> str:
-    """Formats an exception traceback as a string, similar to the Python
-    interpreter."""
+    """
+    Formats an exception traceback as a string, similar to the Python interpreter.
+    """
 
     if tb is None:
         tb = traceback.extract_tb(exp.__traceback__)
@@ -57,7 +58,9 @@ def format_exception(
 
 @Client.on_message(filters=Filter.command("eval"))
 async def exec_eval(c: Client, m: types.Message):
-    """Run python code."""
+    """
+    Run python code.
+    """
     if int(m.from_id) != OWNER_ID:
         return None
 
@@ -152,7 +155,9 @@ async def exec_eval(c: Client, m: types.Message):
 
 @Client.on_message(filters=Filter.command("stats"))
 async def sys_stats(client: Client, message: types.Message):
-    """Get bot and system stats."""
+    """
+    Get bot and system stats.
+    """
     if int(message.from_id) != OWNER_ID:
         await del_msg(message)
         return None
@@ -226,7 +231,9 @@ async def sys_stats(client: Client, message: types.Message):
 
 @Client.on_message(filters=Filter.command("activevc"))
 async def active_vc(_: Client, message: types.Message):
-    """Get active voice chats."""
+    """
+    Get active voice chats.
+    """
     if message.from_id != OWNER_ID:
         await del_msg(message)
         return None
@@ -262,7 +269,9 @@ async def active_vc(_: Client, message: types.Message):
 
 @Client.on_message(filters=Filter.command("logger"))
 async def logger(c: Client, message: types.Message):
-    """Enable or disable logging."""
+    """
+    Enable or disable logging.
+    """
     if message.from_id != OWNER_ID:
         await del_msg(message)
         return None

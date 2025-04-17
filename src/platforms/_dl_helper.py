@@ -14,15 +14,16 @@ from Crypto.Cipher import AES
 from Crypto.Util import Counter
 
 import config
-
-from ..logger import LOGGER
 from ._httpx import HttpxClient
 from .dataclass import TrackInfo
+from ..logger import LOGGER
 
 
 class YouTubeDownload:
     def __init__(self, track: TrackInfo):
-        """Initialize the YouTubeDownload class with a video ID."""
+        """
+        Initialize the YouTubeDownload class with a video ID.
+        """
         self.track = track
         self.video_id = track.tc
         self.video_url = f"https://www.youtube.com/watch?v={self.video_id}"
@@ -50,8 +51,10 @@ class YouTubeDownload:
             return None
 
     async def process(self, video: bool = False) -> Optional[str]:
-        """Download the audio/video from YouTube and return the path to the
-        downloaded file."""
+        """
+        Download the audio/video from YouTube and return the path to the downloaded
+        file.
+        """
         if config.API_URL and config.API_KEY and not video:
             if file_path := await self._download_with_api():
                 return file_path
@@ -59,7 +62,9 @@ class YouTubeDownload:
         return await self._download_with_yt_dlp(video)
 
     async def _download_with_api(self) -> Optional[str]:
-        """Download audio using the API."""
+        """
+        Download audio using the API.
+        """
         dl_url = f"{config.API_URL}/yt?id={self.video_id}"
         download_path = Path(config.DOWNLOADS_DIR) / f"{self.video_id}.webm"
         dl = await self.client.download_file(dl_url, download_path)
@@ -121,7 +126,9 @@ class YouTubeDownload:
 
 
 async def rebuild_ogg(filename: str) -> None:
-    """Fixes broken OGG headers."""
+    """
+    Fixes broken OGG headers.
+    """
     if not os.path.exists(filename):
         LOGGER.error("❌ Error: %s not found.", filename)
         return
@@ -171,7 +178,9 @@ class SpotifyDownload:
         self.output_file = os.path.join(config.DOWNLOADS_DIR, f"{track.tc}.ogg")
 
     async def decrypt_audio(self) -> None:
-        """Decrypt the downloaded audio file using a stream-based approach."""
+        """
+        Decrypt the downloaded audio file using a stream-based approach.
+        """
         try:
             key = bytes.fromhex(self.track.key)
             iv = bytes.fromhex("72e067fbddcbcf77ebe8bc643f630d93")
@@ -192,7 +201,9 @@ class SpotifyDownload:
             raise
 
     async def fix_audio(self) -> None:
-        """Fix the decrypted audio file using FFmpeg."""
+        """
+        Fix the decrypted audio file using FFmpeg.
+        """
         try:
             process = await asyncio.create_subprocess_exec(
                 "ffmpeg",
@@ -213,7 +224,9 @@ class SpotifyDownload:
             raise
 
     async def _cleanup(self) -> None:
-        """Cleanup temporary files asynchronously."""
+        """
+        Cleanup temporary files asynchronously.
+        """
         for file in [self.encrypted_file, self.decrypted_file]:
             try:
                 if os.path.exists(file):
@@ -222,7 +235,9 @@ class SpotifyDownload:
                 LOGGER.warning("Error removing %s: %s", file, e)
 
     async def process(self) -> Optional[str]:
-        """Main function to download, decrypt, and fix audio."""
+        """
+        Main function to download, decrypt, and fix audio.
+        """
         if os.path.exists(self.output_file):
             LOGGER.info("✅ Found existing file: %s", self.output_file)
             return self.output_file

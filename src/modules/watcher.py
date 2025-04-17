@@ -18,7 +18,9 @@ from src.modules.utils.play_helpers import user_status_cache
 
 
 async def handle_non_supergroup(client: Client, chat_id: int) -> None:
-    """Notify user that the chat is not a supergroup and leave."""
+    """
+    Notify user that the chat is not a supergroup and leave.
+    """
     text = (
         f"This chat ({chat_id}) is not a supergroup yet.\n"
         "<b>⚠️ Please convert this chat to a supergroup and add me as admin.</b>\n\n"
@@ -35,12 +37,16 @@ async def handle_non_supergroup(client: Client, chat_id: int) -> None:
 
 
 def is_valid_supergroup(chat_id: int) -> bool:
-    """Check if a chat ID is for a supergroup."""
+    """
+    Check if a chat ID is for a supergroup.
+    """
     return str(chat_id).startswith("-100")
 
 
 async def handle_bot_join(client: Client, chat_id: int) -> None:
-    """Handle logic when bot is added to a new chat."""
+    """
+    Handle logic when bot is added to a new chat.
+    """
     LOGGER.info("Bot joined the chat %s.", chat_id)
     chat_id = int(str(chat_id)[4:]) if str(chat_id).startswith("-100") else chat_id
     chat_info = await client.getSupergroupFullInfo(chat_id)
@@ -64,8 +70,10 @@ async def handle_bot_join(client: Client, chat_id: int) -> None:
 
 @Client.on_updateChatMember()
 async def chat_member(client: Client, update: types.UpdateChatMember) -> None:
-    """Handles member updates in the chat (joins, leaves, promotions,
-    demotions, bans, and unbans)."""
+    """
+    Handles member updates in the chat (joins, leaves, promotions, demotions, bans, and
+    unbans).
+    """
     chat_id = update.chat_id
     if chat_id > 0:
         return None
@@ -161,7 +169,9 @@ async def chat_member(client: Client, update: types.UpdateChatMember) -> None:
 
 @Client.on_updateNewMessage(position=1)
 async def new_message(client: Client, update: types.UpdateNewMessage) -> None:
-    """Handle new messages for video chat events."""
+    """
+    Handle new messages for video chat events.
+    """
     message = update.message
     if not message:
         return None

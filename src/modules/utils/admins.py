@@ -25,10 +25,10 @@ class AdminCache:
 async def load_admin_cache(
     c: Client, chat_id: int, force_reload: bool = False
 ) -> Tuple[bool, AdminCache]:
-    """Load the admin list from Telegram and cache it, unless already cached.
+    """
+    Load the admin list from Telegram and cache it, unless already cached.
 
-    Set force_reload to True to bypass the cache and reload the admin
-    list.
+    Set force_reload to True to bypass the cache and reload the admin list.
     """
     if not force_reload and chat_id in admin_cache:
         return True, admin_cache[chat_id]  # Return cached data if available
@@ -49,7 +49,9 @@ async def load_admin_cache(
 async def get_admin_cache_user(
     chat_id: int, user_id: int
 ) -> Tuple[bool, Optional[dict]]:
-    """Check if the user is an admin using cached data."""
+    """
+    Check if the user is an admin using cached data.
+    """
     admin_list = admin_cache.get(chat_id)
     if admin_list is None:
         return False, None  # Cache miss
@@ -65,15 +67,18 @@ async def get_admin_cache_user(
 
 
 async def is_owner(chat_id: int, user_id: int) -> bool:
-    """Check if the user is the owner of the chat."""
+    """
+    Check if the user is the owner of the chat.
+    """
     is_cached, user = await get_admin_cache_user(chat_id, user_id)
     user_status = user["status"]["@type"] if user else None
     return is_cached and user_status == "chatMemberStatusCreator"
 
 
 async def is_admin(chat_id: int, user_id: int) -> bool:
-    """Check if the user is an admin (including the owner & auth) in the
-    chat."""
+    """
+    Check if the user is an admin (including the owner & auth) in the chat.
+    """
     is_cached, user = await get_admin_cache_user(chat_id, user_id)
     user_status = user["status"]["@type"] if user else None
     if chat_id == user_id:

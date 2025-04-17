@@ -23,7 +23,8 @@ VALID_TARGETS = {"all", "users", "chats"}
 
 
 async def get_broadcast_targets(target: str) -> tuple[list[int], list[int]]:
-    """Get user and chat IDs to broadcast to based on the target.
+    """
+    Get user and chat IDs to broadcast to based on the target.
 
     Args:
     target: str, one of "all", "users", or "chats".
@@ -40,7 +41,8 @@ async def get_broadcast_targets(target: str) -> tuple[list[int], list[int]]:
 async def send_message_with_retry(
     target_id: int, message: types.Message, is_copy: bool
 ) -> int:
-    """Send a message to a target with retrying on 429 errors.
+    """
+    Send a message to a target with retrying on 429 errors.
 
     Args:
     target_id: int, the target ID to send the message to.
@@ -94,7 +96,8 @@ async def send_message_with_retry(
 async def broadcast_to_targets(
     targets: list[int], message: types.Message, is_copy: bool
 ) -> tuple[int, int]:
-    """Broadcast a message to a list of targets (user or chat IDs).
+    """
+    Broadcast a message to a list of targets (user or chat IDs).
 
     Args:
     targets: list[int], the list of target IDs to broadcast to.
@@ -109,8 +112,8 @@ async def broadcast_to_targets(
     sent = failed = 0
 
     async def process_batch(_batch: list[int], index: int):
-        """Process a batch of target IDs by sending the given message to each
-        one.
+        """
+        Process a batch of target IDs by sending the given message to each one.
 
         Args:
         _batch: list[int], the list of target IDs to process in this batch.
@@ -146,7 +149,8 @@ async def broadcast_to_targets(
 
 @Client.on_message(filters=Filter.command("broadcast"))
 async def broadcast(_: Client, message: types.Message):
-    """Broadcast a message to all users and/or chats.
+    """
+    Broadcast a message to all users and/or chats.
 
     Notes:
     This function only responds to the owner of the bot.

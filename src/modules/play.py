@@ -32,7 +32,9 @@ from src.pytgcalls import CallError, call
 
 
 def _get_jiosaavn_url(track_id: str) -> str:
-    """Generate JioSaavn URL from track ID."""
+    """
+    Generate JioSaavn URL from track ID.
+    """
     try:
         title, song_id = track_id.rsplit("/", 1)
     except ValueError:
@@ -42,7 +44,9 @@ def _get_jiosaavn_url(track_id: str) -> str:
 
 
 def _get_platform_url(platform: str, track_id: str) -> str:
-    """Generate platform URL from track ID."""
+    """
+    Generate platform URL from track ID.
+    """
     platform = platform.lower()
     if not track_id:
         return ""
@@ -57,7 +61,8 @@ def _get_platform_url(platform: str, track_id: str) -> str:
 def build_song_selection_message(
     user_by: str, tracks: list[MusicTrack]
 ) -> tuple[str, types.ReplyMarkupInlineKeyboard]:
-    """Build a message and inline keyboard for song selection.
+    """
+    Build a message and inline keyboard for song selection.
 
     Args:
         user_by: The username of the person requesting the song selection.
@@ -90,7 +95,9 @@ async def _update_msg_with_thumb(
     thumb: str,
     button: types.ReplyMarkupInlineKeyboard,
 ):
-    """Update a message with thumbnail if available."""
+    """
+    Update a message with thumbnail if available.
+    """
     if not thumb:
         return await edit_text(msg, text=text, reply_markup=button)
 
@@ -124,7 +131,9 @@ async def _handle_single_track(
     file_path: str = None,
     is_video: bool = False,
 ):
-    """Handle playback of a single track."""
+    """
+    Handle playback of a single track.
+    """
     song = CachedTrack(
         name=track.name,
         artist=track.artist,
@@ -197,7 +206,9 @@ async def _handle_single_track(
 async def _handle_multiple_tracks(
     _: Client, msg: types.Message, chat_id: int, tracks: list[MusicTrack], user_by: str
 ):
-    """Handle multiple tracks (playlist/album)."""
+    """
+    Handle multiple tracks (playlist/album).
+    """
     is_active = chat_cache.is_active(chat_id)
     queue = chat_cache.get_queue(chat_id)
     text = "<b>➻ Added to Queue:</b>\n<blockquote expandable>\n"
@@ -250,7 +261,9 @@ async def play_music(
     tg_file_path: str = None,
     is_video: bool = False,
 ):
-    """Handle playing music from given URL or file."""
+    """
+    Handle playing music from given URL or file.
+    """
     if not url_data or not url_data.tracks:
         return await edit_text(msg, "❌ Unable to retrieve song info.")
 
@@ -266,7 +279,9 @@ async def play_music(
 async def _handle_recommendations(
     _: Client, msg: types.Message, wrapper: MusicServiceWrapper
 ):
-    """Show music recommendations when no query is provided."""
+    """
+    Show music recommendations when no query is provided.
+    """
     recommendations = await wrapper.get_recommendations()
     text = "ᴜsᴀɢᴇ: /play song_name\nSupports Spotify track, playlist, album, artist links.\n\n"
 
@@ -287,7 +302,9 @@ async def _handle_telegram_file(
     reply_message: types.Message,
     user_by: str,
 ):
-    """Handle Telegram audio/video files."""
+    """
+    Handle Telegram audio/video files.
+    """
     telegram = Telegram(reply)
     docs_vid = isinstance(
         reply.content, types.Document
@@ -329,7 +346,9 @@ async def _handle_text_search(
     wrapper: MusicServiceWrapper,
     user_by: str,
 ):
-    """Handle text-based music search."""
+    """
+    Handle text-based music search.
+    """
     play_type = await db.get_play_type(chat_id)
     search = await wrapper.search()
 
@@ -357,7 +376,9 @@ async def _handle_text_search(
 
 
 async def handle_play_command(c: Client, msg: types.Message, is_video: bool = False):
-    """Generic handler for /play and /vplay."""
+    """
+    Generic handler for /play and /vplay.
+    """
     chat_id = msg.chat_id
     if chat_id > 0:
         return await msg.reply_text("This command is only available in supergroups.")
@@ -468,7 +489,8 @@ async def handle_play_command(c: Client, msg: types.Message, is_video: bool = Fa
 
 @Client.on_message(filters=Filter.command("play"))
 async def play_audio(c: Client, msg: types.Message) -> None:
-    """Handle the /play command to play audio.
+    """
+    Handle the /play command to play audio.
 
     This function listens for the /play command and invokes the
     handle_play_command function with the is_video flag set to False,
@@ -482,7 +504,8 @@ async def play_audio(c: Client, msg: types.Message) -> None:
 
 @Client.on_message(filters=Filter.command("vplay"))
 async def play_video(c: Client, msg: types.Message) -> None:
-    """Handle the /vplay command to play videos.
+    """
+    Handle the /vplay command to play videos.
 
     This function listens for the /vplay command and invokes the
     handle_play_command function with the is_video flag set to True,

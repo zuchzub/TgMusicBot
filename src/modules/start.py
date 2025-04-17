@@ -25,7 +25,9 @@ from src.pytgcalls import call
 
 @Client.on_message(filters=Filter.command("start"))
 async def start_cmd(c: Client, message: types.Message):
-    """Handle the /start command to welcome users."""
+    """
+    Handle the /start command to welcome users.
+    """
     chat_id = message.chat_id
     if chat_id < 0:
         await db.add_chat(chat_id)
@@ -55,7 +57,9 @@ Your ultimate music companion for Telegram voice chats!
 
 @Client.on_message(filters=Filter.command("help"))
 async def help_cmd(c: Client, message: types.Message):
-    """Handle the /help command to display help information."""
+    """
+    Handle the /help command to display help information.
+    """
     text = f"""<b>Help for {c.me.first_name}:</b>
 <b>/start:</b> Start the bot.
 <b>/reload:</b> Reload chat administrator list.
@@ -101,7 +105,9 @@ async def help_cmd(c: Client, message: types.Message):
 
 @Client.on_message(filters=Filter.command("privacy"))
 async def privacy_handler(c: Client, message: types.Message):
-    """Handle the /privacy command to display privacy policy."""
+    """
+    Handle the /privacy command to display privacy policy.
+    """
     bot_name = c.me.first_name
     text = f"""
     <u><b>Privacy Policy for {bot_name}:</b></u>
@@ -157,7 +163,9 @@ rate_limit_cache = TTLCache(maxsize=100, ttl=180)
 
 @Client.on_message(filters=Filter.command("reload"))
 async def reload_cmd(c: Client, message: types.Message) -> None:
-    """Handle the /reload command to reload the bot."""
+    """
+    Handle the /reload command to reload the bot.
+    """
     user_id = message.from_id
     chat_id = message.chat_id
     if chat_id > 0:
@@ -214,7 +222,9 @@ async def reload_cmd(c: Client, message: types.Message) -> None:
 
 @Client.on_message(filters=Filter.command("ping"))
 async def ping_cmd(c: Client, message: types.Message) -> None:
-    """Handle the /ping command to check the bot's latency."""
+    """
+    Handle the /ping command to check the bot's latency.
+    """
     start_time = time.time()
     reply = await message.reply_text("🏓 Pong!")
     end_time = time.time()
@@ -229,7 +239,9 @@ async def ping_cmd(c: Client, message: types.Message) -> None:
 
 @Client.on_message(filters=Filter.command("song"))
 async def song_cmd(c: Client, message: types.Message):
-    """Handle the /song command."""
+    """
+    Handle the /song command.
+    """
     reply = await message.reply_text("🎶 USE: @SpTubeBot")
     if isinstance(reply, types.Error):
         c.logger.warning(f"Error sending message: {reply}")

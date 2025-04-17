@@ -9,7 +9,8 @@ from src import client
 
 
 async def create_directories() -> None:
-    """Create directories and save cookies.
+    """
+    Create directories and save cookies.
 
     This function will create the following directories:
       - `config.DOWNLOADS_DIR`

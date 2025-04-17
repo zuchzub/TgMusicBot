@@ -6,8 +6,8 @@ import asyncio
 from io import BytesIO
 
 import httpx
-from aiofiles.os import path as aiopath
 from PIL import Image, ImageDraw, ImageEnhance, ImageFilter, ImageFont, ImageOps
+from aiofiles.os import path as aiopath
 
 from src.logger import LOGGER
 from src.platforms.dataclass import CachedTrack
@@ -21,7 +21,8 @@ FONTS = {
 
 
 def resize_youtube_thumbnail(img: Image.Image) -> Image.Image:
-    """Resize a YouTube thumbnail to 640x640 while keeping important content.
+    """
+    Resize a YouTube thumbnail to 640x640 while keeping important content.
 
     It crops the center of the image after resizing.
     """
@@ -47,7 +48,8 @@ def resize_youtube_thumbnail(img: Image.Image) -> Image.Image:
 
 
 def resize_jiosaavn_thumbnail(img: Image.Image) -> Image.Image:
-    """Resize a JioSaavn thumbnail from 500x500 to 600x600.
+    """
+    Resize a JioSaavn thumbnail from 500x500 to 600x600.
 
     It upscales the image while preserving quality.
     """
@@ -57,9 +59,10 @@ def resize_jiosaavn_thumbnail(img: Image.Image) -> Image.Image:
 
 
 async def fetch_image(url: str) -> Image.Image | None:
-    """Fetches an image from the given URL, resizes it if necessary for
-    JioSaavn and YouTube thumbnails, and returns the loaded image as a PIL
-    Image object, or None on failure.
+    """
+    Fetches an image from the given URL, resizes it if necessary for JioSaavn and
+    YouTube thumbnails, and returns the loaded image as a PIL Image object, or None on
+    failure.
 
     Args:
         url (str): URL of the image to fetch.
@@ -90,13 +93,17 @@ async def fetch_image(url: str) -> Image.Image | None:
 
 
 def clean_text(text: str, limit: int = 17) -> str:
-    """Sanitizes and truncates text to fit within the limit."""
+    """
+    Sanitizes and truncates text to fit within the limit.
+    """
     text = text.strip()
     return f"{text[:limit - 3]}..." if len(text) > limit else text
 
 
 def add_controls(img: Image.Image) -> Image.Image:
-    """Adds blurred background effect and overlay controls."""
+    """
+    Adds blurred background effect and overlay controls.
+    """
     img = img.filter(ImageFilter.GaussianBlur(25))
     box = (120, 120, 520, 480)
 
@@ -116,7 +123,9 @@ def add_controls(img: Image.Image) -> Image.Image:
 
 
 def make_sq(image: Image.Image, size: int = 125) -> Image.Image:
-    """Crops an image into a rounded square."""
+    """
+    Crops an image into a rounded square.
+    """
     width, height = image.size
     side_length = min(width, height)
     crop = image.crop(
@@ -138,7 +147,9 @@ def make_sq(image: Image.Image, size: int = 125) -> Image.Image:
 
 
 def get_duration(duration: int, time: str = "0:24") -> str:
-    """Calculates remaining duration."""
+    """
+    Calculates remaining duration.
+    """
     try:
         m1, s1 = divmod(duration, 60)
         m2, s2 = map(int, time.split(":"))
@@ -151,7 +162,9 @@ def get_duration(duration: int, time: str = "0:24") -> str:
 
 
 async def gen_thumb(song: CachedTrack) -> str:
-    """Generates and saves a thumbnail for the song."""
+    """
+    Generates and saves a thumbnail for the song.
+    """
     save_dir = f"database/photos/{song.track_id}.png"
     if await aiopath.exists(save_dir):
         return save_dir

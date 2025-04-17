@@ -19,15 +19,16 @@ import json
 from pytdbot import Client, types
 
 import config
-
-from ...logger import LOGGER
-from ...platforms.dataclass import CachedTrack
 from ._filters import Filter
 from .buttons import PauseButton, PlayButton, ResumeButton, SupportButton
+from ...logger import LOGGER
+from ...platforms.dataclass import CachedTrack
 
 
 def sec_to_min(seconds):
-    """Convert seconds to minutes:second format."""
+    """
+    Convert seconds to minutes:second format.
+    """
     try:
         minutes = int(seconds // 60)
         remaining_seconds = int(seconds % 60)
@@ -38,7 +39,8 @@ def sec_to_min(seconds):
 
 
 async def send_logger(client: Client, chat_id, song: CachedTrack):
-    """Send a message to the logger channel when a song is played.
+    """
+    Send a message to the logger channel when a song is played.
 
     Args:
         client (Client): The client to send the message with.

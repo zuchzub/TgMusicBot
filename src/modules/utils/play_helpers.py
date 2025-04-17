@@ -19,7 +19,8 @@ chat_invite_cache = TTLCache(maxsize=1000, ttl=1000)
 async def get_url(
     msg: types.Message, reply: Union[types.Message, None]
 ) -> Optional[str]:
-    """Extracts a URL from the given message or its reply.
+    """
+    Extracts a URL from the given message or its reply.
 
     Args:
     msg: The message object to extract the URL from.
@@ -46,7 +47,8 @@ async def get_url(
 
 
 def extract_argument(text: str, enforce_digit: bool = False) -> str | None:
-    """Extracts the argument from the command text.
+    """
+    Extracts the argument from the command text.
 
     Args:
         text (str): The full command text.
@@ -65,7 +67,8 @@ def extract_argument(text: str, enforce_digit: bool = False) -> str | None:
 
 
 async def del_msg(msg: types.Message):
-    """Deletes the given message.
+    """
+    Deletes the given message.
 
     Args:
         msg (types.Message): The message to delete.
@@ -83,7 +86,8 @@ async def del_msg(msg: types.Message):
 async def edit_text(
     reply_message: types.Message, *args: Any, **kwargs: Any
 ) -> Union["types.Error", "types.Message"]:
-    """Edits the given message and returns the result.
+    """
+    Edits the given message and returns the result.
 
     If the given message is an Error, logs the error and returns it.
     If an exception occurs while editing the message, logs the exception and
@@ -109,7 +113,9 @@ async def edit_text(
 
 
 async def join_ub(chat_id: int, c: Client, ub: pyrogram.Client):
-    """Handles the userbot joining a chat via invite link or approval."""
+    """
+    Handles the userbot joining a chat via invite link or approval.
+    """
     invite_link = chat_invite_cache.get(chat_id, await c.createChatInviteLink(chat_id))
     if isinstance(invite_link, types.Error):
         return invite_link
@@ -149,7 +155,9 @@ async def join_ub(chat_id: int, c: Client, ub: pyrogram.Client):
 
 
 async def unban_ub(c: Client, chat_id: int, user_id: int):
-    """Unbans a user from a chat."""
+    """
+    Unbans a user from a chat.
+    """
     await c.setChatMemberStatus(
         chat_id=chat_id,
         member_id=types.MessageSenderUser(user_id),
@@ -157,9 +165,7 @@ async def unban_ub(c: Client, chat_id: int, user_id: int):
     )
 
 
-async def check_user_status(
-    c: Client, chat_id: int, user_id: int
-) -> (
+async def check_user_status(c: Client, chat_id: int, user_id: int) -> (
     Literal[
         "chatMemberStatusLeft",
         "chatMemberStatusCreator",
@@ -170,7 +176,9 @@ async def check_user_status(
     ]
     | Any
 ):
-    """Checks the status of a user in a chat."""
+    """
+    Checks the status of a user in a chat.
+    """
     user_status = user_status_cache.get((chat_id, user_id))
     if not user_status:
         user = await c.getChatMember(

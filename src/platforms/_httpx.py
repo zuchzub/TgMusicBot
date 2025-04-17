@@ -35,7 +35,8 @@ class HttpxClient:
         download_timeout: int = DEFAULT_DOWNLOAD_TIMEOUT,
         max_redirects: int = 0,
     ) -> None:
-        """Initialize the HTTP client with configurable settings.
+        """
+        Initialize the HTTP client with configurable settings.
 
         Args:
             timeout: Timeout for general HTTP requests in seconds
@@ -52,7 +53,9 @@ class HttpxClient:
         )
 
     async def close(self) -> None:
-        """Close the HTTP session gracefully."""
+        """
+        Close the HTTP session gracefully.
+        """
         try:
             await self._session.aclose()
         except Exception as e:
@@ -65,7 +68,8 @@ class HttpxClient:
         overwrite: bool = False,
         **kwargs: Any,
     ) -> DownloadResult:
-        """Download a file asynchronously with proper error handling.
+        """
+        Download a file asynchronously with proper error handling.
 
         Args:
             url: URL of the file to download
@@ -120,7 +124,8 @@ class HttpxClient:
         backoff_factor: float = BACKOFF_FACTOR,
         **kwargs: Any,
     ) -> Optional[dict[str, Any]]:
-        """Make an HTTP GET request with retries and exponential backoff.
+        """
+        Make an HTTP GET request with retries and exponential backoff.
 
         Args:
             url: URL to request

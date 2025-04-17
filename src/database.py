@@ -13,7 +13,8 @@ from src.logger import LOGGER
 
 class Database:
     def __init__(self):
-        """Initialize a new Database object.
+        """
+        Initialize a new Database object.
 
         This creates a new connection to a MongoDB server using the URI
         specified in the `config.MONGO_URI` variable. The connection is
@@ -35,16 +36,15 @@ class Database:
         self.bot_cache = TTLCache(maxsize=1000, ttl=600)
 
     async def ping(self) -> None:
-        """Tests the connection to the MongoDB server.
+        """
+        Tests the connection to the MongoDB server.
 
-        This is a simple test of whether the database connection is
-        working. It sends a "ping" command to the MongoDB server and
-        logs a message if the connection is successful, or raises an
-        exception if the connection fails.
+        This is a simple test of whether the database connection is working. It sends a
+        "ping" command to the MongoDB server and logs a message if the connection is
+        successful, or raises an exception if the connection fails.
 
-        This function does not return any value, but will log a message
-        to the logger if the connection is successful, or raise an
-        exception if the connection fails.
+        This function does not return any value, but will log a message to the logger if
+        the connection is successful, or raise an exception if the connection fails.
         """
         try:
             await self.mongo_client.admin.command("ping")
@@ -54,7 +54,8 @@ class Database:
             raise
 
     async def get_chat(self, chat_id: int) -> Optional[dict]:
-        """Get the document for a given chat ID from the database.
+        """
+        Get the document for a given chat ID from the database.
 
         This will first check the cache to see if we've already retrieved the
         chat document for the given `chat_id`. If we have, it will return the
@@ -85,7 +86,8 @@ class Database:
             return None
 
     async def add_chat(self, chat_id: int) -> None:
-        """Add a chat to the database.
+        """
+        Add a chat to the database.
 
         This function will check if the chat ID already exists in the database. If
         it does not, it will add the chat to the database.
@@ -104,7 +106,8 @@ class Database:
             await self.chat_db.insert_one({"_id": chat_id})
 
     async def _update_chat_field(self, chat_id: int, key: str, value) -> None:
-        """Update a specific field in the chat document and cache.
+        """
+        Update a specific field in the chat document and cache.
 
         This function updates a field specified by `key` with the provided `value`
         in the chat document corresponding to `chat_id` in the database. If the
@@ -132,7 +135,8 @@ class Database:
         self.chat_cache[chat_id] = cached
 
     async def get_play_type(self, chat_id: int) -> int:
-        """Get the play type for a given chat.
+        """
+        Get the play type for a given chat.
 
         The play type is a preference for a given chat that determines how the
         bot should handle song requests. If the preference is 0, the bot will
@@ -154,7 +158,8 @@ class Database:
         return chat.get("play_type", 0) if chat else 0
 
     async def set_play_type(self, chat_id: int, play_type: int) -> None:
-        """Set the play type for a given chat.
+        """
+        Set the play type for a given chat.
 
         This function updates the play type preference for the specified chat ID
         in the database and cache. The play type determines how the bot should
@@ -176,7 +181,8 @@ class Database:
         await self._update_chat_field(chat_id, "play_type", play_type)
 
     async def get_assistant(self, chat_id: int) -> Optional[str]:
-        """Get the assistant associated with a given chat ID.
+        """
+        Get the assistant associated with a given chat ID.
 
         If a chat ID has an associated assistant, it means that the assistant
         is responsible for handling song requests for the chat. This function
@@ -200,7 +206,8 @@ class Database:
         return chat.get("assistant") if chat else None
 
     async def set_assistant(self, chat_id: int, assistant: str) -> None:
-        """Set the assistant associated with a given chat ID.
+        """
+        Set the assistant associated with a given chat ID.
 
         Parameters
         ----------
@@ -217,7 +224,8 @@ class Database:
         await self._update_chat_field(chat_id, "assistant", assistant)
 
     async def remove_assistant(self, chat_id: int) -> None:
-        """Remove the assistant associated with a given chat ID.
+        """
+        Remove the assistant associated with a given chat ID.
 
         This function sets the 'assistant' field to `None` in the chat document
         for the specified chat ID, effectively disassociating any assistant from
@@ -235,7 +243,8 @@ class Database:
         await self._update_chat_field(chat_id, "assistant", None)
 
     async def add_auth_user(self, chat_id: int, auth_user: int) -> None:
-        """Add a user to the list of authorized users for a given chat.
+        """
+        Add a user to the list of authorized users for a given chat.
 
         This function adds the user with the ID `auth_user` to the list of
         authorized users for the chat with the ID `chat_id`. If the chat
@@ -264,7 +273,8 @@ class Database:
         self.chat_cache[chat_id]["auth_users"] = auth_users
 
     async def remove_auth_user(self, chat_id: int, auth_user: int) -> None:
-        """Remove a user from the list of authorized users for a given chat.
+        """
+        Remove a user from the list of authorized users for a given chat.
 
         This function removes the user with the ID `auth_user` from the list of
         authorized users for the chat with the ID `chat_id`. It updates the
@@ -292,7 +302,8 @@ class Database:
         self.chat_cache[chat_id]["auth_users"] = auth_users
 
     async def reset_auth_users(self, chat_id: int) -> None:
-        """Reset the list of authorized users for a given chat.
+        """
+        Reset the list of authorized users for a given chat.
 
         This function resets the list of authorized users for the chat with the
         ID `chat_id` to an empty list. It updates the database and the cached
@@ -310,7 +321,8 @@ class Database:
         await self._update_chat_field(chat_id, "auth_users", [])
 
     async def get_auth_users(self, chat_id: int) -> list[int]:
-        """Retrieve the list of authorized users for a given chat.
+        """
+        Retrieve the list of authorized users for a given chat.
 
         This function fetches the list of user IDs that have been granted
         authorization in the chat identified by `chat_id`. If the chat does
@@ -330,7 +342,8 @@ class Database:
         return chat.get("auth_users", []) if chat else []
 
     async def is_auth_user(self, chat_id: int, user_id: int) -> bool:
-        """Check if a user is authorized in a given chat.
+        """
+        Check if a user is authorized in a given chat.
 
         This function checks whether the user with the specified `user_id`
         is in the list of authorized users for the chat identified by `chat_id`.
@@ -350,7 +363,8 @@ class Database:
         return user_id in await self.get_auth_users(chat_id)
 
     async def set_buttons_status(self, chat_id: int, status: bool) -> None:
-        """Set the status of buttons for a given chat.
+        """
+        Set the status of buttons for a given chat.
 
         This function updates the button status for the specified chat ID
         in the database and cache. The button status determines whether
@@ -370,7 +384,8 @@ class Database:
         await self._update_chat_field(chat_id, "buttons", status)
 
     async def get_buttons_status(self, chat_id: int) -> bool:
-        """Get the status of buttons for a given chat.
+        """
+        Get the status of buttons for a given chat.
 
         This function retrieves the button status for the specified chat ID
         from the database and cache. The button status determines whether
@@ -390,7 +405,8 @@ class Database:
         return chat.get("buttons", True) if chat else True
 
     async def set_thumb_status(self, chat_id: int, status: bool) -> None:
-        """Set the status of thumbnails for a given chat.
+        """
+        Set the status of thumbnails for a given chat.
 
         This function updates the thumbnail status for the specified chat ID
         in the database and cache. The thumbnail status determines whether
@@ -410,7 +426,8 @@ class Database:
         await self._update_chat_field(chat_id, "thumb", status)
 
     async def get_thumb_status(self, chat_id: int) -> bool:
-        """Retrieve the thumbnail status for a given chat.
+        """
+        Retrieve the thumbnail status for a given chat.
 
         This function retrieves the thumbnail status for the specified chat ID
         from the database and cache. The thumbnail status determines whether
@@ -431,7 +448,8 @@ class Database:
         return chat.get("thumb", True) if chat else True
 
     async def remove_chat(self, chat_id: int) -> None:
-        """Remove a chat from the database.
+        """
+        Remove a chat from the database.
 
         This function removes the chat document for the specified chat ID
         from the database and cache.
@@ -449,7 +467,8 @@ class Database:
         self.chat_cache.pop(chat_id, None)
 
     async def add_user(self, user_id: int) -> None:
-        """Add a user to the database.
+        """
+        Add a user to the database.
 
         This function adds a user with the specified `user_id` to the database.
         If the user already exists, it will not be added again.
@@ -469,7 +488,8 @@ class Database:
         await self.users_db.insert_one({"_id": user_id})
 
     async def remove_user(self, user_id: int) -> None:
-        """Remove a user from the database.
+        """
+        Remove a user from the database.
 
         This function removes the user document for the specified `user_id` from
         the database.
@@ -486,7 +506,8 @@ class Database:
         await self.users_db.delete_one({"_id": user_id})
 
     async def is_user_exist(self, user_id: int) -> bool:
-        """Check if a user exists in the database.
+        """
+        Check if a user exists in the database.
 
         This function checks whether a user with the specified `user_id` exists
         in the database. It returns `True` if the user exists, and `False`
@@ -505,7 +526,8 @@ class Database:
         return await self.users_db.find_one({"_id": user_id}) is not None
 
     async def get_all_users(self) -> list[int]:
-        """Retrieve all user IDs from the database.
+        """
+        Retrieve all user IDs from the database.
 
         This function queries the database to retrieve a list of all user
         IDs stored in the "users" collection. It returns the list of user
@@ -519,7 +541,8 @@ class Database:
         return [user["_id"] async for user in self.users_db.find()]
 
     async def get_all_chats(self) -> list[int]:
-        """Retrieve all chat IDs from the database.
+        """
+        Retrieve all chat IDs from the database.
 
         This function queries the database to retrieve a list of all chat
         IDs stored in the "chats" collection. It returns the list of chat
@@ -533,7 +556,8 @@ class Database:
         return [chat["_id"] async for chat in self.chat_db.find()]
 
     async def get_logger_status(self, bot_id: int) -> bool:
-        """Retrieve the logger status for a given bot ID.
+        """
+        Retrieve the logger status for a given bot ID.
 
         This function retrieves the logger status for the bot with the
         specified `bot_id` from the database. If the bot does not exist,
@@ -560,7 +584,8 @@ class Database:
         return status
 
     async def set_logger_status(self, bot_id: int, status: bool) -> None:
-        """Set the logger status for a given bot ID.
+        """
+        Set the logger status for a given bot ID.
 
         This function sets the logger status for the bot with the specified
         `bot_id` to the specified `status` in the database. If the bot does
@@ -584,7 +609,8 @@ class Database:
         self.bot_cache[bot_id] = status
 
     async def close(self) -> None:
-        """Close the database connection.
+        """
+        Close the database connection.
 
         This function closes the connection to the MongoDB database. It
         should be called when the bot is shutting down.

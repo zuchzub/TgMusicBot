@@ -13,8 +13,6 @@ from ntgcalls import TelegramServerError
 from pyrogram import Client as PyroClient
 from pyrogram import errors
 from pytdbot import Client, types
-
-import config
 from pytgcalls import PyTgCalls, exceptions
 from pytgcalls.types import (
     AudioQuality,
@@ -25,6 +23,8 @@ from pytgcalls.types import (
     VideoQuality,
     stream,
 )
+
+import config
 from src.database import db
 from src.logger import LOGGER
 from src.modules.utils import PlayButton, get_audio_duration, sec_to_min, send_logger
@@ -36,17 +36,22 @@ from src.platforms.downloader import MusicServiceWrapper
 
 
 class CallError(Exception):
-    """Custom exception for call-related errors."""
+    """
+    Custom exception for call-related errors.
+    """
 
     def __init__(self, message: str):
         super().__init__(message or "Call error")
 
 
 class MusicBot:
-    """Main music bot class handling voice chat operations."""
+    """
+    Main music bot class handling voice chat operations.
+    """
 
     def __init__(self):
-        """Initialize a MusicBot instance.
+        """
+        Initialize a MusicBot instance.
 
         This constructor sets up the initial state for the MusicBot, including:
         - `calls`: A dictionary to store PyTgCalls instances, indexed by client names.
@@ -60,7 +65,8 @@ class MusicBot:
         self.bot: Optional[Client] = None
 
     async def add_bot(self, client: Client) -> None:
-        """Set the main bot client.
+        """
+        Set the main bot client.
 
         This method takes a Client instance and assigns it to the bot attribute
         of the MusicBot instance. This is used to retrieve the main bot client,
@@ -74,7 +80,8 @@ class MusicBot:
         self.bot = client
 
     async def _get_client_name(self, chat_id: int) -> str:
-        """Get a client name for the given chat ID.
+        """
+        Get a client name for the given chat ID.
 
         This function takes a chat ID as argument and returns a client name
         associated with that chat ID. If the chat ID is 1, it will randomly
@@ -111,7 +118,8 @@ class MusicBot:
         return new_client
 
     async def get_client(self, chat_id: int) -> Union[PyroClient, types.Error]:
-        """Retrieve the PyroClient instance for a given chat ID.
+        """
+        Retrieve the PyroClient instance for a given chat ID.
 
         This asynchronous function fetches the client associated with the
         specified chat ID. If the client is not available or not ready, it
@@ -146,7 +154,8 @@ class MusicBot:
     async def start_client(
         self, api_id: int, api_hash: str, session_string: str
     ) -> None:
-        """Start a new PyTgCalls client instance.
+        """
+        Start a new PyTgCalls client instance.
 
         This asynchronous function creates a new PyTgCalls client instance with
         the given API ID, API hash, and session string. It assigns a unique name
@@ -191,7 +200,8 @@ class MusicBot:
             raise
 
     async def register_decorators(self) -> None:
-        """Registers decorators for handling updates from call instances.
+        """
+        Registers decorators for handling updates from call instances.
 
         This method iterates over all PyTgCalls instances stored in the `calls` dictionary
         and registers an update handler for each instance. The handler processes various
@@ -231,7 +241,8 @@ class MusicBot:
         video: bool = False,
         ffmpeg_parameters: Optional[str] = None,
     ) -> None:
-        """Plays media from the given file path in the specified chat.
+        """
+        Plays media from the given file path in the specified chat.
 
         Parameters
         ----------
@@ -292,7 +303,8 @@ class MusicBot:
             raise CallError(f"Error playing media: {e}") from e
 
     async def play_next(self, chat_id: int) -> None:
-        """Play the next song in the queue for the given chat.
+        """
+        Play the next song in the queue for the given chat.
 
         If a song is currently playing and the loop count is greater than 0,
         decrement the loop count and play the current song again. Otherwise,
@@ -320,7 +332,8 @@ class MusicBot:
             LOGGER.error("Error in play_next for chat %s: %s", chat_id, e)
 
     async def _play_song(self, chat_id: int, song: CachedTrack) -> None:
-        """Play the given song for the given chat.
+        """
+        Play the given song for the given chat.
 
         If the song is not downloaded, download it first and then play it.
         If there is an error downloading the song, send an error message and play
@@ -398,7 +411,8 @@ class MusicBot:
 
     @staticmethod
     async def song_download(song: CachedTrack) -> Optional[Path]:
-        """Download a song using its platform handler.
+        """
+        Download a song using its platform handler.
 
         Args:
             song: CachedTrack object containing download details
@@ -424,7 +438,8 @@ class MusicBot:
         return None
 
     async def _handle_no_songs(self, chat_id: int) -> None:
-        """Handle the case where the queue is empty.
+        """
+        Handle the case where the queue is empty.
 
         Sends a message to the chat with some recommendations if available,
         otherwise asks the user to add some songs using /play.
@@ -468,7 +483,8 @@ class MusicBot:
             LOGGER.error("Error in _handle_no_songs for chat %s: %s", chat_id, e)
 
     async def end(self, chat_id: int) -> None:
-        """End the current call in the specified chat.
+        """
+        End the current call in the specified chat.
 
         This function clears the chat cache and instructs the client to leave
         the ongoing call for the given chat ID. If the call is already invalid,
@@ -499,7 +515,8 @@ class MusicBot:
         duration: int,
         is_video: bool,
     ) -> None:
-        """Seek to a specific position in a stream.
+        """
+        Seek to a specific position in a stream.
 
         Args:
             chat_id: The chat ID to seek the stream for.
@@ -524,11 +541,8 @@ class MusicBot:
             raise CallError(f"Error seeking stream: {e}") from e
 
     async def speed_change(self, chat_id: int, speed: float = 1.0) -> None:
-        """Change the playback speed of the current song in the specified chat.
-
-        This function adjusts the speed of the currently playing song to the given
-        speed value within the allowed range.
-        If there is no song currently playing, or if the specified speed is out of range, an error is raised.
+        """
+        Change the playback speed of the current song in the specified chat.
 
         Args:
             chat_id (int): The ID of the chat where the speed change should occur.
@@ -557,7 +571,8 @@ class MusicBot:
             raise CallError(f"Error changing speed: {e}") from e
 
     async def change_volume(self, chat_id: int, volume: int) -> None:
-        """Change the volume of the current call in the specified chat.
+        """
+        Change the volume of the current call in the specified chat.
 
         This function adjusts the volume of the currently playing song to the given
         volume value within the allowed range.
@@ -579,7 +594,8 @@ class MusicBot:
             raise CallError(f"Error changing volume: {e}") from e
 
     async def mute(self, chat_id: int) -> None:
-        """Mute the current call.
+        """
+        Mute the current call.
 
         This function mutes the currently playing song in the specified chat.
         If there is no song currently playing, an error is raised.
@@ -598,7 +614,8 @@ class MusicBot:
             raise CallError(f"Error muting call: {e}") from e
 
     async def unmute(self, chat_id: int) -> None:
-        """Unmute the current call.
+        """
+        Unmute the current call.
 
         This function unmutes the currently playing song in the specified chat.
         If there is no song currently playing, an error is raised.
@@ -618,7 +635,8 @@ class MusicBot:
             raise CallError(f"Error unmuting call: {e}") from e
 
     async def resume(self, chat_id: int) -> None:
-        """Resume the current call.
+        """
+        Resume the current call.
 
         This function resumes the currently playing song in the specified chat.
         If there is no song currently playing, an error is raised.
@@ -638,7 +656,8 @@ class MusicBot:
             raise CallError(f"Error resuming call: {e}") from e
 
     async def pause(self, chat_id: int) -> None:
-        """Pause the current call.
+        """
+        Pause the current call.
 
         This function pauses the currently playing song in the specified chat.
         If there is no song currently playing, an error is raised.
@@ -658,8 +677,8 @@ class MusicBot:
             raise CallError(f"Error pausing call: {e}") from e
 
     async def played_time(self, chat_id: int) -> int:
-        """Get the played time in seconds for the current call in the specified
-        chat.
+        """
+        Get the played time in seconds for the current call in the specified chat.
 
         This function retrieves the played time in seconds for the current call in the
         specified chat.
@@ -686,7 +705,8 @@ class MusicBot:
             raise CallError(f"Error getting played time: {e}") from e
 
     async def vc_users(self, chat_id: int) -> list:
-        """Get a list of users in the voice chat for the specified chat.
+        """
+        Get a list of users in the voice chat for the specified chat.
 
         This function retrieves a list of users in the voice chat for the specified
         chat. If there is no call active in the chat, it will return an empty list.
@@ -695,7 +715,7 @@ class MusicBot:
             chat_id (int): The ID of the chat to get the voice chat users for.
 
         Returns:
-            list: A list of `pytgcalls.types.chats.GroupCallParticipant` objects representing the users
+            list: A list of `GroupCallParticipant` objects representing the users
                 in the voice chat.
 
         Raises:
@@ -710,7 +730,8 @@ class MusicBot:
             raise CallError(f"Error getting participants: {e}") from e
 
     async def stats_call(self, chat_id: int) -> tuple[float, float]:
-        """Get the ping and CPU usage statistics.
+        """
+        Get the ping and CPU usage statistics.
 
         This function retrieves the ping and CPU usage statistics for the call in the
         specified chat.
@@ -736,7 +757,8 @@ class MusicBot:
 
 
 async def start_clients() -> None:
-    """Start all PyTgCalls clients using provided session strings.
+    """
+    Start all PyTgCalls clients using provided session strings.
 
     This asynchronous function retrieves session strings from the configuration
     and starts a PyTgCalls client for each valid session string.

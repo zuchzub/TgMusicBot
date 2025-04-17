@@ -13,13 +13,13 @@ from src.modules.utils.play_helpers import extract_argument
 
 
 async def _validate_auth_command(msg: types.Message) -> Optional[types.Message]:
-    """Validate a message for the auth commands.
+    """
+    Validate a message for the auth commands.
 
-    This function should be called as the first step of the auth
-    commands. It checks if the message is from a private chat, if the
-    sender is the owner of the chat, if the message is a reply to
-    another message, and if the replied message is from a user or a
-    channel.
+    This function should be called as the first step of the auth commands. It checks if
+    the message is from a private chat, if the sender is the owner of the chat, if the
+    message is a reply to another message, and if the replied message is from a user or
+    a channel.
 
     Returns the replied message if all checks pass, otherwise None.
     """
@@ -52,7 +52,9 @@ async def _validate_auth_command(msg: types.Message) -> Optional[types.Message]:
 
 @Client.on_message(filters=Filter.command("auth"))
 async def auth(_: Client, msg: types.Message):
-    """Grant auth permissions to a user."""
+    """
+    Grant auth permissions to a user.
+    """
     reply = await _validate_auth_command(msg)
     if not reply:
         return
@@ -69,7 +71,9 @@ async def auth(_: Client, msg: types.Message):
 
 @Client.on_message(filters=Filter.command("unauth"))
 async def un_auth(_: Client, msg: types.Message):
-    """Remove auth permissions from a user."""
+    """
+    Remove auth permissions from a user.
+    """
     reply = await _validate_auth_command(msg)
     if not reply:
         return
@@ -86,7 +90,9 @@ async def un_auth(_: Client, msg: types.Message):
 
 @Client.on_message(filters=Filter.command("authlist"))
 async def auth_list(_: Client, msg: types.Message):
-    """List all users with auth permissions."""
+    """
+    List all users with auth permissions.
+    """
     chat_id = msg.chat_id
     if chat_id > 0:
         await msg.reply_text("This command can only be used in groups.")
@@ -110,7 +116,8 @@ async def auth_list(_: Client, msg: types.Message):
 async def _handle_toggle_command(
     msg: types.Message, key: str, label: str, get_func, set_func
 ):
-    """Generic handler for toggle commands.
+    """
+    Generic handler for toggle commands.
 
     This function will check if the command can be used in the current chat,
     if the user is the owner of the chat, and if the argument is valid.
@@ -165,7 +172,9 @@ async def _handle_toggle_command(
 
 @Client.on_message(filters=Filter.command("buttons"))
 async def buttons(_: Client, msg: types.Message):
-    """Toggle button control."""
+    """
+    Toggle button control.
+    """
     await _handle_toggle_command(
         msg, "buttons", "Button control", db.get_buttons_status, db.set_buttons_status
     )
@@ -173,7 +182,9 @@ async def buttons(_: Client, msg: types.Message):
 
 @Client.on_message(filters=Filter.command(["thumbnail", "thumb"]))
 async def thumbnail(_: Client, msg: types.Message):
-    """Toggle thumbnail."""
+    """
+    Toggle thumbnail.
+    """
     await _handle_toggle_command(
         msg, "thumbnail", "Thumbnail", db.get_thumb_status, db.set_thumb_status
     )
