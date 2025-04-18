@@ -7,11 +7,11 @@ from typing import Any, Optional
 
 from py_yt import Playlist, VideosSearch
 
+from src.helpers import MusicTrack, PlatformTracks, TrackInfo
 from src.logger import LOGGER
 from ._dl_helper import YouTubeDownload
+from ._downloader import MusicService
 from ._httpx import HttpxClient
-from .dataclass import MusicTrack, PlatformTracks, TrackInfo
-from .downloader import MusicService
 
 
 class YouTubeData(MusicService):
@@ -171,11 +171,10 @@ class YouTubeData(MusicService):
         if len(parts) == 3:  # Format: H:MM:SS
             hours, minutes, seconds = map(int, parts)
             return hours * 3600 + minutes * 60 + seconds
-        elif len(parts) == 2:  # Format: MM:SS
+        if len(parts) == 2:  # Format: MM:SS
             minutes, seconds = map(int, parts)
             return minutes * 60 + seconds
-        else:
-            return 0
+        return 0
 
     async def _fetch_oembed_data(self, url: str) -> Optional[dict[str, Any]]:
         oembed_url = f"https://www.youtube.com/oembed?url={url}&format=json"

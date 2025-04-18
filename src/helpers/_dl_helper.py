@@ -13,10 +13,11 @@ import aiofiles
 from Crypto.Cipher import AES
 from Crypto.Util import Counter
 
-import config
-from ._httpx import HttpxClient
-from .dataclass import TrackInfo
-from ..logger import LOGGER
+from src import config
+from src.helpers._httpx import HttpxClient
+from src.logger import LOGGER
+
+from ._dataclass import TrackInfo
 
 
 class YouTubeDownload:
@@ -190,9 +191,10 @@ class SpotifyDownload:
             )
 
             chunk_size = 8192  # 8KB chunks
-            async with aiofiles.open(self.encrypted_file, "rb") as fin, aiofiles.open(
-                self.decrypted_file, "wb"
-            ) as fout:
+            async with (
+                aiofiles.open(self.encrypted_file, "rb") as fin,
+                aiofiles.open(self.decrypted_file, "wb") as fout,
+            ):
                 while chunk := await fin.read(chunk_size):
                     decrypted_chunk = cipher.decrypt(chunk)
                     await fout.write(decrypted_chunk)
@@ -215,7 +217,7 @@ class SpotifyDownload:
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
             )
-            stdout, stderr = await process.communicate()
+            _, stderr = await process.communicate()
             if process.returncode != 0:
                 LOGGER.error("FFmpeg error: %s", stderr.decode().strip())
                 raise subprocess.CalledProcessError(process.returncode, "ffmpeg")

@@ -10,8 +10,8 @@ from pyrogram import Client as PyroClient
 from pyrogram import errors
 from pytdbot import Client, types
 
-from src.modules.utils.cacher import chat_cache
-from src.pytgcalls import call
+from src.helpers import call
+from src.helpers import chat_cache
 
 
 class InactiveCallManager:

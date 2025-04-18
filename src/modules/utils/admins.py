@@ -7,7 +7,7 @@ from typing import Optional, Tuple
 from cachetools import TTLCache
 from pytdbot import Client, types
 
-from src import db
+from src.helpers import db
 from src.logger import LOGGER
 
 admin_cache = TTLCache(maxsize=1000, ttl=30 * 60)

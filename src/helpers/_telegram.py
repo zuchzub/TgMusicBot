@@ -107,6 +107,7 @@ class Telegram:
                         self.content.document.document.size,
                         self.content.document.file_name or "Document.mp4",
                     )
+            return 0, "UnknownMedia"
         except Exception as e:
             LOGGER.error("Error while extracting file info: %s", e)
 
@@ -153,7 +154,7 @@ class Telegram:
                 "message_id": message.id,
             }
 
-        file_obj = await self.msg.download(synchronous=True)
+        file_obj = await self.msg.download()
         return file_obj, file_name
 
     @staticmethod

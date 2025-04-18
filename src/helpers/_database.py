@@ -7,7 +7,7 @@ from typing import Optional
 from cachetools import TTLCache
 from motor.motor_asyncio import AsyncIOMotorClient
 
-import config
+from src.config import MONGO_URI
 from src.logger import LOGGER
 
 
@@ -26,7 +26,7 @@ class Database:
         `TTLCache` objects with a maximum size of 1000 and a time to live of
         600 seconds.
         """
-        self.mongo_client = AsyncIOMotorClient(config.MONGO_URI)
+        self.mongo_client = AsyncIOMotorClient(MONGO_URI)
         _db = self.mongo_client["MusicBot"]
         self.chat_db = _db["chats"]
         self.users_db = _db["users"]
@@ -375,7 +375,7 @@ class Database:
         chat_id : int
             The ID of the chat to set the button status for.
         status : bool
-            The button status to set for the chat (True for enabled, False for disabled).
+            The button status to set for the chat.
 
         Returns
         -------
@@ -399,7 +399,7 @@ class Database:
         Returns
         -------
         bool
-            True if the button status is enabled for the specified chat, False otherwise.
+            The button status for the specified chat.
         """
         chat = await self.get_chat(chat_id)
         return chat.get("buttons", True) if chat else True
@@ -417,7 +417,7 @@ class Database:
         chat_id : int
             The ID of the chat to set the thumbnail status for.
         status : bool
-            The thumbnail status to set for the chat (True for enabled, False for disabled).
+            The thumbnail status to set for the chat.
 
         Returns
         -------

@@ -6,12 +6,12 @@ import re
 from pathlib import Path
 from typing import Optional, Union
 
-import config
+from src import config
 from src.logger import LOGGER
+from ._dataclass import MusicTrack, PlatformTracks, TrackInfo
 from ._dl_helper import SpotifyDownload
+from ._downloader import MusicService
 from ._httpx import HttpxClient
-from .dataclass import MusicTrack, PlatformTracks, TrackInfo
-from .downloader import MusicService
 
 
 class ApiData(MusicService):

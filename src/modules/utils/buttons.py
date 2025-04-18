@@ -4,7 +4,7 @@
 
 from pytdbot import types
 
-import config
+from src import config
 
 # ─────────────────────
 # Reusable Button Definitions

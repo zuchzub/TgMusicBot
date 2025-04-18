@@ -1,0 +1,8 @@
+__pycache__/
+/.idea
+/database
+.env
+/cookies
+
+/src/tgmusicbot.egg-info
+/tgmusicbot.egg-info

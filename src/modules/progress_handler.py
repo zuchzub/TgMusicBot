@@ -7,9 +7,9 @@ import time
 
 from pytdbot import Client, types
 
+from src.helpers import Telegram
 from src.logger import LOGGER
 from src.modules.utils.admins import is_admin
-from src.platforms.telegram import Telegram
 
 download_progress = {}
 

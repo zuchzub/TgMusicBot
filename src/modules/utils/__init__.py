@@ -18,11 +18,11 @@ import json
 
 from pytdbot import Client, types
 
-import config
 from ._filters import Filter
 from .buttons import PauseButton, PlayButton, ResumeButton, SupportButton
+from ... import config
+from ...helpers import CachedTrack
 from ...logger import LOGGER
-from ...platforms.dataclass import CachedTrack
 
 
 def sec_to_min(seconds):

@@ -6,7 +6,7 @@ from typing import Optional
 
 from pytdbot import Client, types
 
-from src import db
+from src.helpers import db
 from src.modules.utils import Filter
 from src.modules.utils.admins import is_admin, is_owner
 from src.modules.utils.play_helpers import extract_argument

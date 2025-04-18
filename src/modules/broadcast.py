@@ -7,8 +7,8 @@ import time
 
 from pytdbot import Client, types
 
-from config import OWNER_ID
-from src import db
+from src.config import OWNER_ID
+from src.helpers import db
 from src.logger import LOGGER
 from src.modules.utils import Filter
 from src.modules.utils.play_helpers import del_msg, extract_argument

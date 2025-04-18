@@ -23,12 +23,12 @@ from pytdbot import Client, types
 from pytdbot import VERSION as pyTdVer
 from pytgcalls import __version__ as pytgver
 
-import config
-from config import OWNER_ID
-from src.database import db
+from src import config
+from src.config import OWNER_ID
+from src.helpers import db
 from src.logger import LOGGER
 from src.modules.utils import Filter
-from src.modules.utils.cacher import chat_cache
+from src.helpers import chat_cache
 from src.modules.utils.play_helpers import del_msg, extract_argument
 
 
@@ -53,7 +53,8 @@ def format_exception(
     if msg:
         msg = f": {msg}"
 
-    return f"Traceback (most recent call last):\n{stack}{type(exp).__name__}{msg}"
+    return f"Traceback (most recent call last):\n{stack}{
+    type(exp).__name__}{msg}"
 
 
 @Client.on_message(filters=Filter.command("eval"))
@@ -248,7 +249,11 @@ async def active_vc(_: Client, message: types.Message):
     for chat_id in active_chats:
         queue_length = chat_cache.count(chat_id)
         if current_song := chat_cache.get_current_song(chat_id):
-            song_info = f"🎶 <b>Now Playing:</b> <a href='{current_song.url}'>{current_song.name}</a> - {current_song.artist} ({current_song.duration}s)"
+            song_info = f"🎶 <b>Now Playing:</b> <a href='{
+            current_song.url}'>{
+            current_song.name}</a> - {
+            current_song.artist} ({
+            current_song.duration}s)"
         else:
             song_info = "🔇 No song playing."
 

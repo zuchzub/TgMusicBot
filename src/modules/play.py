@@ -7,12 +7,22 @@ from types import NoneType
 
 from pytdbot import Client, types
 
-from src.database import db
+from src.helpers import (
+    CachedTrack,
+    CallError,
+    MusicServiceWrapper,
+    MusicTrack,
+    PlatformTracks,
+    Telegram,
+    YouTubeData,
+    call,
+    db,
+)
 from src.logger import LOGGER
 from src.modules.utils import Filter, SupportButton, get_audio_duration, sec_to_min
 from src.modules.utils.admins import is_admin, load_admin_cache
 from src.modules.utils.buttons import PlayButton
-from src.modules.utils.cacher import chat_cache
+from src.helpers import chat_cache
 from src.modules.utils.play_helpers import (
     check_user_status,
     del_msg,
@@ -24,11 +34,6 @@ from src.modules.utils.play_helpers import (
     user_status_cache,
 )
 from src.modules.utils.thumbnails import gen_thumb
-from src.platforms import YouTubeData
-from src.platforms.dataclass import CachedTrack, MusicTrack, PlatformTracks
-from src.platforms.downloader import MusicServiceWrapper
-from src.platforms.telegram import Telegram
-from src.pytgcalls import CallError, call
 
 
 def _get_jiosaavn_url(track_id: str) -> str:
@@ -230,7 +235,10 @@ async def _handle_multiple_tracks(
                 url=track.url,
             ),
         )
-        text += f"<b>{position}.</b> {track.name}\n└ Duration: {sec_to_min(track.duration)}\n"
+        text += f"<b>{position}.</b> {
+        track.name}\n└ Duration: {
+        sec_to_min(
+            track.duration)}\n"
 
     text += "</blockquote>\n"
     total_dur = sum(t.duration for t in tracks)

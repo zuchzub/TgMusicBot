@@ -24,15 +24,17 @@ from pytgcalls.types import (
     stream,
 )
 
-import config
-from src.database import db
+from src import config
 from src.logger import LOGGER
 from src.modules.utils import PlayButton, get_audio_duration, sec_to_min, send_logger
-from src.modules.utils.cacher import chat_cache
 from src.modules.utils.thumbnails import gen_thumb
-from src.platforms import ApiData, JiosaavnData, YouTubeData
-from src.platforms.dataclass import CachedTrack
-from src.platforms.downloader import MusicServiceWrapper
+from ._api import ApiData
+from ._cacher import chat_cache
+from ._database import db
+from ._dataclass import CachedTrack
+from ._downloader import MusicServiceWrapper
+from ._jiosaavn import JiosaavnData
+from ._youtube import YouTubeData
 
 
 class CallError(Exception):
@@ -203,9 +205,10 @@ class MusicBot:
         """
         Registers decorators for handling updates from call instances.
 
-        This method iterates over all PyTgCalls instances stored in the `calls` dictionary
-        and registers an update handler for each instance. The handler processes various
-        types of updates, such as `StreamEnded`, `UpdatedGroupCallParticipant`, and
+        This method iterates over all PyTgCalls instances stored in the `calls`
+        dictionary and registers an update handler for each instance.
+        The handler processes various types of updates,
+        such as `StreamEnded`, `UpdatedGroupCallParticipant`, and
         `ChatUpdate`, and performs appropriate actions such as playing the next track
         or clearing the chat cache.
 
@@ -221,18 +224,18 @@ class MusicBot:
                     LOGGER.debug("Received update: %s", update)
                     if isinstance(update, stream.StreamEnded):
                         await self.play_next(update.chat_id)
-                        return
+                        return None
                     elif isinstance(update, UpdatedGroupCallParticipant):
-                        return
+                        return None
                     elif isinstance(update, ChatUpdate) and (
                         update.status.KICKED or update.status.LEFT_GROUP
                     ):
                         chat_cache.clear_chat(update.chat_id)
-                        return
-                    else:
-                        return
+                        return None
+                    return None
                 except Exception as e:
                     LOGGER.error("Error in general handler: %s", e)
+                    return None
 
     async def play_media(
         self,

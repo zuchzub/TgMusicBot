@@ -10,8 +10,8 @@ from typing import Any, Optional, Union
 import aiofiles
 import httpx
 
-import config
-from config import API_KEY
+from src import config
+from src.config import API_KEY
 from src.logger import LOGGER
 
 
@@ -114,8 +114,7 @@ class HttpxClient:
             return f"HTTP error {e.response.status_code} for {url}"
         elif isinstance(e, httpx.RequestError):
             return f"Request failed for {url}: {e}"
-        else:
-            return f"Unexpected error for {url}: {e}"
+        return f"Unexpected error for {url}: {e}"
 
     async def make_request(
         self,
