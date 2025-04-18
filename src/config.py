@@ -12,56 +12,50 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-API_ID = int(getenv("API_ID", None))
-API_HASH = getenv("API_HASH", None)
-TOKEN = getenv("TOKEN", None)
-STRING = getenv("STRING", None)
-STRING2 = getenv("STRING2", None)
-STRING3 = getenv("STRING3", None)
-STRING4 = getenv("STRING4", None)
-STRING5 = getenv("STRING5", None)
-STRING6 = getenv("STRING6", None)
-STRING7 = getenv("STRING7", None)
-STRING8 = getenv("STRING8", None)
-STRING9 = getenv("STRING9", None)
-STRING10 = getenv("STRING10", None)
 
-SESSION_STRINGS = [
-    STRING,
-    STRING2,
-    STRING3,
-    STRING4,
-    STRING5,
-    STRING6,
-    STRING7,
-    STRING8,
-    STRING9,
-    STRING10,
-]
-OWNER_ID = int(getenv("OWNER_ID", 5938660179))
-LOGGER_ID = int(getenv("LOGGER_ID", 0))
-MONGO_URI = getenv("MONGO_URI", None)
-API_URL = getenv("API_URL", None)
-API_KEY = getenv("API_KEY", None)
-PROXY_URL = getenv("PROXY_URL", None)
-DEFAULT_SERVICE = getenv("DEFAULT_SERVICE", "youtube").lower()
-DOWNLOADS_DIR = getenv("DOWNLOADS_DIR", "database/music")
-SUPPORT_GROUP = getenv("SUPPORT_GROUP", "https://t.me/GuardxSupport")
-SUPPORT_CHANNEL = getenv("SUPPORT_CHANNEL", "https://t.me/FallenProjects")
-IGNORE_BACKGROUND_UPDATES = (
+def get_env_int(name: str, default: Optional[int] = None) -> Optional[int]:
+    value = getenv(name)
+    return int(value) if value and value.isdigit() else default
+
+
+API_ID: Optional[int] = get_env_int("API_ID")
+API_HASH: Optional[str] = getenv("API_HASH")
+TOKEN: Optional[str] = getenv("TOKEN")
+
+SESSION_STRINGS: list[str] = [getenv(f"STRING{i}", None) for i in range(1, 11)]
+
+SESSION_STRINGS = [s for s in SESSION_STRINGS if s]
+
+OWNER_ID: int = get_env_int("OWNER_ID", 5938660179)
+LOGGER_ID: int = get_env_int("LOGGER_ID", 0)
+MONGO_URI: Optional[str] = getenv("MONGO_URI")
+API_URL: Optional[str] = getenv("API_URL")
+API_KEY: Optional[str] = getenv("API_KEY")
+PROXY_URL: Optional[str] = getenv("PROXY_URL")
+
+DEFAULT_SERVICE: str = getenv("DEFAULT_SERVICE", "youtube").lower()
+DOWNLOADS_DIR: str = getenv("DOWNLOADS_DIR", "database/music")
+SUPPORT_GROUP: str = getenv("SUPPORT_GROUP", "https://t.me/GuardxSupport")
+SUPPORT_CHANNEL: str = getenv("SUPPORT_CHANNEL", "https://t.me/FallenProjects")
+
+IGNORE_BACKGROUND_UPDATES: bool = (
     getenv("IGNORE_BACKGROUND_UPDATES", "True").lower() == "true"
 )
+AUTO_LEAVE: bool = getenv("AUTO_LEAVE", "True").lower() == "true"
 
 
 def process_cookie_urls(env_value: Optional[str]) -> list[str]:
-    """https://github.com/AshokShau/TgMusicBot/blob/master/cookies/README.md"""
+    """Parse COOKIES_URL for one or more valid URLs."""
     if not env_value:
         return []
-    urls = []
-    for part in env_value.split(","):
-        urls.extend(part.split())
-
-    return [url.strip() for url in urls if url.strip()]
+    parts = env_value.replace(",", " ").split()
+    return [url.strip() for url in parts if url.strip()]
 
 
 COOKIES_URL: list[str] = process_cookie_urls(getenv("COOKIES_URL", ""))
+
+# Developer IDs (OWNER_ID is always included)
+devs_env: Optional[str] = getenv("DEVS")
+DEVS: list[int] = list(map(int, devs_env.split())) if devs_env else []
+if OWNER_ID not in DEVS:
+    DEVS.append(OWNER_ID)

@@ -10,6 +10,7 @@ from pyrogram import Client as PyroClient
 from pyrogram import errors
 from pytdbot import Client, types
 
+from src.config import AUTO_LEAVE
 from src.helpers import call
 from src.helpers import chat_cache
 
@@ -109,6 +110,8 @@ class InactiveCallManager:
         Note that this function is intended to be used with caution, as it will leave
         all non-active chats for all userbot clients.
         """
+        if not AUTO_LEAVE:
+            return
         for client_name, call_instance in call.calls.items():
             ub: PyroClient = call_instance.mtproto_client
             chats_to_leave = []

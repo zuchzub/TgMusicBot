@@ -23,8 +23,7 @@ from pytdbot import Client, types
 from pytdbot import VERSION as pyTdVer
 from pytgcalls import __version__ as pytgver
 
-from src import config
-from src.config import OWNER_ID
+from src.config import OWNER_ID, DEVS, LOGGER_ID
 from src.helpers import db
 from src.logger import LOGGER
 from src.modules.utils import Filter
@@ -159,7 +158,7 @@ async def sys_stats(client: Client, message: types.Message):
     """
     Get bot and system stats.
     """
-    if int(message.from_id) != OWNER_ID:
+    if message.from_id not in DEVS:
         await del_msg(message)
         return None
 
@@ -235,7 +234,7 @@ async def active_vc(_: Client, message: types.Message):
     """
     Get active voice chats.
     """
-    if message.from_id != OWNER_ID:
+    if message.from_id not in DEVS:
         await del_msg(message)
         return None
 
@@ -277,11 +276,11 @@ async def logger(c: Client, message: types.Message):
     """
     Enable or disable logging.
     """
-    if message.from_id != OWNER_ID:
+    if message.from_id not in DEVS:
         await del_msg(message)
         return None
 
-    if config.LOGGER_ID == 0 or not config.LOGGER_ID:
+    if LOGGER_ID == 0 or not LOGGER_ID:
         await message.reply_text("Please set LOGGER_ID in .env first.")
         return None
 
