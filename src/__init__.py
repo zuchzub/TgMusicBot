@@ -13,7 +13,7 @@ from src import config
 from src.helpers import call, db, start_clients
 from src.modules.jobs import InactiveCallManager
 
-__version__ = "1.1.7"
+__version__ = "1.1.8"
 
 # Enforce a minimum Python version
 if sys.version_info < (3, 10):
