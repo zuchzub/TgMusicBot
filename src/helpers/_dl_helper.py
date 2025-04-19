@@ -86,12 +86,7 @@ class YouTubeDownload:
         ]
 
         if video:
-            cmd.extend(
-                [
-                    "-f",
-                    "bestvideo[ext=mp4][height<=720]+bestaudio[ext=m4a]/best[ext=mp4]",
-                ]
-            )
+            cmd.extend(["-f", "best[height<=?720][width<=?1280]"])
         else:
             cmd.extend(["-f", "bestaudio[ext=m4a]/bestaudio/best"])
 
