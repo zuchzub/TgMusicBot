@@ -67,8 +67,7 @@ tgmusicbot v1.1.8
 ├── motor v3.7.0
 │   └── pymongo v4.12.0
 │       └── dnspython v2.7.0
-├── mutagen v1.47.0
-├── ntgcalls v1.3.3
+├── ntgcalls v1.3.4
 ├── pillow v11.2.1
 ├── psutil v7.0.0
 ├── py-tgcalls v2.1.1
@@ -85,8 +84,8 @@ tgmusicbot v1.1.8
 │   │       ├── multidict v6.4.3
 │   │       └── propcache v0.3.1
 │   ├── deprecation v2.1.0
-│   │   └── packaging v24.2
-│   └── ntgcalls v1.3.3
+│   │   └── packaging v25.0
+│   └── ntgcalls v1.3.4
 ├── py-yt-search v0.2
 │   └── httpx v0.28.1
 │       ├── anyio v4.9.0
