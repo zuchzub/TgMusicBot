@@ -13,7 +13,7 @@ from src import __version__
 from src.helpers import call, db
 from src.modules.utils import Filter, sec_to_min
 from src.modules.utils.admins import load_admin_cache
-from src.modules.utils.buttons import add_me_button
+from src.modules.utils.buttons import add_me_markup
 from src.helpers import chat_cache
 from src.modules.utils.play_helpers import (
     chat_invite_cache,
@@ -46,7 +46,7 @@ Your ultimate music companion for Telegram voice chats!
     """
     bot_username = c.me.usernames.editable_username
     reply = await message.reply_text(
-        text, parse_mode="html", reply_markup=add_me_button(bot_username)
+        text, parse_mode="html", reply_markup=add_me_markup(bot_username)
     )
     if isinstance(reply, types.Error):
         c.logger.warning(f"Error sending start message: {reply.message}")

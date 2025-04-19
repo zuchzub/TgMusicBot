@@ -3,39 +3,38 @@
 #  Part of the TgMusicBot project. All rights reserved where applicable.
 
 from pytdbot import types
-
 from src import config
 
 # ─────────────────────
-# Reusable Button Definitions
+# Inline Button Definitions
 # ─────────────────────
 
-SKIP_BUTTON = types.InlineKeyboardButton(
+SKIP_BTN = types.InlineKeyboardButton(
     text="⏭️", type=types.InlineKeyboardButtonTypeCallback(b"play_skip")
 )
 
-STOP_BUTTON = types.InlineKeyboardButton(
+STOP_BTN = types.InlineKeyboardButton(
     text="⏹️", type=types.InlineKeyboardButtonTypeCallback(b"play_stop")
 )
 
-PAUSE_BUTTON = types.InlineKeyboardButton(
+PAUSE_BTN = types.InlineKeyboardButton(
     text="⏸️", type=types.InlineKeyboardButtonTypeCallback(b"play_pause")
 )
 
-RESUME_BUTTON = types.InlineKeyboardButton(
-    text="🔁", type=types.InlineKeyboardButtonTypeCallback(b"play_resume")
+RESUME_BTN = types.InlineKeyboardButton(
+    text="▶️", type=types.InlineKeyboardButtonTypeCallback(b"play_resume")
 )
 
-CLOSE_BUTTON = types.InlineKeyboardButton(
+CLOSE_BTN = types.InlineKeyboardButton(
     text="❌ Close", type=types.InlineKeyboardButtonTypeCallback(b"play_close")
 )
 
-CHANNEL_BUTTON = types.InlineKeyboardButton(
-    text="❄ Channel", type=types.InlineKeyboardButtonTypeUrl(config.SUPPORT_CHANNEL)
+CHANNEL_BTN = types.InlineKeyboardButton(
+    text="📢 Channel", type=types.InlineKeyboardButtonTypeUrl(config.SUPPORT_CHANNEL)
 )
 
-GROUP_BUTTON = types.InlineKeyboardButton(
-    text="✨ Group", type=types.InlineKeyboardButtonTypeUrl(config.SUPPORT_GROUP)
+GROUP_BTN = types.InlineKeyboardButton(
+    text="💬 Group", type=types.InlineKeyboardButtonTypeUrl(config.SUPPORT_GROUP)
 )
 
 # ─────────────────────
@@ -43,53 +42,39 @@ GROUP_BUTTON = types.InlineKeyboardButton(
 # ─────────────────────
 
 PlayButton = types.ReplyMarkupInlineKeyboard(
-    [
-        [SKIP_BUTTON, STOP_BUTTON, PAUSE_BUTTON, RESUME_BUTTON],
-        [CLOSE_BUTTON],
-    ]
+    [[SKIP_BTN, STOP_BTN, PAUSE_BTN, RESUME_BTN], [CLOSE_BTN]]
 )
 
 PauseButton = types.ReplyMarkupInlineKeyboard(
-    [
-        [SKIP_BUTTON, STOP_BUTTON, RESUME_BUTTON],
-        [CLOSE_BUTTON],
-    ]
+    [[SKIP_BTN, STOP_BTN, RESUME_BTN], [CLOSE_BTN]]
 )
 
 ResumeButton = types.ReplyMarkupInlineKeyboard(
-    [
-        [SKIP_BUTTON, STOP_BUTTON, PAUSE_BUTTON],
-        [CLOSE_BUTTON],
-    ]
+    [[SKIP_BTN, STOP_BTN, PAUSE_BTN], [CLOSE_BTN]]
 )
 
-SupportButton = types.ReplyMarkupInlineKeyboard(
-    [
-        [CHANNEL_BUTTON, GROUP_BUTTON],
-        [CLOSE_BUTTON],
-    ]
-)
-
+SupportButton = types.ReplyMarkupInlineKeyboard([[CHANNEL_BTN, GROUP_BTN], [CLOSE_BTN]])
 
 # ─────────────────────
-# Dynamic Keyboard Function
+# Dynamic Keyboard Generator
 # ─────────────────────
 
 
-def add_me_button(username: str) -> types.ReplyMarkupInlineKeyboard:
+def add_me_markup(username: str) -> types.ReplyMarkupInlineKeyboard:
     """
-    Create an inline keyboard with 'Add me to your group' button.
+    Returns an inline keyboard with a button to add the bot to a group
+    and support buttons.
     """
     return types.ReplyMarkupInlineKeyboard(
         [
             [
                 types.InlineKeyboardButton(
-                    text="Add me to your group",
+                    text="➕ Add me to your group",
                     type=types.InlineKeyboardButtonTypeUrl(
                         f"https://t.me/{username}?startgroup=true"
                     ),
                 ),
             ],
-            [CHANNEL_BUTTON, GROUP_BUTTON],
+            [CHANNEL_BTN, GROUP_BTN],
         ]
     )

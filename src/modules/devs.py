@@ -52,8 +52,7 @@ def format_exception(
     if msg:
         msg = f": {msg}"
 
-    return f"Traceback (most recent call last):\n{stack}{
-    type(exp).__name__}{msg}"
+    return f"Traceback (most recent call last):\n{stack}{type(exp).__name__}{msg}"
 
 
 @Client.on_message(filters=Filter.command("eval"))
@@ -134,7 +133,7 @@ async def exec_eval(c: Client, m: types.Message):
 <pre language="python">{escape(out)}</pre>"""
 
     if len(result) > 4096:
-        filename = f"/tmp/{uuid.uuid4().hex}.txt"
+        filename = f"database/{uuid.uuid4().hex}.txt"
         with open(filename, "w", encoding="utf-8") as file:
             file.write(out)
 
@@ -147,6 +146,8 @@ async def exec_eval(c: Client, m: types.Message):
             disable_notification=True,
             parse_mode="html",
         )
+        if os.path.exists(filename):
+            os.remove(filename)
         return None
 
     await m.reply_text(str(result), parse_mode="html")
@@ -248,11 +249,7 @@ async def active_vc(_: Client, message: types.Message):
     for chat_id in active_chats:
         queue_length = chat_cache.count(chat_id)
         if current_song := chat_cache.get_current_song(chat_id):
-            song_info = f"🎶 <b>Now Playing:</b> <a href='{
-            current_song.url}'>{
-            current_song.name}</a> - {
-            current_song.artist} ({
-            current_song.duration}s)"
+            song_info = f"🎶 <b>Now Playing:</b> <a href='{current_song.url}'>{current_song.name}</a> - {current_song.artist} ({current_song.duration}s)"
         else:
             song_info = "🔇 No song playing."
 

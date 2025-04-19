@@ -525,7 +525,7 @@ class MusicBot:
             chat_id: The chat ID to seek the stream for.
             file_path_or_url: The file path or URL of the stream.
             to_seek: The position to seek to, in seconds.
-            duration: The total duration of the stream, in seconds.
+            duration: The total duration of the stream in seconds.
             is_video: Whether the stream is a video or not.
 
         Raises:
@@ -761,29 +761,21 @@ class MusicBot:
 
 async def start_clients() -> None:
     """
-    Start all PyTgCalls clients using provided session strings.
+    Start all PyTgCalls clients.
 
-    This asynchronous function retrieves session strings from the configuration
-    and starts a PyTgCalls client for each valid session string.
-    If no session strings are provided, it logs an error and exits the application.
-    It logs the success or failure of starting clients using the defined logger.
+    This function starts all the PyTgCalls clients configured in the `SESSION_STRINGS`
+    configuration variable. It uses `asyncio.gather` to start all the clients concurrently
+    and logs the result.
 
-    Raises
-    ------
-    SystemExit
-        If no session strings are provided or if an error occurs while starting
-        the clients.
+    Raises:
+        SystemExit: If there is an error starting the clients, it will log the error and raise
+            a `SystemExit` exception with code 1.
     """
-    session_strings = [s for s in config.SESSION_STRINGS if s]
-    if not session_strings:
-        LOGGER.error("No STRING session provided. Exiting...")
-        raise SystemExit(1)
-
     try:
         await asyncio.gather(
             *[
                 call.start_client(config.API_ID, config.API_HASH, s)
-                for s in session_strings
+                for s in config.SESSION_STRINGS
             ]
         )
         LOGGER.info("✅ Clients started successfully.")

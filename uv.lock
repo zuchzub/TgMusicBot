@@ -397,15 +397,15 @@ wheels = [
 
 [[package]]
 name = "kurigram"
-version = "2.2.0"
+version = "2.2.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pyaes" },
     { name = "pysocks" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/bf/bc/7ef47cc4615d1fc725987323425c03c2c18420d9756ccd1ce2dbe4ce059d/kurigram-2.2.0.tar.gz", hash = "sha256:d644316ce64c7ecbca57052e646ae63a0ef251afc6957db767012456f040c02d", size = 527724 }
+sdist = { url = "https://files.pythonhosted.org/packages/f2/ac/f95f2a6dd1634224a31b7a0eb218e6181ac38c03363956b2bcd7bac7c0b0/kurigram-2.2.1.tar.gz", hash = "sha256:63fae5471d3824d5e08188180edf21ecfe13ed1bb53504308d0015469e4c9581", size = 527783 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/5b/0b/0f16c293ff1d932bb5e2ae01153cd98fddf18c0f18ce74ed5a3dbe4835a5/kurigram-2.2.0-py3-none-any.whl", hash = "sha256:e412a100805bd057cf504079b4b2a01739fbbe0d1d4bf9eeeb4df88cc5003e52", size = 4792227 },
+    { url = "https://files.pythonhosted.org/packages/21/5f/0ea1fb36596ed756b122212e34d1786c96adf4ee9a3f5532c9d3f6833812/kurigram-2.2.1-py3-none-any.whl", hash = "sha256:94c9f23ee5cd2a868a557929b3ecf24fb4ff530a7f0a0f633676db2391fc9545", size = 4792260 },
 ]
 
 [[package]]
@@ -1062,6 +1062,15 @@ wheels = [
 ]
 
 [[package]]
+name = "setuptools"
+version = "78.1.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/a9/5a/0db4da3bc908df06e5efae42b44e75c81dd52716e10192ff36d0c1c8e379/setuptools-78.1.0.tar.gz", hash = "sha256:18fd474d4a82a5f83dac888df697af65afa82dec7323d09c3e37d1f14288da54", size = 1367827 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/54/21/f43f0a1fa8b06b32812e0975981f4677d28e0f3271601dc88ac5a5b83220/setuptools-78.1.0-py3-none-any.whl", hash = "sha256:3e386e96793c8702ae83d17b853fb93d3e09ef82ec62722e61da5cd22376dcd8", size = 1256108 },
+]
+
+[[package]]
 name = "sniffio"
 version = "1.3.1"
 source = { registry = "https://pypi.org/simple" }
@@ -1083,7 +1092,7 @@ wheels = [
 
 [[package]]
 name = "tgmusicbot"
-version = "1.1.7"
+version = "1.1.8"
 source = { editable = "." }
 dependencies = [
     { name = "aiofiles" },
@@ -1109,12 +1118,17 @@ dependencies = [
     { name = "yt-dlp" },
 ]
 
+[package.optional-dependencies]
+dev = [
+    { name = "setuptools" },
+]
+
 [package.metadata]
 requires-dist = [
     { name = "aiofiles", specifier = "~=24.1.0" },
     { name = "apscheduler", specifier = "~=3.11.0" },
     { name = "cachetools", specifier = "~=5.5.2" },
-    { name = "kurigram", specifier = "~=2.2.0" },
+    { name = "kurigram", specifier = "~=2.2.1" },
     { name = "meval", specifier = "~=2.5" },
     { name = "motor", specifier = "~=3.7.0" },
     { name = "mutagen", specifier = "~=1.47.0" },
@@ -1129,10 +1143,12 @@ requires-dist = [
     { name = "pytgcrypto", specifier = "~=1.2.9.2" },
     { name = "python-dotenv", specifier = "~=1.1.0" },
     { name = "pytz", specifier = "~=2025.2" },
+    { name = "setuptools", marker = "extra == 'dev'", specifier = "~=78.1.0" },
     { name = "tdjson", specifier = "~=1.8.47" },
     { name = "ujson", specifier = "~=5.10.0" },
     { name = "yt-dlp", specifier = "~=2025.3.31" },
 ]
+provides-extras = ["dev"]
 
 [[package]]
 name = "typing-extensions"

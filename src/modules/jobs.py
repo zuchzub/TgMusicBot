@@ -52,7 +52,8 @@ class InactiveCallManager:
             played_time = await call.played_time(chat_id)
             if played_time < 20:
                 self.bot.logger.debug(
-                    f"Call in chat {chat_id} has been active for less than 20 seconds. Skipping..."
+                    f"Call in chat {chat_id} has been active for less than 20 "
+                    "seconds. Skipping..."
                 )
                 return
 

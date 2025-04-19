@@ -52,15 +52,15 @@ downloads.
 ## **Installation**
 
 <details> 
-<summary>Dependencies Tree: Click to expand</summary>
+<summary>Dependency Tree: Click to expand</summary>
 
 ```
-tgmusicbot v1.1.7
+tgmusicbot v1.1.8
 ├── aiofiles v24.1.0
 ├── apscheduler v3.11.0
 │   └── tzlocal v5.3.1
 ├── cachetools v5.5.2
-├── kurigram v2.2.0
+├── kurigram v2.2.1
 │   ├── pyaes v1.6.1
 │   └── pysocks v1.7.1
 ├── meval v2.5
@@ -119,7 +119,8 @@ tgmusicbot v1.1.7
 ├── pytz v2025.2
 ├── tdjson v1.8.47
 ├── ujson v5.10.0
-└── yt-dlp v2025.3.31
+├── yt-dlp v2025.3.31
+└── setuptools v78.1.0 (extra: dev)
 ```
 
 </details>

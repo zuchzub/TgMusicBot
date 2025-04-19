@@ -23,7 +23,6 @@ API_HASH: Optional[str] = getenv("API_HASH")
 TOKEN: Optional[str] = getenv("TOKEN")
 
 SESSION_STRINGS: list[str] = [getenv(f"STRING{i}", None) for i in range(1, 11)]
-
 SESSION_STRINGS = [s for s in SESSION_STRINGS if s]
 
 OWNER_ID: int = get_env_int("OWNER_ID", 5938660179)
