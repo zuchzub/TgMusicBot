@@ -10,23 +10,23 @@ from src import config
 # ─────────────────────
 
 SKIP_BTN = types.InlineKeyboardButton(
-    text="⏭️", type=types.InlineKeyboardButtonTypeCallback(b"play_skip")
+    text="‣‣I", type=types.InlineKeyboardButtonTypeCallback(b"play_skip")
 )
 
 STOP_BTN = types.InlineKeyboardButton(
-    text="⏹️", type=types.InlineKeyboardButtonTypeCallback(b"play_stop")
+    text="▢", type=types.InlineKeyboardButtonTypeCallback(b"play_stop")
 )
 
 PAUSE_BTN = types.InlineKeyboardButton(
-    text="⏸️", type=types.InlineKeyboardButtonTypeCallback(b"play_pause")
+    text="II", type=types.InlineKeyboardButtonTypeCallback(b"play_pause")
 )
 
 RESUME_BTN = types.InlineKeyboardButton(
-    text="▶️", type=types.InlineKeyboardButtonTypeCallback(b"play_resume")
+    text="▷", type=types.InlineKeyboardButtonTypeCallback(b"play_resume")
 )
 
 CLOSE_BTN = types.InlineKeyboardButton(
-    text="❌ Close", type=types.InlineKeyboardButtonTypeCallback(b"play_close")
+    text="⏹ ᴄʟᴏsᴇ", type=types.InlineKeyboardButtonTypeCallback(b"play_close")
 )
 
 CHANNEL_BTN = types.InlineKeyboardButton(
@@ -36,6 +36,27 @@ CHANNEL_BTN = types.InlineKeyboardButton(
 GROUP_BTN = types.InlineKeyboardButton(
     text="💬 Group", type=types.InlineKeyboardButtonTypeUrl(config.SUPPORT_GROUP)
 )
+
+HELP_BTN = types.InlineKeyboardButton(
+    text="📖 Help", type=types.InlineKeyboardButtonTypeCallback(b"help_all")
+)
+
+USER_BTN = types.InlineKeyboardButton(
+    text="User Commands", type=types.InlineKeyboardButtonTypeCallback(b"help_user")
+)
+
+ADMIN_BTN = types.InlineKeyboardButton(
+    text="Admin Commands", type=types.InlineKeyboardButtonTypeCallback(b"help_admin")
+)
+
+OWNER_BTN = types.InlineKeyboardButton(
+    text="Owner Commands", type=types.InlineKeyboardButtonTypeCallback(b"help_owner")
+)
+
+DEVS_BTN = types.InlineKeyboardButton(
+    text="Devs Commands", type=types.InlineKeyboardButtonTypeCallback(b"help_devs")
+)
+
 
 # ─────────────────────
 # Inline Keyboard Markups
@@ -54,6 +75,12 @@ ResumeButton = types.ReplyMarkupInlineKeyboard(
 )
 
 SupportButton = types.ReplyMarkupInlineKeyboard([[CHANNEL_BTN, GROUP_BTN], [CLOSE_BTN]])
+
+HelpMenu = types.ReplyMarkupInlineKeyboard(
+    [[USER_BTN, ADMIN_BTN], [OWNER_BTN, DEVS_BTN], [CLOSE_BTN]]
+)
+
+BackHelpMenu = types.ReplyMarkupInlineKeyboard([[HELP_BTN, CLOSE_BTN]])
 
 # ─────────────────────
 # Dynamic Keyboard Generator
@@ -75,6 +102,7 @@ def add_me_markup(username: str) -> types.ReplyMarkupInlineKeyboard:
                     ),
                 ),
             ],
+            [HELP_BTN],
             [CHANNEL_BTN, GROUP_BTN],
         ]
     )
