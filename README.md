@@ -133,17 +133,25 @@ tgmusicbot v1.1.8
    ```sh
    git clone https://github.com/AshokShau/TgMusicBot.git && cd TgMusicBot
    ```
+
 2. Build the Docker image:
    ```sh
    docker build -t tgmusicbot .
    ```
+
 3. Set up environment variables:
    ```sh
    cp sample.env .env && vi .env
    ```
+
 4. Run the Docker container:
    ```sh
    docker run -d --name tgmusicbot --env-file .env tgmusicbot
+   ```
+
+5. Check the logs:
+   ```sh
+   docker logs -f tgmusicbot
    ```
 
 </details>
@@ -152,58 +160,46 @@ tgmusicbot v1.1.8
 <summary><strong>📌 Manual Installation (Click to expand)</strong></summary>
 
 1.Update and Upgrade your system:
-
    ```sh
    sudo apt-get update && sudo apt-get upgrade -y
    ```
 
 2.Install tmux to keep running your bot when you close the terminal by:
-
    ```sh
    sudo apt install tmux && tmux
    ```
-
-3.Install required packages:
-
+3.Install required packages and [install uv](https://docs.astral.sh/uv/getting-started/installation/):
    ```sh
    sudo apt-get install git python3-pip ffmpeg -y && pip3 install uv
    ```
 
 4.Clone the repository:
-
    ```sh
    git clone https://github.com/AshokShau/TgMusicBot.git && cd TgMusicBot
    ```
-
-5.Create a virtual environment:
-
+5.Create a virtual environment [Docs](https://docs.astral.sh/uv/pip/environments/):
    ```sh
    uv venv
    ```
 
 6.Activate the virtual environment:
-
-- Windows: `.venv/Scripts/activate`
+- Windows: `.venv\Scripts\activate`
 - Linux/Mac: `source .venv/bin/activate`
 
 7.Install dependencies:
-
    ```sh
    uv pip install -e .
    ```
 
 8.Set up environment variables:
-
    ```sh
    cp sample.env .env && vi .env
    ```
-
 > Press `Ctrl+C` when you're done with editing env and `:wq` to save the environment variables.
 
 9.Finally, run the bot by:
-
    ```sh
-   tgmusicbot
+   tgmusic
    ```
 
 > For getting out from tmux session: Press `Ctrl+b` and then `d`.
@@ -242,7 +238,7 @@ tgmusicbot v1.1.8
 
 - **OWNER_ID** – Your Telegram User ID
 - **MONGO_URI** – Get from [MongoDB Cloud](https://cloud.mongodb.com)
-- **API_URL** – Buy from [@AshokShau](https://t.me/AshokShau) (Spotify API for unlimited downloads)
+- **API_URL** – Buy from [@AshokShau](https://t.me/AshokShau) (API for unlimited downloads)
 - **API_KEY** – Required for API_URL
 - **DOWNLOADS_DIR** – Directory for downloads and TDLib database
 - **SUPPORT_GROUP** – Support Group Link

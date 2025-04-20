@@ -74,7 +74,7 @@ class HttpxClient:
         Args:
             url: URL of the file to download
             file_path: Path to save the downloaded file
-            overwrite: Whether to overwrite existing file
+            overwrite: Whether to overwrite an existing file
 
         Returns:
             DownloadResult: Contains success status and file path or error message

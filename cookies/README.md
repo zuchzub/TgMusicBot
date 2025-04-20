@@ -11,8 +11,7 @@ the account again** until the cookies expire — reopening may invalidate the se
 
 Use a browser extension to export cookies in the **Netscape HTTP Cookie File** format:
 
-- **Chrome:
-  ** [Get cookies.txt (Chrome Extension)](https://chromewebstore.google.com/detail/get-cookiestxt-clean/ahmnmhfbokciafffnknlekllgcnafnie)
+- **Chrome:** [Get cookies.txt (Chrome Extension)](https://chromewebstore.google.com/detail/get-cookiestxt-clean/ahmnmhfbokciafffnknlekllgcnafnie)
 - **Firefox:** [Get cookies.txt (Firefox Add-on)](https://addons.mozilla.org/en-US/firefox/addon/cookies-txt/)
 
 #### **2. Upload Cookies to BatBin Service**

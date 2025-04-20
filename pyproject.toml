@@ -41,7 +41,7 @@ dev = [
 ]
 
 [project.scripts]
-tgmusicbot = "src.__main__:main"
+tgmusic = "src.__main__:main"
 
 [tool.setuptools]
 packages = ["src"]

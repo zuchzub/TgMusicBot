@@ -10,12 +10,30 @@ from typing import Optional
 
 from dotenv import load_dotenv
 
+from src.logger import LOGGER
+
 load_dotenv()
 
 
 def get_env_int(name: str, default: Optional[int] = None) -> Optional[int]:
+    """
+    Gets an environment variable as an integer, or returns the default value if
+    the variable does not exist or is not an integer.
+
+    Args:
+        name (str): The environment variable name.
+        default (Optional[int]): The default value to return if the variable does not exist.
+            Defaults to None.
+
+    Returns:
+        Optional[int]: The value of the environment variable as an integer, or the default value.
+    """
     value = getenv(name)
-    return int(value) if value and value.isdigit() else default
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        LOGGER.warning("Invalid value for %s: %s", name, value)
+        return default
 
 
 API_ID: Optional[int] = get_env_int("API_ID")
@@ -56,5 +74,5 @@ COOKIES_URL: list[str] = process_cookie_urls(getenv("COOKIES_URL", ""))
 # Developer IDs (OWNER_ID is always included)
 devs_env: Optional[str] = getenv("DEVS")
 DEVS: list[int] = list(map(int, devs_env.split())) if devs_env else []
-if OWNER_ID not in DEVS:
+if OWNER_ID and OWNER_ID not in DEVS:
     DEVS.append(OWNER_ID)
