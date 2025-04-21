@@ -17,7 +17,7 @@ chat_invite_cache = TTLCache(maxsize=1000, ttl=1000)
 
 
 async def get_url(
-    msg: types.Message, reply: Union[types.Message, None]
+        msg: types.Message, reply: Union[types.Message, None]
 ) -> Optional[str]:
     """
     Extracts a URL from the given message or its reply.
@@ -40,7 +40,7 @@ async def get_url(
         if entity.type and entity.type["@type"] == "textEntityTypeUrl":
             offset = entity.offset
             length = entity.length
-            url = text_content[offset : offset + length]
+            url = text_content[offset: offset + length]
             LOGGER.info("Extracted URL: %s", url)
             return url
     return None
@@ -84,7 +84,7 @@ async def del_msg(msg: types.Message):
 
 
 async def edit_text(
-    reply_message: types.Message, *args: Any, **kwargs: Any
+        reply_message: types.Message, *args: Any, **kwargs: Any
 ) -> Union["types.Error", "types.Message"]:
     """
     Edits the given message and returns the result.
@@ -170,15 +170,15 @@ async def unban_ub(c: Client, chat_id: int, user_id: int):
 
 
 async def check_user_status(c: Client, chat_id: int, user_id: int) -> (
-    Literal[
-        "chatMemberStatusLeft",
-        "chatMemberStatusCreator",
-        "chatMemberStatusAdministrator",
-        "chatMemberStatusMember",
-        "chatMemberStatusRestricted",
-        "chatMemberStatusBanned",
-    ]
-    | Any
+        Literal[
+            "chatMemberStatusLeft",
+            "chatMemberStatusCreator",
+            "chatMemberStatusAdministrator",
+            "chatMemberStatusMember",
+            "chatMemberStatusRestricted",
+            "chatMemberStatusBanned",
+        ]
+        | Any
 ):
     """
     Checks the status of a user in a chat.

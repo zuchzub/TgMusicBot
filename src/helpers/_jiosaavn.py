@@ -214,7 +214,7 @@ class JiosaavnData(MusicService):
         return None
 
     async def download_track(
-        self, track: TrackInfo, video: bool = False
+            self, track: TrackInfo, video: bool = False
     ) -> Optional[Path]:
         """
         Download a track to local storage.
@@ -343,7 +343,7 @@ class JiosaavnData(MusicService):
         )
 
     def _parse_search_response(
-        self, response: dict[str, Any]
+            self, response: dict[str, Any]
     ) -> Optional[dict[str, Any]]:
         """
         Parse the search API response into standardized format.

@@ -91,7 +91,7 @@ class InactiveCallManager:
 
         # Process tasks in batches of 3 with a 1-second delay between batches
         for i in range(0, len(tasks), 3):
-            await asyncio.gather(*tasks[i : i + 3])
+            await asyncio.gather(*tasks[i: i + 3])
             await asyncio.sleep(1)
 
         self.bot.logger.debug("Inactive call checks completed.")

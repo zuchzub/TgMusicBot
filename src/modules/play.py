@@ -18,11 +18,11 @@ from src.helpers import (
     call,
     db,
 )
+from src.helpers import chat_cache
 from src.logger import LOGGER
 from src.modules.utils import Filter, SupportButton, get_audio_duration, sec_to_min
 from src.modules.utils.admins import is_admin, load_admin_cache
 from src.modules.utils.buttons import PlayButton
-from src.helpers import chat_cache
 from src.modules.utils.play_helpers import (
     check_user_status,
     del_msg,
@@ -64,7 +64,7 @@ def _get_platform_url(platform: str, track_id: str) -> str:
 
 
 def build_song_selection_message(
-    user_by: str, tracks: list[MusicTrack]
+        user_by: str, tracks: list[MusicTrack]
 ) -> tuple[str, types.ReplyMarkupInlineKeyboard]:
     """
     Build a message and inline keyboard for song selection.
@@ -94,11 +94,11 @@ def build_song_selection_message(
 
 
 async def _update_msg_with_thumb(
-    c: Client,
-    msg: types.Message,
-    text: str,
-    thumb: str,
-    button: types.ReplyMarkupInlineKeyboard,
+        c: Client,
+        msg: types.Message,
+        text: str,
+        thumb: str,
+        button: types.ReplyMarkupInlineKeyboard,
 ):
     """
     Update a message with thumbnail if available.
@@ -128,13 +128,13 @@ async def _update_msg_with_thumb(
 
 
 async def _handle_single_track(
-    c: Client,
-    msg: types.Message,
-    chat_id: int,
-    track: MusicTrack,
-    user_by: str,
-    file_path: str = None,
-    is_video: bool = False,
+        c: Client,
+        msg: types.Message,
+        chat_id: int,
+        track: MusicTrack,
+        user_by: str,
+        file_path: str = None,
+        is_video: bool = False,
 ):
     """
     Handle playback of a single track.
@@ -209,7 +209,7 @@ async def _handle_single_track(
 
 
 async def _handle_multiple_tracks(
-    _: Client, msg: types.Message, chat_id: int, tracks: list[MusicTrack], user_by: str
+        _: Client, msg: types.Message, chat_id: int, tracks: list[MusicTrack], user_by: str
 ):
     """
     Handle multiple tracks (playlist/album).
@@ -262,12 +262,12 @@ async def _handle_multiple_tracks(
 
 
 async def play_music(
-    c: Client,
-    msg: types.Message,
-    url_data: PlatformTracks,
-    user_by: str,
-    tg_file_path: str = None,
-    is_video: bool = False,
+        c: Client,
+        msg: types.Message,
+        url_data: PlatformTracks,
+        user_by: str,
+        tg_file_path: str = None,
+        is_video: bool = False,
 ):
     """
     Handle playing music from given URL or file.
@@ -285,7 +285,7 @@ async def play_music(
 
 
 async def _handle_recommendations(
-    _: Client, msg: types.Message, wrapper: MusicServiceWrapper
+        _: Client, msg: types.Message, wrapper: MusicServiceWrapper
 ):
     """
     Show music recommendations when no query is provided.
@@ -304,11 +304,11 @@ async def _handle_recommendations(
 
 
 async def _handle_telegram_file(
-    c: Client,
-    _: types.Message,
-    reply: types.Message,
-    reply_message: types.Message,
-    user_by: str,
+        c: Client,
+        _: types.Message,
+        reply: types.Message,
+        reply_message: types.Message,
+        user_by: str,
 ):
     """
     Handle Telegram audio/video files.
@@ -324,8 +324,8 @@ async def _handle_telegram_file(
         return await edit_text(
             reply_message,
             text=f"❌ <b>Download Failed</b>\n\n"
-            f"🎶 <b>File:</b> <code>{file_name}</code>\n"
-            f"💬 <b>Error:</b> <code>{str(file_path.message)}</code>",
+                 f"🎶 <b>File:</b> <code>{file_name}</code>\n"
+                 f"💬 <b>Error:</b> <code>{str(file_path.message)}</code>",
         )
 
     _song = PlatformTracks(
@@ -348,11 +348,11 @@ async def _handle_telegram_file(
 
 
 async def _handle_text_search(
-    c: Client,
-    msg: types.Message,
-    chat_id: int,
-    wrapper: MusicServiceWrapper,
-    user_by: str,
+        c: Client,
+        msg: types.Message,
+        chat_id: int,
+        wrapper: MusicServiceWrapper,
+        user_by: str,
 ):
     """
     Handle text-based music search.

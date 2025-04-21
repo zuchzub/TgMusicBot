@@ -136,7 +136,7 @@ def _should_update(progress: dict, now: float, completed: bool) -> bool:
 
 
 def _build_progress_text(
-    filename: str, total: int, downloaded: int, speed: float
+        filename: str, total: int, downloaded: int, speed: float
 ) -> str:
     """
     Build a progress update message for a download task.

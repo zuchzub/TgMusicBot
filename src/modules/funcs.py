@@ -8,12 +8,12 @@ from typing import Union
 from pytdbot import Client, types
 
 from src.helpers import MusicServiceWrapper, call, db
+from src.helpers import chat_cache
 from src.logger import LOGGER
 from src.modules.play import _get_platform_url, play_music
 from src.modules.progress_handler import _handle_play_c_data
 from src.modules.utils import Filter, PauseButton, ResumeButton, sec_to_min
 from src.modules.utils.admins import is_admin
-from src.helpers import chat_cache
 from src.modules.utils.play_helpers import del_msg, edit_text, extract_argument
 
 
@@ -33,7 +33,7 @@ async def is_admin_or_reply(msg: types.Message) -> Union[int, types.Message]:
 
 
 async def handle_playback_action(
-    _: Client, msg: types.Message, action, success_msg: str, fail_msg: str
+        _: Client, msg: types.Message, action, success_msg: str, fail_msg: str
 ) -> None:
     """
     Handle playback actions like stop, pause, resume, mute, unmute.
@@ -506,7 +506,7 @@ async def callback_query(c: Client, message: types.UpdateNewCallbackQuery) -> No
         user_name = user.first_name
 
         async def send_response(
-            msg: str, alert: bool = False, delete: bool = False, markup=None
+                msg: str, alert: bool = False, delete: bool = False, markup=None
         ) -> None:
             """
             Helper function to send responses consistently.

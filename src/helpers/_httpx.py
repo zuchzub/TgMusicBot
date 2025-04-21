@@ -30,10 +30,10 @@ class HttpxClient:
     BACKOFF_FACTOR = 1.0
 
     def __init__(
-        self,
-        timeout: int = DEFAULT_TIMEOUT,
-        download_timeout: int = DEFAULT_DOWNLOAD_TIMEOUT,
-        max_redirects: int = 0,
+            self,
+            timeout: int = DEFAULT_TIMEOUT,
+            download_timeout: int = DEFAULT_DOWNLOAD_TIMEOUT,
+            max_redirects: int = 0,
     ) -> None:
         """
         Initialize the HTTP client with configurable settings.
@@ -62,11 +62,11 @@ class HttpxClient:
             LOGGER.error("Error closing HTTP session: %s", str(e))
 
     async def download_file(
-        self,
-        url: str,
-        file_path: Union[str, Path],
-        overwrite: bool = False,
-        **kwargs: Any,
+            self,
+            url: str,
+            file_path: Union[str, Path],
+            overwrite: bool = False,
+            **kwargs: Any,
     ) -> DownloadResult:
         """
         Download a file asynchronously with proper error handling.
@@ -92,7 +92,7 @@ class HttpxClient:
 
         try:
             async with self._session.stream(
-                "GET", url, timeout=self._download_timeout, headers=headers
+                    "GET", url, timeout=self._download_timeout, headers=headers
             ) as response:
                 response.raise_for_status()
                 path.parent.mkdir(parents=True, exist_ok=True)
@@ -117,11 +117,11 @@ class HttpxClient:
         return f"Unexpected error for {url}: {e}"
 
     async def make_request(
-        self,
-        url: str,
-        max_retries: int = MAX_RETRIES,
-        backoff_factor: float = BACKOFF_FACTOR,
-        **kwargs: Any,
+            self,
+            url: str,
+            max_retries: int = MAX_RETRIES,
+            backoff_factor: float = BACKOFF_FACTOR,
+            **kwargs: Any,
     ) -> Optional[dict[str, Any]]:
         """
         Make an HTTP GET request with retries and exponential backoff.
@@ -179,7 +179,7 @@ class HttpxClient:
                 return None
 
             # Exponential backoff
-            await asyncio.sleep(backoff_factor * (2**attempt))
+            await asyncio.sleep(backoff_factor * (2 ** attempt))
 
         return None
 

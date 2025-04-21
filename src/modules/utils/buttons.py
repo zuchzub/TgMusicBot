@@ -3,6 +3,7 @@
 #  Part of the TgMusicBot project. All rights reserved where applicable.
 
 from pytdbot import types
+
 from src import config
 
 # ─────────────────────
@@ -57,7 +58,6 @@ DEVS_BTN = types.InlineKeyboardButton(
     text="Devs Commands", type=types.InlineKeyboardButtonTypeCallback(b"help_devs")
 )
 
-
 # ─────────────────────
 # Inline Keyboard Markups
 # ─────────────────────
@@ -81,6 +81,7 @@ HelpMenu = types.ReplyMarkupInlineKeyboard(
 )
 
 BackHelpMenu = types.ReplyMarkupInlineKeyboard([[HELP_BTN, CLOSE_BTN]])
+
 
 # ─────────────────────
 # Dynamic Keyboard Generator

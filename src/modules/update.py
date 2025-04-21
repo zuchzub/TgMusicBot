@@ -10,11 +10,13 @@ import uuid
 from os import execvp
 
 from pytdbot import Client, types
+
 from src.config import DEVS
 from src.helpers import chat_cache
 from src.logger import LOGGER
 from src.modules.utils import Filter
 from src.modules.utils.play_helpers import del_msg
+
 
 def is_docker():
     """Check if running inside a Docker container."""
@@ -27,6 +29,7 @@ def is_docker():
         except Exception:
             return False
     return False
+
 
 @Client.on_message(filters=Filter.command(["update", "restart"]))
 async def update(c: Client, message: types.Message) -> None:

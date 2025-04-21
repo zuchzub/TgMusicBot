@@ -98,7 +98,7 @@ class YouTubeData(MusicService):
             return None
 
     async def download_track(
-        self, track: TrackInfo, video: bool = False
+            self, track: TrackInfo, video: bool = False
     ) -> Optional[str]:
         try:
             return await YouTubeDownload(track).process(video)

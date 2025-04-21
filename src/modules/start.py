@@ -12,10 +12,10 @@ from pytdbot import Client, types
 from src import __version__
 from src.config import SUPPORT_GROUP
 from src.helpers import call, db
+from src.helpers import chat_cache
 from src.modules.utils import Filter, sec_to_min, SupportButton
 from src.modules.utils.admins import load_admin_cache
 from src.modules.utils.buttons import add_me_markup, HelpMenu, BackHelpMenu
-from src.helpers import chat_cache
 from src.modules.utils.play_helpers import (
     chat_invite_cache,
     check_user_status,
@@ -226,8 +226,7 @@ async def callback_query_help(c: Client, message: types.UpdateNewCallbackQuery) 
         "help_devs": {"answer": "Developer Help Menu", "text": BotDevsCommands, "markup": BackHelpMenu},
     }
 
-    action = actions.get(data)
-    if action:
+    if action := actions.get(data):
         await message.answer(text=action["answer"])
         await message.edit_message_text(text=action["text"], reply_markup=action["markup"])
         return None

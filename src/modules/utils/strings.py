@@ -14,7 +14,6 @@ A fast, reliable and powerful Telegram music bot built with amazing features.
 <b>Supported Platforms:</b> YouTube, Spotify, Apple Music and SoundCloud.
 """
 
-
 StartText = """
 <b>Hello {0}, 🥀</b>
 
@@ -24,8 +23,6 @@ StartText = """
 Need help or got questions?  
 Join our <a href='{2}'>Support Chat</a> — we're here for you! 💬
 """
-
-
 
 UserCommands = """
 <b>Available Commands for Users:</b>

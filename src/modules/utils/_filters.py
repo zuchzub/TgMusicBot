@@ -22,11 +22,11 @@ class Filter:
             extracted.
         """
         if isinstance(event, types.Message) and isinstance(
-            event.content, types.MessageText
+                event.content, types.MessageText
         ):
             return event.content.text.text
         if isinstance(event, types.UpdateNewMessage) and isinstance(
-            event.message, types.MessageText
+                event.message, types.MessageText
         ):
             return event.message.text.text
         if isinstance(event, types.UpdateNewCallbackQuery) and event.payload:
@@ -36,7 +36,7 @@ class Filter:
 
     @staticmethod
     def command(
-        commands: Union[str, list[str]], prefixes: str = "/!"
+            commands: Union[str, list[str]], prefixes: str = "/!"
     ) -> filters.Filter:
         """
         Filter for commands.

@@ -154,7 +154,7 @@ class MusicBot:
             return types.Error(code=500, message=str(e))
 
     async def start_client(
-        self, api_id: int, api_hash: str, session_string: str
+            self, api_id: int, api_hash: str, session_string: str
     ) -> None:
         """
         Start a new PyTgCalls client instance.
@@ -228,7 +228,7 @@ class MusicBot:
                     elif isinstance(update, UpdatedGroupCallParticipant):
                         return None
                     elif isinstance(update, ChatUpdate) and (
-                        update.status.KICKED or update.status.LEFT_GROUP
+                            update.status.KICKED or update.status.LEFT_GROUP
                     ):
                         chat_cache.clear_chat(update.chat_id)
                         return None
@@ -238,11 +238,11 @@ class MusicBot:
                     return None
 
     async def play_media(
-        self,
-        chat_id: int,
-        file_path: Union[str, Path],
-        video: bool = False,
-        ffmpeg_parameters: Optional[str] = None,
+            self,
+            chat_id: int,
+            file_path: Union[str, Path],
+            video: bool = False,
+            ffmpeg_parameters: Optional[str] = None,
     ) -> None:
         """
         Plays media from the given file path in the specified chat.
@@ -511,12 +511,12 @@ class MusicBot:
             LOGGER.error("Error ending call for chat %s: %s", chat_id, e)
 
     async def seek_stream(
-        self,
-        chat_id: int,
-        file_path_or_url: str,
-        to_seek: int,
-        duration: int,
-        is_video: bool,
+            self,
+            chat_id: int,
+            file_path_or_url: str,
+            to_seek: int,
+            duration: int,
+            is_video: bool,
     ) -> None:
         """
         Seek to a specific position in a stream.

@@ -114,7 +114,7 @@ async def auth_list(_: Client, msg: types.Message):
 
 
 async def _handle_toggle_command(
-    msg: types.Message, key: str, label: str, get_func, set_func
+        msg: types.Message, key: str, label: str, get_func, set_func
 ):
     """
     Generic handler for toggle commands.

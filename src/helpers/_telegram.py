@@ -115,7 +115,7 @@ class Telegram:
         return 0, "UnknownMedia"
 
     async def dl(
-        self, message: types.Message
+            self, message: types.Message
     ) -> tuple[Union[types.Error, types.LocalFile], str]:
         """
         Download a media file from a Telegram message.
@@ -159,7 +159,7 @@ class Telegram:
 
     @staticmethod
     def get_cached_metadata(
-        unique_id: str,
+            unique_id: str,
     ) -> Optional[dict[str, Union[int, str, str, int]]]:
         """
         Retrieve cached metadata for a Telegram media file.

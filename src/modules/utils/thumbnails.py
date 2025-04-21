@@ -83,7 +83,7 @@ async def fetch_image(url: str) -> Image.Image | None:
             if url.startswith("https://i.ytimg.com"):
                 img = resize_youtube_thumbnail(img)
             elif url.startswith("http://c.saavncdn.com") or url.startswith(
-                "https://i1.sndcdn"
+                    "https://i1.sndcdn"
             ):
                 img = resize_jiosaavn_thumbnail(img)
             return img

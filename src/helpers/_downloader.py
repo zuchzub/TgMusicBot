@@ -65,7 +65,7 @@ class MusicService(ABC):
 
     @abstractmethod
     async def download_track(
-        self, track_info: TrackInfo, video: bool = False
+            self, track_info: TrackInfo, video: bool = False
     ) -> Optional[str]:
         """
         Download a track from the music service.
@@ -142,6 +142,6 @@ class MusicServiceWrapper(MusicService):
         return await self.service.get_track()
 
     async def download_track(
-        self, track_info: TrackInfo, video: bool = False
+            self, track_info: TrackInfo, video: bool = False
     ) -> Optional[str]:
         return await self.service.download_track(track_info)
