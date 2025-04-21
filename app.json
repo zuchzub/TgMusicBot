@@ -34,47 +34,7 @@
       "required": true
     },
     "STRING2": {
-      "description": "Your second session string",
-      "value": "",
-      "required": false
-    },
-    "STRING3": {
-      "description": "Your third session string",
-      "value": "",
-      "required": false
-    },
-    "STRING4": {
-      "description": "Your fourth session string",
-      "value": "",
-      "required": false
-    },
-    "STRING5": {
-      "description": "Your fifth session string",
-      "value": "",
-      "required": false
-    },
-    "STRING6": {
-      "description": "Your sixth session string",
-      "value": "",
-      "required": false
-    },
-    "STRING7": {
-      "description": "Your seventh session string",
-      "value": "",
-      "required": false
-    },
-    "STRING8": {
-      "description": "Your eighth session string",
-      "value": "",
-      "required": false
-    },
-    "STRING9": {
-      "description": "Your ninth session string",
-      "value": "",
-      "required": false
-    },
-    "STRING10": {
-      "description": "Your tenth session string",
+      "description": "Your second session string (optional)",
       "value": "",
       "required": false
     },
@@ -88,23 +48,13 @@
       "value": "",
       "required": true
     },
-    "DOWNLOADS_DIR": {
-      "description": "Directory to store downloads",
-      "value": "database/music",
-      "required": false
-    },
     "API_URL": {
-      "description": "API URL for the bot",
+      "description": "API URL for the bot to download music (optional)",
       "value": "",
       "required": false
     },
     "API_KEY": {
-      "description": "API key for the bot",
-      "value": "",
-      "required": false
-    },
-    "PROXY_URL": {
-      "description": "Proxy URL for the bot if you want to use it for yt-dlp",
+      "description": "API key for the bot to (optional)",
       "value": "",
       "required": false
     },

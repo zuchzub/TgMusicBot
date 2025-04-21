@@ -14,17 +14,19 @@ from src.logger import LOGGER
 
 
 async def fetch_content(session: aiohttp.ClientSession, url: str) -> str | None:
-    """
-    Fetches content from BatBin.
-    """
+    """Fetches content from BatBin or Pastebin."""
     paste_id = url.strip("/").split("/")[-1]
-    raw_url = f"https://batbin.me/raw/{paste_id}"
+
+    if "pastebin.com" in url:
+        raw_url = f"https://pastebin.com/raw/{paste_id}"
+    else:
+        raw_url = f"https://batbin.me/raw/{paste_id}"
 
     try:
         async with session.get(raw_url) as response:
             if response.status == 200:
                 content_type = response.headers.get("Content-Type", "")
-                if "text/plain" in content_type:
+                if "text/plain" in content_type or "text" in content_type:
                     return await response.text()
                 LOGGER.error(
                     "Unexpected Content-Type (%s) from %s", content_type, raw_url

@@ -82,7 +82,6 @@ class YouTubeDownload:
             "2",
             "-o",
             output_template,
-            "--force-keyframes-at-cuts",
         ]
 
         if video:

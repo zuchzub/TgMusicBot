@@ -146,7 +146,7 @@ tgmusicbot v1.1.8
 
 4. Run the Docker container:
    ```sh
-   docker run -d --name tgmusicbot --env-file .env tgmusicbot
+   docker run -d --name tgmusicbot --env-file .env --restart always tgmusicbot
    ```
 
 5. Check the logs:
