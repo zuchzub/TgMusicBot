@@ -85,7 +85,7 @@ class YouTubeDownload:
 
         if video:
             cmd.extend([
-                "-f", "bv[height<=720]+ba/best[height<=720]",
+                "-f", "(bestvideo[height<=?720][width<=?1280][ext=mp4])+(bestaudio[ext=m4a])",
                 "--merge-output-format", "mp4",
             ])
         else:
@@ -109,6 +109,7 @@ class YouTubeDownload:
             if proc.returncode != 0:
                 LOGGER.error("❌ Error downloading: %s", stderr.decode().strip())
                 return None
+
             possible_exts = ["mp4", "mkv"] if video else ["mp4", "m4a", "webm"]
             for ext in possible_exts:
                 downloaded_path = f"{config.DOWNLOADS_DIR}/{self.video_id}.{ext}"
@@ -120,7 +121,6 @@ class YouTubeDownload:
         except Exception as e:
             LOGGER.error("❌ Failed to download: %s", e)
             return None
-
 
 async def rebuild_ogg(filename: str) -> None:
     """

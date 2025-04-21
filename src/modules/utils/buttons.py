@@ -27,15 +27,15 @@ RESUME_BTN = types.InlineKeyboardButton(
 )
 
 CLOSE_BTN = types.InlineKeyboardButton(
-    text="⏹ ᴄʟᴏsᴇ", type=types.InlineKeyboardButtonTypeCallback(b"play_close")
+    text="ᴄʟᴏsᴇ", type=types.InlineKeyboardButtonTypeCallback(b"play_close")
 )
 
 CHANNEL_BTN = types.InlineKeyboardButton(
-    text="📢 Channel", type=types.InlineKeyboardButtonTypeUrl(config.SUPPORT_CHANNEL)
+    text="Channel 📢 ", type=types.InlineKeyboardButtonTypeUrl(config.SUPPORT_CHANNEL)
 )
 
 GROUP_BTN = types.InlineKeyboardButton(
-    text="💬 Group", type=types.InlineKeyboardButtonTypeUrl(config.SUPPORT_GROUP)
+    text="Group 💬", type=types.InlineKeyboardButtonTypeUrl(config.SUPPORT_GROUP)
 )
 
 HELP_BTN = types.InlineKeyboardButton(
