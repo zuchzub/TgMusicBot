@@ -77,14 +77,17 @@ class YouTubeDownload:
             "--no-warnings",
             "--quiet",
             "--geo-bypass",
-            "--retries",
-            "2",
-            "-o",
-            output_template,
+            "--retries", "2",
+            "--continue",
+            "--no-part",
+            "-o", output_template,
         ]
 
         if video:
-            cmd.extend(["-f", "best[height<=?720][width<=?1280]"])
+            cmd.extend([
+                "-f", "bv[height<=720]+ba/best[height<=720]",
+                "--merge-output-format", "mp4",
+            ])
         else:
             cmd.extend(["-f", "bestaudio[ext=m4a]/bestaudio/best"])
 
