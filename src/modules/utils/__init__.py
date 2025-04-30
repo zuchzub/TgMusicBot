@@ -51,6 +51,7 @@ async def send_logger(client: Client, chat_id, song: CachedTrack):
         None
     """
     if not chat_id or not song or chat_id == config.LOGGER_ID or config.LOGGER_ID == 0:
+        LOGGER.warning("LOGGER_ID is not set or chat_id is invalid.")
         return
 
     text = (

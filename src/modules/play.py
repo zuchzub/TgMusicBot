@@ -9,7 +9,6 @@ from pytdbot import Client, types
 
 from src.helpers import (
     CachedTrack,
-    CallError,
     MusicServiceWrapper,
     MusicTrack,
     PlatformTracks,
@@ -64,7 +63,7 @@ def _get_platform_url(platform: str, track_id: str) -> str:
 
 
 def build_song_selection_message(
-        user_by: str, tracks: list[MusicTrack]
+    user_by: str, tracks: list[MusicTrack]
 ) -> tuple[str, types.ReplyMarkupInlineKeyboard]:
     """
     Build a message and inline keyboard for song selection.
@@ -94,11 +93,11 @@ def build_song_selection_message(
 
 
 async def _update_msg_with_thumb(
-        c: Client,
-        msg: types.Message,
-        text: str,
-        thumb: str,
-        button: types.ReplyMarkupInlineKeyboard,
+    c: Client,
+    msg: types.Message,
+    text: str,
+    thumb: str,
+    button: types.ReplyMarkupInlineKeyboard,
 ):
     """
     Update a message with thumbnail if available.
@@ -108,7 +107,7 @@ async def _update_msg_with_thumb(
 
     parsed_text = await c.parseTextEntities(text, types.TextParseModeHTML())
     if isinstance(parsed_text, types.Error):
-        return await edit_text(msg, text=str(parsed_text), reply_markup=button)
+        return await edit_text(msg, text=parsed_text.message, reply_markup=button)
 
     input_content = types.InputMessagePhoto(
         types.InputFileLocal(thumb), caption=parsed_text
@@ -128,13 +127,13 @@ async def _update_msg_with_thumb(
 
 
 async def _handle_single_track(
-        c: Client,
-        msg: types.Message,
-        chat_id: int,
-        track: MusicTrack,
-        user_by: str,
-        file_path: str = None,
-        is_video: bool = False,
+    c: Client,
+    msg: types.Message,
+    chat_id: int,
+    track: MusicTrack,
+    user_by: str,
+    file_path: str = None,
+    is_video: bool = False,
 ):
     """
     Handle playback of a single track.
@@ -182,10 +181,9 @@ async def _handle_single_track(
     chat_cache.set_active(chat_id, True)
     chat_cache.add_song(chat_id, song)
 
-    try:
-        await call.play_media(chat_id, song.file_path, video=is_video)
-    except CallError as e:
-        return await edit_text(msg, text=f"⚠️ {e}")
+    _call = await call.play_media(chat_id, song.file_path, video=is_video)
+    if isinstance(_call, types.Error):
+        return await edit_text(msg, text=f"⚠️ {str(_call)}")
 
     thumb = await gen_thumb(song) if await db.get_thumb_status(chat_id) else ""
     text = (
@@ -209,7 +207,7 @@ async def _handle_single_track(
 
 
 async def _handle_multiple_tracks(
-        _: Client, msg: types.Message, chat_id: int, tracks: list[MusicTrack], user_by: str
+    _: Client, msg: types.Message, chat_id: int, tracks: list[MusicTrack], user_by: str
 ):
     """
     Handle multiple tracks (playlist/album).
@@ -262,15 +260,15 @@ async def _handle_multiple_tracks(
 
 
 async def play_music(
-        c: Client,
-        msg: types.Message,
-        url_data: PlatformTracks,
-        user_by: str,
-        tg_file_path: str = None,
-        is_video: bool = False,
+    c: Client,
+    msg: types.Message,
+    url_data: PlatformTracks,
+    user_by: str,
+    tg_file_path: str = None,
+    is_video: bool = False,
 ):
     """
-    Handle playing music from given URL or file.
+    Handle playing music from a given URL or file.
     """
     if not url_data or not url_data.tracks:
         return await edit_text(msg, "❌ Unable to retrieve song info.")
@@ -285,7 +283,7 @@ async def play_music(
 
 
 async def _handle_recommendations(
-        _: Client, msg: types.Message, wrapper: MusicServiceWrapper
+    _: Client, msg: types.Message, wrapper: MusicServiceWrapper
 ):
     """
     Show music recommendations when no query is provided.
@@ -304,11 +302,11 @@ async def _handle_recommendations(
 
 
 async def _handle_telegram_file(
-        c: Client,
-        _: types.Message,
-        reply: types.Message,
-        reply_message: types.Message,
-        user_by: str,
+    c: Client,
+    _: types.Message,
+    reply: types.Message,
+    reply_message: types.Message,
+    user_by: str,
 ):
     """
     Handle Telegram audio/video files.
@@ -324,8 +322,8 @@ async def _handle_telegram_file(
         return await edit_text(
             reply_message,
             text=f"❌ <b>Download Failed</b>\n\n"
-                 f"🎶 <b>File:</b> <code>{file_name}</code>\n"
-                 f"💬 <b>Error:</b> <code>{str(file_path.message)}</code>",
+            f"🎶 <b>File:</b> <code>{file_name}</code>\n"
+            f"💬 <b>Error:</b> <code>{str(file_path.message)}</code>",
         )
 
     _song = PlatformTracks(
@@ -348,11 +346,11 @@ async def _handle_telegram_file(
 
 
 async def _handle_text_search(
-        c: Client,
-        msg: types.Message,
-        chat_id: int,
-        wrapper: MusicServiceWrapper,
-        user_by: str,
+    c: Client,
+    msg: types.Message,
+    chat_id: int,
+    wrapper: MusicServiceWrapper,
+    user_by: str,
 ):
     """
     Handle text-based music search.
@@ -399,8 +397,7 @@ async def handle_play_command(c: Client, msg: types.Message, is_video: bool = Fa
         )
 
     await load_admin_cache(c, chat_id)
-    bot_id = c.options["my_id"] or c.me.id
-    if not await is_admin(chat_id, bot_id):
+    if not await is_admin(chat_id, c.me.id):
         return await msg.reply_text(
             "I need admin with invite user permission if group is private.\n\n"
             "After promoting me, try again or use /reload."
@@ -418,7 +415,7 @@ async def handle_play_command(c: Client, msg: types.Message, is_video: bool = Fa
     # Assistant checks
     ub = await call.get_client(chat_id)
     if isinstance(ub, (types.Error, NoneType)):
-        return await edit_text(reply_message, "❌ Assistant not found for this chat.")
+        return await edit_text(reply_message, text=ub.message)
 
     # User status check
     user_key = f"{chat_id}:{ub.me.id}"
@@ -438,7 +435,7 @@ async def handle_play_command(c: Client, msg: types.Message, is_video: bool = Fa
             await unban_ub(c, chat_id, ub.me.id)
         join = await join_ub(chat_id, c, ub)
         if isinstance(join, types.Error):
-            return await edit_text(reply_message, f"❌ {str(join)}")
+            return await edit_text(reply_message, f"❌ {join.message}")
 
     await del_msg(msg)
     wrapper = (YouTubeData if is_video else MusicServiceWrapper)(url or args)
@@ -447,7 +444,7 @@ async def handle_play_command(c: Client, msg: types.Message, is_video: bool = Fa
         if is_video:
             return await edit_text(
                 reply_message,
-                text="ᴜsᴀɢᴇ: /vplay video_name or YouTube link",
+                text="ᴜsᴀɢᴇ: /play song_name or YouTube link",
                 reply_markup=SupportButton,
             )
         else:
@@ -462,7 +459,7 @@ async def handle_play_command(c: Client, msg: types.Message, is_video: bool = Fa
         if not wrapper.is_valid(url):
             return await edit_text(
                 reply_message,
-                "❌ Invalid URL! Provide a valid link.",
+                "❌ Invalid URL! Provide a valid link.\nSupported platforms are: YouTube, SoundCloud, Spotify, Apple Music & Jiosaavn.",
                 reply_markup=SupportButton,
             )
 

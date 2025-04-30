@@ -9,9 +9,9 @@ from types import NoneType
 from cachetools import TTLCache
 from pytdbot import Client, types
 
-from src import __version__
+from src import __version__, StartTime
 from src.config import SUPPORT_GROUP
-from src.helpers import call, db
+from src.helpers import call
 from src.helpers import chat_cache
 from src.modules.utils import Filter, sec_to_min, SupportButton
 from src.modules.utils.admins import load_admin_cache
@@ -20,6 +20,7 @@ from src.modules.utils.play_helpers import (
     chat_invite_cache,
     check_user_status,
     user_status_cache,
+    extract_argument,
 )
 from src.modules.utils.strings import (
     PmStartText,
@@ -37,12 +38,11 @@ async def start_cmd(c: Client, message: types.Message):
     Handle the /start and /help command to welcome users.
     """
     chat_id = message.chat_id
+    bot_name = c.me.first_name
     if chat_id < 0:
-        await db.add_chat(chat_id)
+        text = StartText.format(await message.mention(), bot_name, SUPPORT_GROUP)
         reply = await message.reply_text(
-            text=StartText.format(
-                await message.mention(), c.me.first_name, SUPPORT_GROUP
-            ),
+            text=text,
             disable_web_page_preview=True,
             reply_markup=SupportButton,
         )
@@ -50,8 +50,7 @@ async def start_cmd(c: Client, message: types.Message):
             c.logger.warning(f"Error sending start message: {reply.message}")
         return None
 
-    await db.add_user(chat_id)
-    text = PmStartText.format(await message.mention(), c.me.first_name, __version__)
+    text = PmStartText.format(await message.mention(), bot_name, __version__)
     bot_username = c.me.usernames.editable_username
     reply = await message.reply_text(text, reply_markup=add_me_markup(bot_username))
     if isinstance(reply, types.Error):
@@ -111,10 +110,7 @@ If you have any questions or concerns about our privacy policy, feel free to con
 
     reply = await message.reply_text(text)
     if isinstance(reply, types.Error):
-        c.logger.warning(
-            f"Error sending privacy policy message: {
-            reply.message}"
-        )
+        c.logger.warning(f"Error sending privacy policy message:{reply.message}")
     return
 
 
@@ -123,12 +119,15 @@ rate_limit_cache = TTLCache(maxsize=100, ttl=180)
 
 @Client.on_message(filters=Filter.command("reload"))
 async def reload_cmd(c: Client, message: types.Message) -> None:
-    """
-    Handle the /reload command to reload the bot.
-    """
+    """Handle the /reload command to reload the bot."""
     user_id = message.from_id
     chat_id = message.chat_id
     if chat_id > 0:
+        reply = await message.reply_text(
+            "🚫 This command can only be used in SuperGroups only."
+        )
+        if isinstance(reply, types.Error):
+            c.logger.warning(f"Error sending message: {reply} for chat {chat_id}")
         return None
 
     if user_id in rate_limit_cache:
@@ -148,10 +147,8 @@ async def reload_cmd(c: Client, message: types.Message) -> None:
         return None
 
     ub = await call.get_client(chat_id)
-    if isinstance(ub, (types.Error, NoneType)):
-        await reply.edit_text(
-            "❌ Something went wrong. Assistant not found for this chat."
-        )
+    if isinstance(ub, types.Error):
+        await reply.edit_text(ub.message)
         return None
 
     chat_invite_cache.pop(chat_id, None)
@@ -181,28 +178,45 @@ async def reload_cmd(c: Client, message: types.Message) -> None:
 
 
 @Client.on_message(filters=Filter.command("ping"))
-async def ping_cmd(c: Client, message: types.Message) -> None:
+async def ping_cmd(client: Client, message: types.Message) -> None:
     """
-    Handle the /ping command to check the bot's latency.
+    Handle the /ping command to check bot performance metrics.
     """
-    start_time = time.time()
-    reply = await message.reply_text("🏓 Pong!")
-    end_time = time.time()
-    if isinstance(reply, types.Error):
-        c.logger.warning(f"Error sending message: {reply}")
-    else:
-        latency_ms = (end_time - start_time) * 1000
-        await reply.edit_text(f"🏓 Pong! - {latency_ms:.2f}ms")
+    start_time = time.monotonic()
+    reply_msg = await message.reply_text("🏓 Pinging...")
+    latency = (time.monotonic() - start_time) * 1000  # ms
 
+    response = await call.stats_call(message.chat_id if message.chat_id < 0 else 1)
+    if isinstance(response, types.Error):
+        call_ping = response.message
+        cpu_usage = "Unavailable"
+    else:
+        call_ping, cpu_usage = response
+    call_ping_info = f"{call_ping:.2f} ms"
+    cpu_info = f"{cpu_usage:.2f}%"
+    uptime = datetime.now() - StartTime
+    uptime_str = str(uptime).split(".")[0]
+
+    response = (
+        "📊 <b>System Performance Metrics</b>\n\n"
+        f"⏱️ <b>Bot Latency:</b> <code>{latency:.2f} ms</code>\n"
+        f"🕒 <b>Uptime:</b> <code>{uptime_str}</code>\n"
+        f"🧠 <b>CPU Usage:</b> <code>{cpu_info}</code>\n"
+        f"📞 <b>NTgCalls Ping:</b> <code>{call_ping_info}</code>\n"
+    )
+    done = await reply_msg.edit_text(response, disable_web_page_preview=True)
+    if isinstance(done, types.Error):
+        client.logger.warning(f"Error sending message: {done}")
     return None
 
 
 @Client.on_message(filters=Filter.command("song"))
 async def song_cmd(c: Client, message: types.Message):
-    """
-    Handle the /song command.
-    """
-    reply = await message.reply_text("🎶 USE: @SpTubeBot")
+    """Handle the /song command."""
+    args = extract_argument(message.text)
+    reply = await message.reply_text(
+        f"🎶 USE: <code>@SpTubeBot {args or 'song name'}</code>"
+    )
     if isinstance(reply, types.Error):
         c.logger.warning(f"Error sending message: {reply}")
 
@@ -211,24 +225,47 @@ async def song_cmd(c: Client, message: types.Message):
 
 @Client.on_updateNewCallbackQuery(filters=Filter.regex(r"help_\w+"))
 async def callback_query_help(c: Client, message: types.UpdateNewCallbackQuery) -> None:
+    """Handle the help_* callback query."""
     data = message.payload.data.decode()
     if data == "help_all":
-        await message.answer(text="Help Menu")
         user = await c.getUser(message.sender_user_id)
+        if isinstance(user, types.Error):
+            c.logger.warning(f"Error getting user: {user.message}")
+            await message.answer(text="Something went wrong.", show_alert=True)
+            return None
+        await message.answer(text="Help Menu")
         text = PmStartText.format(user.first_name, c.me.first_name, __version__)
         await message.edit_message_text(text=text, reply_markup=HelpMenu)
         return None
 
     actions = {
-        "help_user": {"answer": "User Help Menu", "text": UserCommands, "markup": BackHelpMenu},
-        "help_admin": {"answer": "Admin Help Menu", "text": AdminCommands, "markup": BackHelpMenu},
-        "help_owner": {"answer": "Owner Help Menu", "text": ChatOwnerCommands, "markup": BackHelpMenu},
-        "help_devs": {"answer": "Developer Help Menu", "text": BotDevsCommands, "markup": BackHelpMenu},
+        "help_user": {
+            "answer": "User Help Menu",
+            "text": UserCommands,
+            "markup": BackHelpMenu,
+        },
+        "help_admin": {
+            "answer": "Admin Help Menu",
+            "text": AdminCommands,
+            "markup": BackHelpMenu,
+        },
+        "help_owner": {
+            "answer": "Owner Help Menu",
+            "text": ChatOwnerCommands,
+            "markup": BackHelpMenu,
+        },
+        "help_devs": {
+            "answer": "Developer Help Menu",
+            "text": BotDevsCommands,
+            "markup": BackHelpMenu,
+        },
     }
 
     if action := actions.get(data):
         await message.answer(text=action["answer"])
-        await message.edit_message_text(text=action["text"], reply_markup=action["markup"])
+        await message.edit_message_text(
+            text=action["text"], reply_markup=action["markup"]
+        )
         return None
 
     await message.answer(text=f"Unknown action: {data}")

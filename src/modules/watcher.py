@@ -3,6 +3,7 @@
 #  Part of the TgMusicBot project. All rights reserved where applicable.
 
 import asyncio
+from asyncio import create_task
 from types import NoneType
 
 from pytdbot import Client, types
@@ -30,7 +31,10 @@ async def handle_non_supergroup(client: Client, chat_id: int) -> None:
     )
     bot_username = client.me.usernames.editable_username
     await client.sendTextMessage(
-        chat_id, text, reply_markup=add_me_markup(bot_username)
+        chat_id=chat_id,
+        text=text,
+        reply_markup=add_me_markup(bot_username),
+        disable_web_page_preview=True,
     )
     await asyncio.sleep(1)
     await client.leaveChat(chat_id)
@@ -76,24 +80,14 @@ async def chat_member(client: Client, update: types.UpdateChatMember) -> None:
     # Early return for non-group chats
     if chat_id > 0 or not await _validate_chat(client, chat_id):
         return None
+    await db.add_chat(chat_id)
+    user_id = update.new_chat_member.member_id.user_id
+    old_status = update.old_chat_member.status["@type"]
+    new_status = update.new_chat_member.status["@type"]
 
-    try:
-        await db.add_chat(chat_id)
-        user_id = update.new_chat_member.member_id.user_id
-        old_status = update.old_chat_member.status["@type"]
-        new_status = update.new_chat_member.status["@type"]
-
-        # Skip invalid user IDs
-        if user_id == 0:
-            return None
-
-        # Handle different status change scenarios
-        await _handle_status_changes(client, chat_id, user_id, old_status, new_status)
-        return None
-
-    except Exception as e:
-        LOGGER.error("Error processing chat member update in %s: %s", chat_id, e)
-        return None
+    # Handle different status change scenarios
+    await _handle_status_changes(client, chat_id, user_id, old_status, new_status)
+    return None
 
 
 async def _validate_chat(client: Client, chat_id: int) -> bool:
@@ -105,7 +99,7 @@ async def _validate_chat(client: Client, chat_id: int) -> bool:
 
 
 async def _handle_status_changes(
-        client: Client, chat_id: int, user_id: int, old_status: str, new_status: str
+    client: Client, chat_id: int, user_id: int, old_status: str, new_status: str
 ) -> None:
     """Route different status change scenarios to appropriate handlers."""
     if old_status == "chatMemberStatusLeft" and new_status in {
@@ -114,14 +108,14 @@ async def _handle_status_changes(
     }:
         await _handle_join(client, chat_id, user_id)
     elif (
-            old_status in {"chatMemberStatusMember", "chatMemberStatusAdministrator"}
-            and new_status == "chatMemberStatusLeft"
+        old_status in {"chatMemberStatusMember", "chatMemberStatusAdministrator"}
+        and new_status == "chatMemberStatusLeft"
     ):
         await _handle_leave_or_kick(chat_id, user_id)
     elif new_status == "chatMemberStatusBanned":
         await _handle_ban(chat_id, user_id)
     elif (
-            old_status == "chatMemberStatusBanned" and new_status == "chatMemberStatusLeft"
+        old_status == "chatMemberStatusBanned" and new_status == "chatMemberStatusLeft"
     ):
         await _handle_unban(chat_id, user_id)
     else:
@@ -156,16 +150,16 @@ async def _handle_unban(chat_id: int, user_id: int) -> None:
 
 
 async def _handle_promotion_demotion(
-        client: Client, chat_id: int, user_id: int, old_status: str, new_status: str
+    client: Client, chat_id: int, user_id: int, old_status: str, new_status: str
 ) -> None:
     """Handle user promotion/demotion in chat."""
     is_promoted = (
-            old_status != "chatMemberStatusAdministrator"
-            and new_status == "chatMemberStatusAdministrator"
+        old_status != "chatMemberStatusAdministrator"
+        and new_status == "chatMemberStatusAdministrator"
     )
     is_demoted = (
-            old_status == "chatMemberStatusAdministrator"
-            and new_status != "chatMemberStatusAdministrator"
+        old_status == "chatMemberStatusAdministrator"
+        and new_status != "chatMemberStatusAdministrator"
     )
 
     if not (is_promoted or is_demoted):
@@ -183,7 +177,8 @@ async def _handle_promotion_demotion(
 async def _update_user_status_cache(chat_id: int, user_id: int, status: str) -> None:
     """Update the user status cache if the user is the bot."""
     ub = await call.get_client(chat_id)
-    if isinstance(ub, (types.Error, NoneType)):
+    if isinstance(ub, types.Error):
+        LOGGER.warning("Error getting client for chat %s: %s", chat_id, ub)
         return
 
     if user_id == ub.me.id:
@@ -198,20 +193,30 @@ async def new_message(client: Client, update: types.UpdateNewMessage) -> None:
     """
     message = update.message
     if not message:
-        return None
+        return
+
     chat_id = message.chat_id
     content = message.content
+
+    # Run DB operation in the background
+    if chat_id < 0:
+        create_task(db.add_chat(chat_id))
+    else:
+        create_task(db.add_user(chat_id))
+
+    # Handle video chat events
     if isinstance(content, types.MessageVideoChatEnded):
         LOGGER.info("Video chat ended in %s", chat_id)
         chat_cache.clear_chat(chat_id)
-        await client.sendTextMessage(chat_id, "Video chat ended!\nall queues cleared")
-        return None
+        await client.sendTextMessage(chat_id, "Video chat ended!\nAll queues cleared")
+        return
+
     if isinstance(content, types.MessageVideoChatStarted):
         LOGGER.info("Video chat started in %s", chat_id)
         chat_cache.clear_chat(chat_id)
         await client.sendTextMessage(
-            chat_id, "Video chat started!\nuse /play song name to play a song"
+            chat_id, "Video chat started!\nUse /play song name to play a song"
         )
-        return None
+        return
+
     LOGGER.debug("New message in %s: %s", chat_id, message)
-    return None

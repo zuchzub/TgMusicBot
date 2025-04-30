@@ -77,17 +77,23 @@ class YouTubeDownload:
             "--no-warnings",
             "--quiet",
             "--geo-bypass",
-            "--retries", "2",
+            "--retries",
+            "2",
             "--continue",
             "--no-part",
-            "-o", output_template,
+            "-o",
+            output_template,
         ]
 
         if video:
-            cmd.extend([
-                "-f", "(bestvideo[height<=?720][width<=?1280][ext=mp4])+(bestaudio[ext=m4a])",
-                "--merge-output-format", "mp4",
-            ])
+            cmd.extend(
+                [
+                    "-f",
+                    "(bestvideo[height<=?720][width<=?1280][ext=mp4])+(bestaudio[ext=m4a])",
+                    "--merge-output-format",
+                    "mp4",
+                ]
+            )
         else:
             cmd.extend(["-f", "bestaudio[ext=m4a]/bestaudio/best"])
 
@@ -97,6 +103,7 @@ class YouTubeDownload:
             cmd.extend(["--cookies", cookie_file])
 
         cmd.append(self.video_url)
+        cmd.extend(["--print", "after_move:filepath"])
 
         try:
             proc = await asyncio.create_subprocess_exec(
@@ -104,23 +111,21 @@ class YouTubeDownload:
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE,
             )
-            _, stderr = await proc.communicate()
 
+            stdout, stderr = await proc.communicate()
             if proc.returncode != 0:
-                LOGGER.error("❌ Error downloading: %s", stderr.decode().strip())
+                LOGGER.error("❌ Failed to download: %s", stderr.decode().strip())
                 return None
 
-            possible_exts = ["mp4", "mkv"] if video else ["mp4", "m4a", "webm"]
-            for ext in possible_exts:
-                downloaded_path = f"{config.DOWNLOADS_DIR}/{self.video_id}.{ext}"
-                if os.path.exists(downloaded_path):
-                    LOGGER.info("✅ Downloaded: %s", downloaded_path)
-                    return downloaded_path
-            LOGGER.warning("⚠️ No file found for video ID: %s", self.video_id)
+            if downloaded_path := stdout.decode().strip():
+                LOGGER.info("✅ Downloaded: %s", downloaded_path)
+                return downloaded_path
             return None
+
         except Exception as e:
-            LOGGER.error("❌ Failed to download: %s", e)
+            LOGGER.error("Unexpected error while downloading: %s", e)
             return None
+
 
 async def rebuild_ogg(filename: str) -> None:
     """

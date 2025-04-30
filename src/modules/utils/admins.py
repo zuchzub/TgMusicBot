@@ -15,7 +15,7 @@ admin_cache = TTLCache(maxsize=1000, ttl=30 * 60)
 
 class AdminCache:
     def __init__(
-            self, chat_id: int, user_info: list[types.ChatMember], cached: bool = True
+        self, chat_id: int, user_info: list[types.ChatMember], cached: bool = True
     ):
         self.chat_id = chat_id
         self.user_info = user_info
@@ -23,7 +23,7 @@ class AdminCache:
 
 
 async def load_admin_cache(
-        c: Client, chat_id: int, force_reload: bool = False
+    c: Client, chat_id: int, force_reload: bool = False
 ) -> Tuple[bool, AdminCache]:
     """
     Load the admin list from Telegram and cache it, unless already cached.
@@ -47,7 +47,7 @@ async def load_admin_cache(
 
 
 async def get_admin_cache_user(
-        chat_id: int, user_id: int
+    chat_id: int, user_id: int
 ) -> Tuple[bool, Optional[dict]]:
     """
     Check if the user is an admin using cached data.

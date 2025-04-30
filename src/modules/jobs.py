@@ -42,6 +42,12 @@ class InactiveCallManager:
         """
         async with semaphore:
             vc_users = await call.vc_users(chat_id)
+            if isinstance(vc_users, types.Error):
+                self.bot.logger.warning(
+                    f"An error occurred while getting vc users: {vc_users.message}"
+                )
+                return
+
             if len(vc_users) > 1:
                 self.bot.logger.debug(
                     f"Active users detected in chat {chat_id}. Skipping..."
@@ -50,6 +56,11 @@ class InactiveCallManager:
 
             # Check if the call has been active for more than 20 seconds
             played_time = await call.played_time(chat_id)
+            if isinstance(played_time, types.Error):
+                self.bot.logger.warning(
+                    f"An error occurred while getting played time: {played_time.message}"
+                )
+                return
             if played_time < 20:
                 self.bot.logger.debug(
                     f"Call in chat {chat_id} has been active for less than 20 "
@@ -91,7 +102,7 @@ class InactiveCallManager:
 
         # Process tasks in batches of 3 with a 1-second delay between batches
         for i in range(0, len(tasks), 3):
-            await asyncio.gather(*tasks[i: i + 3])
+            await asyncio.gather(*tasks[i : i + 3])
             await asyncio.sleep(1)
 
         self.bot.logger.debug("Inactive call checks completed.")
@@ -113,6 +124,7 @@ class InactiveCallManager:
         """
         if not AUTO_LEAVE:
             return
+
         for client_name, call_instance in call.calls.items():
             ub: PyroClient = call_instance.mtproto_client
             chats_to_leave = []
@@ -129,6 +141,7 @@ class InactiveCallManager:
             self.bot.logger.debug(
                 f"[{client_name}] Found {len(chats_to_leave)} chats to leave."
             )
+
             for chat_id in chats_to_leave:
                 is_active = chat_cache.is_active(chat_id)
                 if is_active:

@@ -67,7 +67,7 @@ tgmusicbot v1.1.8
 ├── motor v3.7.0
 │   └── pymongo v4.12.0
 │       └── dnspython v2.7.0
-├── ntgcalls v1.3.4
+├── ntgcalls v1.3.5b1
 ├── pillow v11.2.1
 ├── psutil v7.0.0
 ├── py-tgcalls v2.1.1
@@ -85,17 +85,18 @@ tgmusicbot v1.1.8
 │   │       └── propcache v0.3.1
 │   ├── deprecation v2.1.0
 │   │   └── packaging v25.0
-│   └── ntgcalls v1.3.4
-├── py-yt-search v0.2
-│   └── httpx v0.28.1
-│       ├── anyio v4.9.0
-│       │   ├── idna v3.10
-│       │   └── sniffio v1.3.1
-│       ├── certifi v2025.1.31
-│       ├── httpcore v1.0.8
-│       │   ├── certifi v2025.1.31
-│       │   └── h11 v0.14.0
-│       └── idna v3.10
+│   └── ntgcalls v1.3.5b1
+├── py-yt-search v0.3
+│   ├── httpx v0.28.1
+│   │   ├── anyio v4.9.0
+│   │   │   ├── idna v3.10
+│   │   │   └── sniffio v1.3.1
+│   │   ├── certifi v2025.1.31
+│   │   ├── httpcore v1.0.8
+│   │   │   ├── certifi v2025.1.31
+│   │   │   └── h11 v0.14.0
+│   │   └── idna v3.10
+│   └── python-dotenv v1.1.0
 ├── pycryptodome v3.22.0
 ├── pydantic v2.11.3
 │   ├── annotated-types v0.7.0
@@ -119,6 +120,13 @@ tgmusicbot v1.1.8
 ├── tdjson v1.8.47
 ├── ujson v5.10.0
 ├── yt-dlp v2025.3.31
+├── black v25.1.0 (extra: dev)
+│   ├── click v8.1.8
+│   ├── mypy-extensions v1.1.0
+│   ├── packaging v25.0
+│   ├── pathspec v0.12.1
+│   └── platformdirs v4.3.7
+├── ruff v0.11.7 (extra: dev)
 └── setuptools v78.1.0 (extra: dev)
 ```
 
@@ -183,7 +191,7 @@ tgmusicbot v1.1.8
    git clone https://github.com/AshokShau/TgMusicBot.git && cd TgMusicBot
    ```
 
-5.Create a virtual environment [Docs](https://docs.astral.sh/uv/pip/environments/):
+5.Create a [virtual environment](https://docs.astral.sh/uv/pip/environments/):
 
    ```sh
    uv venv
@@ -205,7 +213,7 @@ tgmusicbot v1.1.8
    ```sh
    cp sample.env .env && vi .env
    ```
-
+> Press `I` on the keyboard to enter the insert mode.
 > Press `Ctrl+C` when you're done with editing env and `:wq` to save the environment variables.
 
 9.Finally, run the bot by:

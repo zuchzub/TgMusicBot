@@ -16,7 +16,7 @@ Use a browser extension to export cookies in the **Netscape HTTP Cookie File** f
 
 #### **2. Upload Cookies to BatBin/PasteBin Service**
 
-1. Go to **[BatBin](https://batbin.me)**.
+1. Go to **[BatBin](https://batbin.me)** or **[PasteBin](https://pastebin.com)**.
 2. Upload your `cookies.txt` file.
 3. Copy the generated URL.
 

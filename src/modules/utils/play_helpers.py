@@ -1,9 +1,9 @@
 #  Copyright (c) 2025 AshokShau
 #  Licensed under the GNU AGPL v3.0: https://www.gnu.org/licenses/agpl-3.0.html
 #  Part of the TgMusicBot project. All rights reserved where applicable.
-
+import asyncio
 from types import NoneType
-from typing import Any, Literal, Optional, Union
+from typing import Any, Literal, Union
 
 import pyrogram
 from cachetools import TTLCache
@@ -17,8 +17,8 @@ chat_invite_cache = TTLCache(maxsize=1000, ttl=1000)
 
 
 async def get_url(
-        msg: types.Message, reply: Union[types.Message, None]
-) -> Optional[str]:
+    msg: types.Message, reply: Union[types.Message, None]
+) -> Union[str, None]:
     """
     Extracts a URL from the given message or its reply.
 
@@ -40,13 +40,13 @@ async def get_url(
         if entity.type and entity.type["@type"] == "textEntityTypeUrl":
             offset = entity.offset
             length = entity.length
-            url = text_content[offset: offset + length]
+            url = text_content[offset : offset + length]
             LOGGER.info("Extracted URL: %s", url)
             return url
     return None
 
 
-def extract_argument(text: str, enforce_digit: bool = False) -> str | None:
+def extract_argument(text: str, enforce_digit: bool = False) -> Union[str, None]:
     """
     Extracts the argument from the command text.
 
@@ -66,7 +66,7 @@ def extract_argument(text: str, enforce_digit: bool = False) -> str | None:
     return None if enforce_digit and not argument.isdigit() else argument
 
 
-async def del_msg(msg: types.Message):
+async def del_msg(msg: types.Message) -> None:
     """
     Deletes the given message.
 
@@ -81,10 +81,11 @@ async def del_msg(msg: types.Message):
         if delete.code == 400:
             return
         LOGGER.warning("Error deleting message: %s", delete)
+    return
 
 
 async def edit_text(
-        reply_message: types.Message, *args: Any, **kwargs: Any
+    reply_message: types.Message, *args: Any, **kwargs: Any
 ) -> Union["types.Error", "types.Message"]:
     """
     Edits the given message and returns the result.
@@ -105,11 +106,23 @@ async def edit_text(
     if isinstance(reply_message, types.Error):
         LOGGER.warning("Error getting message: %s", reply_message)
         return reply_message
-    try:
-        return await reply_message.edit_text(*args, **kwargs)
-    except Exception as e:
-        LOGGER.warning("Error editing message: %s", e)
-        return reply_message
+
+    reply = await reply_message.edit_text(*args, **kwargs)
+    if isinstance(reply, types.Error):
+        if reply.code == 429:
+            retry_after = (
+                int(reply.message.split("retry after ")[1])
+                if "retry after" in reply.message
+                else 2
+            )
+            LOGGER.warning("Rate limited, retrying in %s seconds", retry_after)
+            if retry_after > 20:
+                return reply
+
+            await asyncio.sleep(retry_after)
+            return await edit_text(reply_message, *args, **kwargs)
+        LOGGER.warning("Error editing message: %s", reply)
+    return reply
 
 
 async def join_ub(chat_id: int, c: Client, ub: pyrogram.Client):
@@ -170,15 +183,15 @@ async def unban_ub(c: Client, chat_id: int, user_id: int):
 
 
 async def check_user_status(c: Client, chat_id: int, user_id: int) -> (
-        Literal[
-            "chatMemberStatusLeft",
-            "chatMemberStatusCreator",
-            "chatMemberStatusAdministrator",
-            "chatMemberStatusMember",
-            "chatMemberStatusRestricted",
-            "chatMemberStatusBanned",
-        ]
-        | Any
+    Literal[
+        "chatMemberStatusLeft",
+        "chatMemberStatusCreator",
+        "chatMemberStatusAdministrator",
+        "chatMemberStatusMember",
+        "chatMemberStatusRestricted",
+        "chatMemberStatusBanned",
+    ]
+    | Any
 ):
     """
     Checks the status of a user in a chat.

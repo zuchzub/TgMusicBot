@@ -7,7 +7,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     && rm -rf /var/lib/apt/lists/*
 
-RUN pip install --no-cache-dir uv==0.6.14
+RUN pip install --no-cache-dir uv==0.7.0
 
 COPY . /app/
 

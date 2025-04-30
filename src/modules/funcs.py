@@ -33,7 +33,7 @@ async def is_admin_or_reply(msg: types.Message) -> Union[int, types.Message]:
 
 
 async def handle_playback_action(
-        _: Client, msg: types.Message, action, success_msg: str, fail_msg: str
+    _: Client, msg: types.Message, action, success_msg: str, fail_msg: str
 ) -> None:
     """
     Handle playback actions like stop, pause, resume, mute, unmute.
@@ -42,14 +42,13 @@ async def handle_playback_action(
     if isinstance(chat_id, types.Message):
         return
 
-    try:
-        await action(chat_id)
-        await msg.reply_text(
-            f"{success_msg}\n│ \n└ Requested by: {await msg.mention()} 🥀"
-        )
-    except Exception as e:
-        LOGGER.error("Error in %s: %s", action.__name__, e)
-        await msg.reply_text(f"⚠️ {fail_msg}\nError: {e}")
+    done = await action(chat_id)
+    if isinstance(done, types.Error):
+        await msg.reply_text(f"⚠️ {fail_msg}\n\n{done.message}")
+        return
+
+    await msg.reply_text(f"{success_msg}\n│ \n└ Requested by: {await msg.mention()} 🥀")
+    return
 
 
 @Client.on_message(filters=Filter.command("setPlayType"))
@@ -86,12 +85,8 @@ async def set_play_type(_: Client, msg: types.Message) -> None:
         await msg.reply_text("Invalid option! Please use: /setPlayType 0/1")
         return
 
-    try:
-        await db.set_play_type(chat_id, play_type)
-        await msg.reply_text(f"✅ Play type set to {play_type}")
-    except Exception as e:
-        LOGGER.error("Error setting play type: %s", e)
-        await msg.reply_text("⚠️ Failed to set play type. Please try again.")
+    await db.set_play_type(chat_id, play_type)
+    await msg.reply_text(f"✅ Play type set to {play_type}")
 
 
 @Client.on_message(filters=Filter.command("queue"))
@@ -150,7 +145,7 @@ async def queue_info(_: Client, msg: types.Message) -> None:
 
 
 @Client.on_message(filters=Filter.command("loop"))
-async def modify_loop(_: Client, msg: types.Message) -> None:
+async def modify_loop(c: Client, msg: types.Message) -> None:
     """
     Modify the loop count for the current song.
     """
@@ -174,19 +169,16 @@ async def modify_loop(_: Client, msg: types.Message) -> None:
         return None
 
     loop = int(args)
-    try:
-        chat_cache.set_loop_count(chat_id, loop)
-        action = "disabled" if loop == 0 else f"changed to {loop} times"
-        await msg.reply_text(f"🔄 Loop {action}\n│ \n└ Action by: {msg.mention()}")
-        return None
-    except Exception as e:
-        LOGGER.error("Error setting loop: %s", e)
-        await msg.reply_text(f"⚠️ Something went wrong...\n\nError: {str(e)}")
-        return None
+    chat_cache.set_loop_count(chat_id, loop)
+    action = "disabled" if loop == 0 else f"changed to {loop} times"
+    reply = await msg.reply_text(f"🔄 Loop {action}\n│ \n└ Action by: {msg.mention()}")
+    if isinstance(reply, types.Error):
+        c.logger.warning(f"Error sending reply: {reply.message}")
+    return None
 
 
 @Client.on_message(filters=Filter.command("seek"))
-async def seek_song(_: Client, msg: types.Message) -> None:
+async def seek_song(c: Client, msg: types.Message) -> None:
     """
     Seek to a specific time in the current song.
     """
@@ -216,28 +208,34 @@ async def seek_song(_: Client, msg: types.Message) -> None:
         return
 
     curr_dur = await call.played_time(chat_id)
-    seek_to = curr_dur + seek_time
+    if isinstance(curr_dur, types.Error):
+        await msg.reply_text(curr_dur.message)
+        return
 
+    seek_to = curr_dur + seek_time
     if seek_to >= curr_song.duration:
         await msg.reply_text(
             f"🛑 Cannot seek past the song duration ({sec_to_min(curr_song.duration)} min)."
         )
         return
 
-    try:
-        await call.seek_stream(
-            chat_id,
-            curr_song.file_path,
-            seek_to,
-            curr_song.duration,
-            curr_song.is_video,
-        )
-        await msg.reply_text(
-            f"⏩ Seeked to {seek_to} seconds\n│ \n└ Action by: {await msg.mention()}"
-        )
-    except Exception as e:
-        LOGGER.error("Error seeking song: %s", e)
-        await msg.reply_text(f"⚠️ Something went wrong...\n\nError: {str(e)}")
+    _seek = await call.seek_stream(
+        chat_id,
+        curr_song.file_path,
+        seek_to,
+        curr_song.duration,
+        curr_song.is_video,
+    )
+    if isinstance(_seek, types.Error):
+        await msg.reply_text(_seek.message)
+        return
+
+    reply = await msg.reply_text(
+        f"⏩ Seeked to {seek_to} seconds\n│ \n└ Action by: {await msg.mention()}"
+    )
+    if isinstance(reply, types.Error):
+        c.logger.warning(f"Error sending reply: {reply}")
+    return
 
 
 def extract_number(text: str) -> float | None:
@@ -274,21 +272,19 @@ async def change_speed(_: Client, msg: types.Message) -> None:
         return
 
     speed = round(float(args), 2)
-    try:
-        await call.speed_change(chat_id, speed)
-        await msg.reply_text(
-            f"🚀 Speed changed to {speed}\n│ \n└ Action by: {await msg.mention()}"
-        )
-    except Exception as e:
-        LOGGER.error("Error changing speed: %s", e)
-        await msg.reply_text(f"⚠️ Something went wrong...\n\nError: {str(e)}")
+    _change_speed = await call.speed_change(chat_id, speed)
+    if isinstance(_change_speed, types.Error):
+        await msg.reply_text(_change_speed.message)
+        return
+    await msg.reply_text(
+        f"🚀 Speed changed to {speed}\n│ \n└ Action by: {await msg.mention()}"
+    )
+    return
 
 
 @Client.on_message(filters=Filter.command("remove"))
-async def remove_song(_: Client, msg: types.Message) -> None:
-    """
-    Remove a track from the queue.
-    """
+async def remove_song(c: Client, msg: types.Message) -> None:
+    """Remove a track from the queue."""
     chat_id = msg.chat_id
     if chat_id > 0:
         return None
@@ -319,20 +315,17 @@ async def remove_song(_: Client, msg: types.Message) -> None:
         )
         return None
 
-    try:
-        chat_cache.remove_track(chat_id, track_num)
-        await msg.reply_text(
-            f"✔️ Track removed from queue\n│ \n└ Removed by: {await msg.mention()}"
-        )
-        return None
-    except Exception as e:
-        LOGGER.error("Error removing track: %s", e)
-        await msg.reply_text(f"⚠️ Something went wrong...\n\nError: {str(e)}")
-        return None
+    chat_cache.remove_track(chat_id, track_num)
+    reply = await msg.reply_text(
+        f"✔️ Track removed from queue\n│ \n└ Removed by: {await msg.mention()}"
+    )
+    if isinstance(reply, types.Error):
+        c.logger.warning(f"Error sending reply: {reply}")
+    return None
 
 
 @Client.on_message(filters=Filter.command("clear"))
-async def clear_queue(_: Client, msg: types.Message) -> None:
+async def clear_queue(c: Client, msg: types.Message) -> None:
     """
     Clear the queue.
     """
@@ -352,14 +345,13 @@ async def clear_queue(_: Client, msg: types.Message) -> None:
         await msg.reply_text("🛑 The queue is already empty!")
         return None
 
-    try:
-        chat_cache.clear_chat(chat_id)
-        await msg.reply_text(f"🗑️ Queue cleared\n│ \n└ Action by: {await msg.mention()}")
-        return None
-    except Exception as e:
-        LOGGER.error("Error clearing queue: %s", e)
-        await msg.reply_text(f"⚠️ Something went wrong...\n\nError: {str(e)}")
-        return None
+    chat_cache.clear_chat(chat_id)
+    reply = await msg.reply_text(
+        f"🗑️ Queue cleared\n│ \n└ Action by: {await msg.mention()}"
+    )
+    if isinstance(reply, types.Error):
+        c.logger.warning(f"Error sending reply: {reply}")
+    return None
 
 
 @Client.on_message(filters=Filter.command(["stop", "end"]))
@@ -375,21 +367,19 @@ async def stop_song(_: Client, msg: types.Message) -> None:
         await msg.reply_text("You must be an admin to use this command.")
         return
 
-    try:
-        await call.end(chat_id)
-        await msg.reply_text(
-            f"🎵 <b>Stream Ended</b> ❄️\n│ \n└ Requested by: {await msg.mention()} 🥀"
-        )
-    except Exception as e:
-        LOGGER.error("Error stopping song: %s", e)
-        await msg.reply_text(f"⚠️ Failed to stop the song.\nError: {str(e)}")
+    _end = await call.end(chat_id)
+    if isinstance(_end, types.Error):
+        await msg.reply_text(_end.message)
+        return
+    await msg.reply_text(
+        f"🎵 <b>Stream Ended</b> ❄️\n│ \n└ Requested by: {await msg.mention()} 🥀"
+    )
+    return
 
 
 @Client.on_message(filters=Filter.command("pause"))
 async def pause_song(_: Client, msg: types.Message) -> None:
-    """
-    Pause the current song.
-    """
+    """Pause the current song."""
     await handle_playback_action(
         _, msg, call.pause, "⏸️ <b>Stream Paused</b> 🥺", "Failed to pause the song"
     )
@@ -397,9 +387,7 @@ async def pause_song(_: Client, msg: types.Message) -> None:
 
 @Client.on_message(filters=Filter.command("resume"))
 async def resume(_: Client, msg: types.Message) -> None:
-    """
-    Resume the current song.
-    """
+    """Resume the current song."""
     await handle_playback_action(
         _, msg, call.resume, "🎶 <b>Stream Resumed</b> 💫", "Failed to resume the song"
     )
@@ -407,9 +395,7 @@ async def resume(_: Client, msg: types.Message) -> None:
 
 @Client.on_message(filters=Filter.command("mute"))
 async def mute_song(_: Client, msg: types.Message) -> None:
-    """
-    Mute the current song.
-    """
+    """Mute the current song."""
     await handle_playback_action(
         _, msg, call.mute, "🔇 <b>Stream Muted</b>", "Failed to mute the song"
     )
@@ -417,9 +403,7 @@ async def mute_song(_: Client, msg: types.Message) -> None:
 
 @Client.on_message(filters=Filter.command("unmute"))
 async def unmute_song(_: Client, msg: types.Message) -> None:
-    """
-    Unmute the current song.
-    """
+    """Unmute the current song."""
     await handle_playback_action(
         _, msg, call.unmute, "🔊 <b>Stream Unmuted</b>", "Failed to unmute the song"
     )
@@ -453,21 +437,19 @@ async def volume(_: Client, msg: types.Message) -> None:
             "⚠️ Volume must be between 1 and 200.\nUsage: /volume 1-200"
         )
         return None
+    done = await call.change_volume(chat_id, vol_int)
+    if isinstance(done, types.Error):
+        await msg.reply_text(done.message)
+        return None
 
-    try:
-        await call.change_volume(chat_id, vol_int)
-        await msg.reply_text(
-            f"🔊 <b>Stream volume set to {vol_int}</b>\n│ \n└ Requested by: {await msg.mention()} 🥀"
-        )
-        return None
-    except Exception as e:
-        LOGGER.error("Error changing volume: %s", e)
-        await msg.reply_text(f"⚠️ Failed to change volume.\nError: {e}")
-        return None
+    await msg.reply_text(
+        f"🔊 <b>Stream volume set to {vol_int}</b>\n│ \n└ Requested by: {await msg.mention()} 🥀"
+    )
+    return None
 
 
 @Client.on_message(filters=Filter.command("skip"))
-async def skip_song(_: Client, msg: types.Message) -> None:
+async def skip_song(c: Client, msg: types.Message) -> None:
     """
     Skip the current song.
     """
@@ -475,24 +457,23 @@ async def skip_song(_: Client, msg: types.Message) -> None:
     if isinstance(chat_id, types.Message):
         return None
 
-    try:
-        await del_msg(msg)
-        await call.play_next(chat_id)
-        await msg.reply_text(
-            f"⏭️ Song skipped\n│ \n└ Requested by: {await msg.mention()} 🥀"
-        )
+    await del_msg(msg)
+    done = await call.play_next(chat_id)
+    if isinstance(done, types.Error):
+        await msg.reply_text(f"⚠️ Something went wrong...\n\nError: {done.message}")
         return None
-    except Exception as e:
-        LOGGER.error("Error skipping song: %s", e)
-        await msg.reply_text(f"⚠️ Failed to skip the song.\nError: {e}")
-        return None
+    reply = await msg.reply_text(
+        f"⏭️ Song skipped\n│ \n└ Requested by: {await msg.mention()} 🥀"
+    )
+    if isinstance(reply, types.Error):
+        c.logger.warning(f"Error sending reply: {reply}")
+
+    return None
 
 
 @Client.on_updateNewCallbackQuery(filters=Filter.regex(r"play_\w+"))
 async def callback_query(c: Client, message: types.UpdateNewCallbackQuery) -> None:
-    """
-    Handle all play control callback queries (skip, stop, pause, resume, timer).
-    """
+    """Handle all play control callback queries (skip, stop, pause, resume, timer)."""
     try:
         data = message.payload.data.decode()
         chat_id = message.chat_id
@@ -506,7 +487,7 @@ async def callback_query(c: Client, message: types.UpdateNewCallbackQuery) -> No
         user_name = user.first_name
 
         async def send_response(
-                msg: str, alert: bool = False, delete: bool = False, markup=None
+            msg: str, alert: bool = False, delete: bool = False, markup=None
         ) -> None:
             """
             Helper function to send responses consistently.
@@ -563,59 +544,45 @@ async def callback_query(c: Client, message: types.UpdateNewCallbackQuery) -> No
             )
 
         if data == "play_skip":
-            try:
-                await call.play_next(chat_id)
-                await send_response("⏭️ Song skipped", delete=True)
-            except Exception as e:
-                LOGGER.error("Could not skip song: %s", e)
-                await send_response("⚠️ Error: Next song not found to play.", alert=True)
+            done = await call.play_next(chat_id)
+            if isinstance(done, types.Error):
+                await send_response(
+                    f"⚠️ Something went wrong...\n\nError: {done.message}", alert=True
+                )
                 return None
-
+            await send_response("⏭️ Song skipped", delete=True)
+            return None
         elif data == "play_stop":
-            try:
-                chat_cache.clear_chat(chat_id)
-                await call.end(chat_id)
-                await send_response(
-                    f"<b>➻ Stream stopped:</b>\n└ Requested by: {user_name}"
-                )
-            except Exception as e:
-                LOGGER.error("Error stopping stream: %s", e)
-                await send_response(
-                    "⚠️ Error stopping the stream. Please try again.", alert=True
-                )
+            done = await call.end(chat_id)
+            if isinstance(done, types.Error):
+                await send_response(done.message, alert=True)
                 return None
-
+            await send_response(
+                f"<b>➻ Stream stopped:</b>\n└ Requested by: {user_name}"
+            )
+            return None
         elif data == "play_pause":
-            try:
-                await call.pause(chat_id)
+            done = await call.pause(chat_id)
+            if isinstance(done, types.Error):
                 await send_response(
-                    f"<b>➻ Stream paused:</b>\n└ Requested by: {user_name}",
-                    markup=(
-                        PauseButton if await db.get_buttons_status(chat_id) else None
-                    ),
-                )
-            except Exception as e:
-                LOGGER.error("Error pausing stream: %s", e)
-                await send_response(
-                    "⚠️ Error pausing the stream. Please try again.", alert=True
+                    f"⚠️ Something went wrong...\n\nError: {done.message}", alert=True
                 )
                 return None
-
+            await send_response(
+                f"<b>➻ Stream paused:</b>\n└ Requested by: {user_name}",
+                markup=(PauseButton if await db.get_buttons_status(chat_id) else None),
+            )
+            return None
         elif data == "play_resume":
-            try:
-                await call.resume(chat_id)
-                await send_response(
-                    f"<b>➻ Stream resumed:</b>\n└ Requested by: {user_name}",
-                    markup=(
-                        ResumeButton if await db.get_buttons_status(chat_id) else None
-                    ),
-                )
-            except Exception as e:
-                LOGGER.error("Error resuming stream: %s", e)
-                await send_response(
-                    "⚠️ Error resuming the stream. Please try again.", alert=True
-                )
+            done = await call.resume(chat_id)
+            if isinstance(done, types.Error):
+                await send_response(f"{done.message}", alert=True)
                 return None
+            await send_response(
+                f"<b>➻ Stream resumed:</b>\n└ Requested by: {user_name}",
+                markup=(ResumeButton if await db.get_buttons_status(chat_id) else None),
+            )
+            return None
         elif data == "play_close":
             _delete = await c.deleteMessages(chat_id, [message.message_id], revoke=True)
             if isinstance(_delete, types.Error):
@@ -630,36 +597,33 @@ async def callback_query(c: Client, message: types.UpdateNewCallbackQuery) -> No
             return None
         else:
             try:
-                _, platform, song_id = data.split("_", 2)
-                await message.answer(
-                    text=f"Playing song for {user_name}", show_alert=True
-                )
-
-                reply_message = await message.edit_message_text(
-                    f"🎶 Searching ...\nRequested by: {user_name} 🥀"
-                )
-                url = _get_platform_url(platform, song_id)
-                if not url:
-                    await edit_text(
-                        reply_message, text=f"⚠️ Error: Invalid Platform {platform}"
-                    )
-                    return None
-
-                if song := await MusicServiceWrapper(url).get_info():
-                    return await play_music(c, reply_message, song, user_name)
-
-                await edit_text(reply_message, text="⚠️ Error: Song not found.")
-                return None
+                platform, song_id = data.split("_", 1)
             except ValueError:
                 LOGGER.error("Invalid callback data format: %s", data)
                 await send_response("⚠️ Error: Invalid request format.", alert=True)
                 return None
-            except Exception as e:
-                LOGGER.error("Error handling play request: %s", e)
-                await send_response("⚠️ Error processing your request.", alert=True)
+
+            await message.answer(text=f"Playing song for {user_name}", show_alert=True)
+            reply_message = await message.edit_message_text(
+                f"🎶 Searching ...\nRequested by: {user_name} 🥀"
+            )
+            if isinstance(reply_message, types.Error):
+                c.logger.warning(f"Error sending reply: {reply_message}")
                 return None
+
+            url = _get_platform_url(platform, song_id)
+            if not url:
+                await edit_text(
+                    reply_message, text=f"⚠️ Error: Invalid Platform {platform}"
+                )
+                return None
+
+            if song := await MusicServiceWrapper(url).get_info():
+                return await play_music(c, reply_message, song, user_name)
+            await edit_text(reply_message, text="⚠️ Error: Song not found.")
+            return None
     except Exception as e:
-        LOGGER.critical("Unhandled exception in callback_query: %s", e)
+        c.logger.critical("Unhandled exception in callback_query: %s", e)
         await message.answer(
             "⚠️ An error occurred while processing your request.", show_alert=True
         )

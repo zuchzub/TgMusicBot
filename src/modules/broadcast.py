@@ -39,7 +39,7 @@ async def get_broadcast_targets(target: str) -> tuple[list[int], list[int]]:
 
 
 async def send_message_with_retry(
-        target_id: int, message: types.Message, is_copy: bool
+    target_id: int, message: types.Message, is_copy: bool
 ) -> int:
     """
     Send a message to a target with retrying on 429 errors.
@@ -56,12 +56,10 @@ async def send_message_with_retry(
     Exception: if there's an unexpected error.
     """
     for attempt in range(1, MAX_RETRIES + 1):
-        try:
-            async with semaphore:
-                result = await (
-                    message.copy(target_id) if is_copy else message.forward(target_id)
-                )
-
+        async with semaphore:
+            result = await (
+                message.copy(target_id) if is_copy else message.forward(target_id)
+            )
             if isinstance(result, types.Error):
                 if result.code == 429:
                     retry_after = (
@@ -83,18 +81,12 @@ async def send_message_with_retry(
                     return 0
                 LOGGER.error("[Error] %s: %s", target_id, result.message)
                 return 0
-
             return 1
-
-        except Exception as e:
-            LOGGER.error("[Error] %s: %s", target_id, e)
-            await asyncio.sleep(2)
-
     return 0
 
 
 async def broadcast_to_targets(
-        targets: list[int], message: types.Message, is_copy: bool
+    targets: list[int], message: types.Message, is_copy: bool
 ) -> tuple[int, int]:
     """
     Broadcast a message to a list of targets (user or chat IDs).
@@ -134,7 +126,7 @@ async def broadcast_to_targets(
         )
         return _batch_sent, _batch_failed
 
-    batches = [targets[i: i + BATCH_SIZE] for i in range(0, len(targets), BATCH_SIZE)]
+    batches = [targets[i : i + BATCH_SIZE] for i in range(0, len(targets), BATCH_SIZE)]
     for idx, batch in enumerate(batches):
         LOGGER.info(
             "Sending batch %s/%s (targets: %s)", idx + 1, len(batches), len(batch)
@@ -195,9 +187,9 @@ async def broadcast(_: Client, message: types.Message):
 
     started = await message.reply_text(
         text=f"📣 Starting broadcast to {total_targets} target(s)...\n"
-             f"• Users: {len(users)}\n"
-             f"• Chats: {len(chats)}\n"
-             f"• Mode: {'Copy' if is_copy else 'Forward'}",
+        f"• Users: {len(users)}\n"
+        f"• Chats: {len(chats)}\n"
+        f"• Mode: {'Copy' if is_copy else 'Forward'}",
         disable_web_page_preview=True,
     )
 
@@ -214,13 +206,13 @@ async def broadcast(_: Client, message: types.Message):
 
     await started.edit_text(
         text=f"✅ <b>Broadcast Summary</b>\n"
-             f"• Total Sent: {user_sent + chat_sent}\n"
-             f"  - Users: {user_sent}\n"
-             f"  - Chats: {chat_sent}\n"
-             f"• Total Failed: {user_failed + chat_failed}\n"
-             f"  - Users: {user_failed}\n"
-             f"  - Chats: {chat_failed}\n"
-             f"🕒 Time Taken: <code>{end_time - start_time:.2f} sec</code>",
+        f"• Total Sent: {user_sent + chat_sent}\n"
+        f"  - Users: {user_sent}\n"
+        f"  - Chats: {chat_sent}\n"
+        f"• Total Failed: {user_failed + chat_failed}\n"
+        f"  - Users: {user_failed}\n"
+        f"  - Chats: {chat_failed}\n"
+        f"🕒 Time Taken: <code>{end_time - start_time:.2f} sec</code>",
         disable_web_page_preview=True,
     )
     return None

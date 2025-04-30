@@ -8,7 +8,7 @@ from ._database import db
 from ._dataclass import CachedTrack, MusicTrack, PlatformTracks, TrackInfo
 from ._downloader import MusicServiceWrapper
 from ._jiosaavn import JiosaavnData
-from ._pytgcalls import CallError, call, start_clients
+from ._pytgcalls import call, start_clients
 from ._save_cookies import save_all_cookies
 from ._telegram import Telegram
 from ._youtube import YouTubeData
@@ -25,7 +25,6 @@ __all__ = [
     "MusicTrack",
     "PlatformTracks",
     "call",
-    "CallError",
     "start_clients",
     "Telegram",
     "YouTubeData",

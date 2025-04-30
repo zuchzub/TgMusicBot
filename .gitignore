@@ -3,6 +3,4 @@ __pycache__/
 /database
 .env
 /cookies
-
-/src/tgmusicbot.egg-info
 /tgmusicbot.egg-info
