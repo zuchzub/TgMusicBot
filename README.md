@@ -4,6 +4,53 @@ Telegram Group Calls Streaming bot with some useful features, written in Python 
 Supporting platforms like YouTube, Spotify, Apple Music, Soundcloud, JioSaavn and more.
 
 <p align="center">
+  <!-- GitHub Stars -->
+  <a href="https://github.com/AshokShau/TgMusicBot/stargazers">
+    <img src="https://img.shields.io/github/stars/AshokShau/TgMusicBot?style=for-the-badge&color=black&logo=github" alt="Stars"/>
+  </a>
+  
+  <!-- GitHub Forks -->
+  <a href="https://github.com/AshokShau/TgMusicBot/network/members">
+    <img src="https://img.shields.io/github/forks/AshokShau/TgMusicBot?style=for-the-badge&color=black&logo=github" alt="Forks"/>
+  </a>
+
+  <!-- Last Commit -->
+  <a href="https://github.com/AshokShau/TgMusicBot/commits/AshokShau">
+    <img src="https://img.shields.io/github/last-commit/AshokShau/TgMusicBot?style=for-the-badge&color=blue" alt="Last Commit"/>
+  </a>
+
+  <!-- Repo Size -->
+  <a href="https://github.com/AshokShau/TgMusicBot">
+    <img src="https://img.shields.io/github/repo-size/AshokShau/TgMusicBot?style=for-the-badge&color=success" alt="Repo Size"/>
+  </a>
+
+  <!-- Language -->
+  <a href="https://www.python.org/">
+    <img src="https://img.shields.io/badge/Written%20in-Python-orange?style=for-the-badge&logo=python" alt="Python"/>
+  </a>
+
+  <!-- License -->
+  <a href="https://github.com/AshokShau/TgMusicBot/blob/AshokShau/LICENSE">
+    <img src="https://img.shields.io/github/license/AshokShau/TgMusicBot?style=for-the-badge&color=blue" alt="License"/>
+  </a>
+
+  <!-- Open Issues -->
+  <a href="https://github.com/AshokShau/TgMusicBot/issues">
+    <img src="https://img.shields.io/github/issues/AshokShau/TgMusicBot?style=for-the-badge&color=red" alt="Issues"/>
+  </a>
+
+  <!-- Pull Requests -->
+  <a href="https://github.com/AshokShau/TgMusicBot/pulls">
+    <img src="https://img.shields.io/github/issues-pr/AshokShau/TgMusicBot?style=for-the-badge&color=purple" alt="PRs"/>
+  </a>
+
+  <!-- GitHub Workflow CI -->
+  <a href="https://github.com/AshokShau/TgMusicBot/actions">
+    <img src="https://img.shields.io/github/actions/workflow/status/AshokShau/TgMusicBot/code-fixer.yml?style=for-the-badge&label=CI&logo=github" alt="CI Status"/>
+  </a>
+</p>
+
+<p align="center">
    <img src="https://raw.githubusercontent.com/AshokShau/TgMusicBot/master/.github/images/thumb.png" alt="thumbnail" width="320" height="320">
 </p>
 
