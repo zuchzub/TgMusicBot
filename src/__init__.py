@@ -13,7 +13,7 @@ from src import config
 from src.helpers import call, db, start_clients
 from src.modules.jobs import InactiveCallManager
 
-__version__ = "1.1.8"
+__version__ = "1.1.9"
 StartTime = datetime.now()
 
 

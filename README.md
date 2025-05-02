@@ -56,7 +56,7 @@ downloads.
 <summary>Dependency Tree: Click to expand</summary>
 
 ```
-tgmusicbot v1.1.8
+tgmusicbot v1.1.9
 ├── aiofiles v24.1.0
 ├── apscheduler v3.11.0
 │   └── tzlocal v5.3.1
@@ -68,7 +68,7 @@ tgmusicbot v1.1.8
 ├── motor v3.7.0
 │   └── pymongo v4.12.1
 │       └── dnspython v2.7.0
-├── ntgcalls v1.3.5b1
+├── ntgcalls v1.3.5b2
 ├── pillow v11.2.1
 ├── psutil v7.0.0
 ├── py-tgcalls v2.1.2b1
@@ -86,7 +86,7 @@ tgmusicbot v1.1.8
 │   │       └── propcache v0.3.1
 │   ├── deprecation v2.1.0
 │   │   └── packaging v25.0
-│   └── ntgcalls v1.3.5b1
+│   └── ntgcalls v1.3.5b2
 ├── py-yt-search v0.3
 │   ├── httpx v0.28.1
 │   │   ├── anyio v4.9.0
@@ -118,9 +118,9 @@ tgmusicbot v1.1.8
 ├── pytgcrypto v1.2.9.2
 ├── python-dotenv v1.1.0
 ├── pytz v2025.2
-├── tdjson v1.8.47
+├── tdjson v1.8.48
 ├── ujson v5.10.0
-├── yt-dlp v2025.3.31
+├── yt-dlp v2025.4.30
 ├── black v25.1.0 (extra: dev)
 │   ├── click v8.1.8
 │   ├── mypy-extensions v1.1.0
