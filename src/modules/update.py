@@ -103,7 +103,14 @@ async def update(c: Client, message: types.Message) -> None:
     if active_vc := chat_cache.get_active_chats():
         for chat_id in active_vc:
             await call.end(chat_id)
-            await c.sendTextMessage(chat_id, "♻️ Restarting the bot...")
+            await c.sendTextMessage(
+                chat_id,
+                "🔧 <b>Bot Maintenance</b>\n\n"
+                "The bot is being updated/restarted to bring you new features and improvements.\n"
+                "Your music playback has been stopped temporarily. Please start again after a minute.\n\n"
+                "Thank you for your patience!",
+                parse_mode="html",
+            )
             await asyncio.sleep(0.5)
 
     await msg.edit_text("♻️ Restarting the bot...")

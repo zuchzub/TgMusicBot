@@ -5,14 +5,14 @@
 import re
 from typing import Any, Optional
 
-from py_yt import Playlist, VideosSearch, Video
+from py_yt import Playlist, VideosSearch
 
 from src.helpers import MusicTrack, PlatformTracks, TrackInfo
 from src.logger import LOGGER
 from ._dl_helper import YouTubeDownload
 from ._downloader import MusicService
 from ._httpx import HttpxClient
-from ..config import PROXY_URL
+from ..config import API_URL, API_KEY
 
 
 class YouTubeData(MusicService):
@@ -170,30 +170,11 @@ class YouTubeData(MusicService):
         if not normalized_url:
             return None
 
-        if PROXY_URL:
-            try:
-                video_id = self._extract_video_id(normalized_url)
-                if not video_id:
-                    return None
-
-                result = await Video.get(video_id)
-                if not result:
-                    return None
-
-                track = self._format_track(
-                    {
-                        "id": result["id"],
-                        "title": result["title"],
-                        "duration": result.get("duration", {}).get(
-                            "secondsText", "0:00"
-                        ),
-                        "channel": result.get("channel", {}),
-                        "thumbnails": result.get("thumbnails", [{}]),
-                    }
-                )
-                return {"results": [track]}
-            except Exception as e:
-                LOGGER.warning(f"Proxy fetch failed, falling back: {str(e)}")
+        if API_URL and API_KEY:
+            if data := await self.client.make_request(
+                f"{API_URL}/get_url_new?url={normalized_url}", max_retries=1
+            ):
+                return data
 
         try:
             search = VideosSearch(normalized_url, limit=1)
@@ -310,7 +291,7 @@ class YouTubeData(MusicService):
             duration=track_data.get("duration", 0),
             platform="youtube",
             url=f"https://youtube.com/watch?v={track_data.get('id', '')}",
-            year=0,
+            year=track_data.get("year", 0),
         )
 
     @staticmethod

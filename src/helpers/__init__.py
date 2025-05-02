@@ -8,6 +8,7 @@ from ._database import db
 from ._dataclass import CachedTrack, MusicTrack, PlatformTracks, TrackInfo
 from ._downloader import MusicServiceWrapper
 from ._jiosaavn import JiosaavnData
+from ._lang import load_translations, get_string
 from ._pytgcalls import call, start_clients
 from ._save_cookies import save_all_cookies
 from ._telegram import Telegram
@@ -24,6 +25,8 @@ __all__ = [
     "TrackInfo",
     "MusicTrack",
     "PlatformTracks",
+    "load_translations",
+    "get_string",
     "call",
     "start_clients",
     "Telegram",

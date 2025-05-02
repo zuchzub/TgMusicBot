@@ -31,9 +31,11 @@ class Database:
         self.chat_db = _db["chats"]
         self.users_db = _db["users"]
         self.bot_db = _db["bot"]
+        self.language = _db["language"]
 
-        self.chat_cache = TTLCache(maxsize=1000, ttl=600)
-        self.bot_cache = TTLCache(maxsize=1000, ttl=600)
+        self.chat_cache = TTLCache(maxsize=1000, ttl=1200)
+        self.bot_cache = TTLCache(maxsize=1000, ttl=1200)
+        self.lang_cache = TTLCache(maxsize=1000, ttl=1200)
 
     async def ping(self) -> None:
         """
@@ -103,7 +105,11 @@ class Database:
         """
         if await self.get_chat(chat_id) is None:
             LOGGER.info("Added chat: %s", chat_id)
-            await self.chat_db.insert_one({"_id": chat_id})
+            await self.chat_db.update_one(
+                {"_id": chat_id},
+                {"$setOnInsert": {}},
+                upsert=True
+            )
 
     async def _update_chat_field(self, chat_id: int, key: str, value) -> None:
         """
@@ -482,10 +488,12 @@ class Database:
         -------
         None
         """
-        if await self.is_user_exist(user_id):
-            return
         LOGGER.info("Added user: %s", user_id)
-        await self.users_db.insert_one({"_id": user_id})
+        await self.users_db.update_one(
+            {"_id": user_id},
+            {"$setOnInsert": {}},
+            upsert=True
+        )
 
     async def remove_user(self, user_id: int) -> None:
         """
@@ -607,6 +615,28 @@ class Database:
             {"_id": bot_id}, {"$set": {"logger": status}}, upsert=True
         )
         self.bot_cache[bot_id] = status
+
+    async def get_lang(self, chat_id: int) -> str:
+        """
+        Get the language code for the given chat ID.
+        Defaults to 'en' if not set.
+        """
+        if chat_id in self.lang_cache:
+            return self.lang_cache[chat_id]
+
+        data = await self.language.find_one({"chat_id": chat_id})
+        lang = data.get("lang", "en") if data else "en"
+        self.lang_cache[chat_id] = lang
+        return lang
+
+    async def set_lang(self, chat_id: int, lang: str) -> None:
+        """
+        Set or update the language code for the given chat ID.
+        """
+        await self.language.update_one(
+            {"chat_id": chat_id}, {"$set": {"lang": lang}}, upsert=True
+        )
+        self.lang_cache[chat_id] = lang
 
     async def close(self) -> None:
         """

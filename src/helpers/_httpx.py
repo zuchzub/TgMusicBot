@@ -26,7 +26,7 @@ class HttpxClient:
     DEFAULT_TIMEOUT = 10
     DEFAULT_DOWNLOAD_TIMEOUT = 60
     CHUNK_SIZE = 8192  # 8KB chunks for streaming downloads
-    MAX_RETRIES = 3
+    MAX_RETRIES = 2
     BACKOFF_FACTOR = 1.0
 
     def __init__(

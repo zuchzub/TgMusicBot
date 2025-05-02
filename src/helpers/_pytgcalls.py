@@ -9,7 +9,7 @@ import re
 from pathlib import Path
 from typing import Optional, Union
 
-from ntgcalls import TelegramServerError
+from ntgcalls import TelegramServerError, ConnectionNotFound
 from pyrogram import Client as PyroClient
 from pyrogram import errors
 from pytdbot import Client, types
@@ -208,7 +208,6 @@ class MusicBot:
 
         try:
             await self.calls[client_name].play(chat_id, _stream)
-
             # Send playback log if enabled
             if await db.get_logger_status(self.bot.me.id):
                 self.bot.loop.create_task(
@@ -223,7 +222,7 @@ class MusicBot:
                 message="No active voice chat found.\n\n"
                 "Please start a voice chat and try again.",
             )
-        except exceptions.NoActiveGroupCall:
+        except (exceptions.NoActiveGroupCall, ConnectionNotFound):
             return types.Error(
                 code=404,
                 message="No active voice chat found.\n\n"

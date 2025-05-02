@@ -26,7 +26,7 @@ from pytgcalls import __version__ as pytgver
 
 from src import StartTime
 from src.config import OWNER_ID, DEVS, LOGGER_ID
-from src.helpers import chat_cache
+from src.helpers import chat_cache, get_string
 from src.helpers import db
 from src.modules.utils import Filter
 from src.modules.utils.play_helpers import del_msg, extract_argument
@@ -316,30 +316,33 @@ async def logger(c: Client, message: types.Message):
     """
     if message.from_id not in DEVS:
         await del_msg(message)
-        return None
+        return
 
     if not LOGGER_ID:
         await message.reply_text("Please set LOGGER_ID in .env first.")
-        return None
+        return
 
+    lang = await db.get_lang(message.chat_id)
     args = extract_argument(message.text)
     enabled = await db.get_logger_status(c.me.id)
-    if not args:
-        await message.reply_text(
-            "Usage: /logger [enable|disable|on|off]\n\nCurrent status: "
-            + ("enabled" if enabled else "disabled")
-        )
-        return None
 
-    if args.lower() in ["on", "enable"]:
+    if not args:
+        status = (
+            get_string("enabled", lang) if enabled else get_string("disabled", lang)
+        )
+        await message.reply_text(
+            get_string("logger_usage_status", lang).format(status=status)
+        )
+        return
+
+    arg = args.lower()
+    if arg in ["on", "enable"]:
         await db.set_logger_status(c.me.id, True)
-        await message.reply_text("Logger enabled.")
-        return None
-    if args.lower() in ["off", "disable"]:
+        await message.reply_text(get_string("logger_enabled", lang))
+        return
+    if arg in ["off", "disable"]:
         await db.set_logger_status(c.me.id, False)
-        await message.reply_text("Logger disabled.")
-        return None
-    await message.reply_text(
-        f"Usage: /logger [enable|disable]\n\nYour argument is {args}"
-    )
-    return None
+        await message.reply_text(get_string("logger_disabled", lang))
+        return
+
+    await message.reply_text(get_string("logger_invalid_usage", lang).format(arg=args))

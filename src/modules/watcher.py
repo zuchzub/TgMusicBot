@@ -3,8 +3,6 @@
 #  Part of the TgMusicBot project. All rights reserved where applicable.
 
 import asyncio
-from asyncio import create_task
-from types import NoneType
 
 from pytdbot import Client, types
 
@@ -55,7 +53,7 @@ async def handle_bot_join(client: Client, chat_id: int) -> None:
     chat_id = int(str(chat_id)[4:]) if str(chat_id).startswith("-100") else chat_id
     chat_info = await client.getSupergroupFullInfo(chat_id)
     if isinstance(chat_info, types.Error):
-        LOGGER.warning("Failed to get supergroup info for %s", chat_id)
+        LOGGER.warning("Failed to get supergroup info for %s; %s", chat_id, chat_info)
         return
 
     if chat_info.member_count < 50:
@@ -200,9 +198,9 @@ async def new_message(client: Client, update: types.UpdateNewMessage) -> None:
 
     # Run DB operation in the background
     if chat_id < 0:
-        create_task(db.add_chat(chat_id))
+        client.loop.create_task(db.add_chat(chat_id))
     else:
-        create_task(db.add_user(chat_id))
+        client.loop.create_task(db.add_user(chat_id))
 
     # Handle video chat events
     if isinstance(content, types.MessageVideoChatEnded):

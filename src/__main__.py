@@ -21,9 +21,10 @@ async def create_directories() -> None:
 
     If any error occurs, it will raise a `SystemExit` exception with code 1.
     """
-    from src.helpers import save_all_cookies
+    from src.helpers import save_all_cookies, load_translations
 
     try:
+        load_translations()
         await os.makedirs(DOWNLOADS_DIR, exist_ok=True)
         await os.makedirs("database/photos", exist_ok=True)
         await save_all_cookies(COOKIES_URL)

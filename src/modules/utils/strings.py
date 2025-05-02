@@ -31,6 +31,7 @@ UserCommands = """
 /play [song name or reply to audio] – Play music in voice chat.
 /vplay [song name or reply to video] – Play video in voice chat.
 /privacy – View privacy policy.
+/lang – Change the bot's language.
 """
 
 AdminCommands = """
