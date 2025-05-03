@@ -495,7 +495,7 @@ class MusicBot:
             )
 
         try:
-            is_url = bool(re.match(r"https?://", file_path_or_url))
+            is_url = bool(re.match(r"https?://", str(file_path_or_url)))
             ffmpeg_params = (
                 f"-ss {to_seek} -i {file_path_or_url} -to {duration}"
                 if is_url or not os.path.isfile(file_path_or_url)

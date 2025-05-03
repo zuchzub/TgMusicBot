@@ -72,4 +72,5 @@ BotDevsCommands = """
 /logger – Enable or disable logging.
 /broadcast [reply] – Broadcast a message to all users and chats.
 /activevc – Show currently active voice chats.
+/clearallassistants - clear ALL assistant associations.
 """

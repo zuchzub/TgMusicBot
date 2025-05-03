@@ -229,6 +229,33 @@ class Database:
         """
         await self._update_chat_field(chat_id, "assistant", assistant)
 
+    async def clear_all_assistants(self) -> int:
+        """
+        Remove assistant association from all chats in the database.
+
+        This function will clear the 'assistant' field from all chat documents,
+        effectively disassociating all assistants from their chats. It will also
+        clear the assistant data from the cache for all chats.
+
+        Returns
+        -------
+        int
+            The number of chats that were modified (had their assistant cleared).
+        """
+        # Clear assistants from all chats in the database
+        result = await self.chat_db.update_many(
+            {"assistant": {"$exists": True}},
+            {"$unset": {"assistant": ""}}
+        )
+
+        # Clear assistants from all cached chats
+        for chat_id in list(self.chat_cache.keys()):
+            if "assistant" in self.chat_cache[chat_id]:
+                self.chat_cache[chat_id]["assistant"] = None
+
+        LOGGER.info(f"Cleared assistants from {result.modified_count} chats")
+        return result.modified_count
+
     async def remove_assistant(self, chat_id: int) -> None:
         """
         Remove the assistant associated with a given chat ID.

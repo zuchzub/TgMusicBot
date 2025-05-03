@@ -21,13 +21,14 @@ from meval import meval
 from ntgcalls import __version__ as ntgver
 from pyrogram import __version__ as pyrover
 from pytdbot import Client, types
-from pytdbot import VERSION as py_td_ver
+from pytdbot import __version__ as py_td_ver
 from pytgcalls import __version__ as pytgver
 
 from src import StartTime
 from src.config import OWNER_ID, DEVS, LOGGER_ID
 from src.helpers import chat_cache, get_string
 from src.helpers import db
+from src.logger import LOGGER
 from src.modules.utils import Filter
 from src.modules.utils.play_helpers import del_msg, extract_argument
 
@@ -346,3 +347,12 @@ async def logger(c: Client, message: types.Message):
         return
 
     await message.reply_text(get_string("logger_invalid_usage", lang).format(arg=args))
+
+@Client.on_message(filters=Filter.command(["clearass", "clearallassistants"]))
+async def clear_all_assistants(_: Client, message: types.Message):
+    if message.from_id not in DEVS:
+        await del_msg(message)
+        return
+    count = await db.clear_all_assistants()
+    LOGGER.info("Cleared assistants from %s chats by command from %s", count, message.from_id)
+    await message.reply_text(f"♻️ Cleared assistants from {count} chats")
