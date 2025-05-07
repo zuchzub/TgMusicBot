@@ -63,6 +63,7 @@ ChatOwnerCommands = """
 /reload – Refresh the list of admins in the group.
 /buttons – Toggle playback buttons display.
 /thumb – Toggle thumbnail display.
+/autoend [on/off] – Automatically ends voice chats when no one is listening.
 """
 
 BotDevsCommands = """

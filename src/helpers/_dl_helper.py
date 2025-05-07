@@ -4,9 +4,7 @@
 
 import asyncio
 import os
-import random
 import subprocess
-from pathlib import Path
 from typing import Optional
 
 import aiofiles
@@ -17,114 +15,6 @@ from src import config
 from src.helpers._httpx import HttpxClient
 from src.logger import LOGGER
 from ._dataclass import TrackInfo
-
-
-class YouTubeDownload:
-    def __init__(self, track: TrackInfo):
-        """
-        Initialize the YouTubeDownload class with a video ID.
-        """
-        self.track = track
-        self.video_id = track.tc
-        self.video_url = f"https://www.youtube.com/watch?v={self.video_id}"
-        self.client = HttpxClient()
-
-    @staticmethod
-    async def get_cookie_file():
-        cookie_dir = "cookies"
-        try:
-            if not os.path.exists(cookie_dir):
-                LOGGER.warning("Cookie directory '%s' does not exist.", cookie_dir)
-                return None
-
-            files = await asyncio.to_thread(os.listdir, cookie_dir)
-            cookies_files = [f for f in files if f.endswith(".txt")]
-
-            if not cookies_files:
-                LOGGER.warning("No cookie files found in '%s'.", cookie_dir)
-                return None
-
-            random_file = random.choice(cookies_files)
-            return os.path.join(cookie_dir, random_file)
-        except Exception as e:
-            LOGGER.warning("Error accessing cookie directory: %s", e)
-            return None
-
-    async def process(self, video: bool = False) -> Optional[str]:
-        """
-        Download the audio/video from YouTube and return the path to the downloaded
-        file.
-        """
-        if config.API_URL and config.API_KEY and not video:
-            if file_path := await self._download_with_api():
-                return file_path
-
-        return await self._download_with_yt_dlp(video)
-
-    async def _download_with_api(self) -> Optional[str]:
-        """
-        Download audio using the API.
-        """
-        dl_url = f"{config.API_URL}/yt?id={self.video_id}"
-        download_path = Path(config.DOWNLOADS_DIR) / f"{self.video_id}.webm"
-        dl = await self.client.download_file(dl_url, download_path)
-        return dl.file_path if dl.success else None
-
-    async def _download_with_yt_dlp(self, video: bool) -> Optional[str]:
-        output_template = f"{config.DOWNLOADS_DIR}/%(id)s.%(ext)s"
-        cmd = [
-            "yt-dlp",
-            "--no-warnings",
-            "--quiet",
-            "--geo-bypass",
-            "--retries",
-            "2",
-            "--continue",
-            "--no-part",
-            "-o",
-            output_template,
-        ]
-
-        if video:
-            cmd.extend(
-                [
-                    "-f",
-                    "(bestvideo[height<=?720][width<=?1280][ext=mp4])+(bestaudio[ext=m4a])",
-                    "--merge-output-format",
-                    "mp4",
-                ]
-            )
-        else:
-            cmd.extend(["-f", "bestaudio[ext=m4a]/bestaudio/best"])
-
-        if config.PROXY_URL:
-            cmd.extend(["--proxy", config.PROXY_URL])
-        elif cookie_file := await self.get_cookie_file():
-            cmd.extend(["--cookies", cookie_file])
-
-        cmd.append(self.video_url)
-        cmd.extend(["--print", "after_move:filepath"])
-
-        try:
-            proc = await asyncio.create_subprocess_exec(
-                *cmd,
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE,
-            )
-
-            stdout, stderr = await proc.communicate()
-            if proc.returncode != 0:
-                LOGGER.error("❌ Failed to download: %s", stderr.decode().strip())
-                return None
-
-            if downloaded_path := stdout.decode().strip():
-                LOGGER.info("✅ Downloaded: %s", downloaded_path)
-                return downloaded_path
-            return None
-
-        except Exception as e:
-            LOGGER.error("Unexpected error while downloading: %s", e)
-            return None
 
 
 async def rebuild_ogg(filename: str) -> None:

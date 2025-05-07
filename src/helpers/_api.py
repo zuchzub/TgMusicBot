@@ -108,7 +108,7 @@ class ApiData(MusicService):
         if not self.query or not self.is_valid(self.query):
             return None
 
-        data = await self._make_api_request("get_url_new", {"url": self.query})
+        data = await self._make_api_request("get_url", {"url": self.query})
         return self._parse_tracks_response(data) if data else None
 
     async def search(self) -> Optional[PlatformTracks]:

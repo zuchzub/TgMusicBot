@@ -348,6 +348,39 @@ async def logger(c: Client, message: types.Message):
 
     await message.reply_text(get_string("logger_invalid_usage", lang).format(arg=args))
 
+@Client.on_message(filters=Filter.command(["autoend", "auto_end"]))
+async def auto_end(c: Client, message: types.Message):
+    if message.from_id not in DEVS:
+        await del_msg(message)
+        return
+
+    args = extract_argument(message.text)
+
+    if not args:
+        status = await db.get_auto_end(c.me.id)
+        status_text = "enabled ✅" if status else "disabled ❌"
+        await message.reply_text(
+            f"<b>Auto End</b> is currently <b>{status_text}</b>.\n\n"
+            "When enabled, the bot will automatically end group voice chats "
+            "if no users are listening. Useful for saving resources and keeping chats clean.",
+            disable_web_page_preview=True
+        )
+        return
+
+    args = args.lower()
+    if args in ["on", "enabled"]:
+        await db.set_auto_end(c.me.id, True)
+        await message.reply_text("✅ <b>Auto End</b> has been <b>enabled</b>.")
+    elif args in ["off", "disabled"]:
+        await db.set_auto_end(c.me.id, False)
+        await message.reply_text("❌ <b>Auto End</b> has been <b>disabled</b>.")
+    else:
+        await message.reply_text(
+            f"⚠️ Unknown argument: <b>{args}</b>\nUse <code>/autoend on</code> or <code>/autoend off</code>.",
+            disable_web_page_preview=True
+        )
+
+
 @Client.on_message(filters=Filter.command(["clearass", "clearallassistants"]))
 async def clear_all_assistants(_: Client, message: types.Message):
     if message.from_id not in DEVS:
@@ -356,3 +389,5 @@ async def clear_all_assistants(_: Client, message: types.Message):
     count = await db.clear_all_assistants()
     LOGGER.info("Cleared assistants from %s chats by command from %s", count, message.from_id)
     await message.reply_text(f"♻️ Cleared assistants from {count} chats")
+
+

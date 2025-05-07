@@ -317,7 +317,7 @@ tgmusicbot v1.1.9
 
 ### 🎵 Music Download Options
 
-- **PROXY_URL** – Optional; Proxy URL for yt-dlp
+- **PROXY** – Optional; Proxy URL for yt-dlp
 - **DEFAULT_SERVICE** – Default search platform (Options: `youtube`, `spotify`, `jiosaavn`)
 - **DOWNLOADS_DIR** – Directory for downloads and TDLib database
 

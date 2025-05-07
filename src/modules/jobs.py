@@ -10,6 +10,7 @@ from pyrogram import Client as PyroClient
 from pyrogram import errors
 from pytdbot import Client, types
 
+from src import db
 from src.config import AUTO_LEAVE
 from src.helpers import call
 from src.helpers import chat_cache
@@ -87,6 +88,8 @@ class InactiveCallManager:
         The function logs the number of active chats found and when inactive call checks
         are completed.
         """
+        if not await db.get_auto_end(self.bot.me.id):
+            return
         active_chats = chat_cache.get_active_chats()
         self.bot.logger.debug(
             f"Found {len(active_chats)} active chats. Ending inactive calls..."

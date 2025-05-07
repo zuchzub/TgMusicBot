@@ -48,7 +48,7 @@ LOGGER_ID: int = get_env_int("LOGGER_ID", OWNER_ID)
 MONGO_URI: Optional[str] = getenv("MONGO_URI")
 API_URL: Optional[str] = getenv("API_URL")
 API_KEY: Optional[str] = getenv("API_KEY")
-PROXY_URL: Optional[str] = getenv("PROXY_URL")
+PROXY: Optional[str] = getenv("PROXY")
 
 DEFAULT_SERVICE: str = getenv("DEFAULT_SERVICE", "youtube").lower()
 DOWNLOADS_DIR: str = getenv("DOWNLOADS_DIR", "database/music")

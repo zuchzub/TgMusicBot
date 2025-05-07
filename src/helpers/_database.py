@@ -594,11 +594,8 @@ class Database:
         """
         Retrieve the logger status for a given bot ID.
 
-        This function retrieves the logger status for the bot with the
-        specified `bot_id` from the database. If the bot does not exist,
-        it will return `False`. If the bot exists and has a logger status
-        set, it will return the logger status. If the bot exists but does
-        not have a logger status set, it will return `False`.
+        This function retrieves the logger status from cache if available,
+        otherwise from database. Returns False if not set.
 
         Parameters
         ----------
@@ -608,24 +605,26 @@ class Database:
         Returns
         -------
         bool
-            The logger status for the specified bot.
+            The logger status for the specified bot (False by default).
         """
-        if bot_id in self.bot_cache:
-            return self.bot_cache[bot_id]
+        if bot_id in self.bot_cache and self.bot_cache[bot_id].get("logger"):
+            return self.bot_cache[bot_id].get("logger")
 
         bot_data = await self.bot_db.find_one({"_id": bot_id})
         status = bot_data.get("logger", False) if bot_data else False
-        self.bot_cache[bot_id] = status
+
+        # Update cache
+        cached = self.bot_cache.get(bot_id, {})
+        cached["logger"] = status
+        self.bot_cache[bot_id] = cached
+
         return status
 
     async def set_logger_status(self, bot_id: int, status: bool) -> None:
         """
         Set the logger status for a given bot ID.
 
-        This function sets the logger status for the bot with the specified
-        `bot_id` to the specified `status` in the database. If the bot does
-        not exist, it will be created. If the bot exists and has a logger
-        status set, it will be updated.
+        Updates both database and cache atomically.
 
         Parameters
         ----------
@@ -639,9 +638,75 @@ class Database:
         None
         """
         await self.bot_db.update_one(
-            {"_id": bot_id}, {"$set": {"logger": status}}, upsert=True
+            {"_id": bot_id},
+            {"$set": {"logger": status}},
+            upsert=True
         )
-        self.bot_cache[bot_id] = status
+
+        # Update cache
+        cached = self.bot_cache.get(bot_id, {})
+        cached["logger"] = status
+        self.bot_cache[bot_id] = cached
+
+    async def get_auto_end(self, bot_id: int) -> bool:
+        """
+        Get the auto-end status for a given bot ID.
+
+        This function retrieves the auto-end status for the bot with the
+        specified `bot_id` from the database. If the bot does not exist,
+        it will return `True`. If the bot exists and has an auto-end status
+        set, it will return that status.
+
+        Parameters
+        ----------
+        bot_id : int
+            The ID of the bot to retrieve the auto-end status for.
+
+        Returns
+        -------
+        bool
+            The auto-end status for the specified bot.
+        """
+        if bot_id in self.bot_cache and self.bot_cache[bot_id].get("auto_end"):
+            return self.bot_cache[bot_id].get("auto_end")
+
+        bot_data = await self.bot_db.find_one({"_id": bot_id})
+        status = bot_data.get("auto_end", True) if bot_data else True
+        # Update cache
+        cached = self.bot_cache.get(bot_id, {})
+        cached["auto_end"] = status
+        self.bot_cache[bot_id] = cached
+        return status
+
+    async def set_auto_end(self, bot_id: int, status: bool) -> None:
+        """
+        Set the auto-end status for a given bot ID.
+
+        This function sets the auto-end status for the bot with the specified
+        `bot_id` to the specified `status` in the database. If the bot does
+        not exist, it will be created. The status determines whether the bot
+        should automatically leave voice chats when queues are empty.
+
+        Parameters
+        ----------
+        bot_id : int
+            The ID of the bot to set the auto-end status for.
+        status : bool
+            The auto-end status to set for the bot.
+
+        Returns
+        -------
+        None
+        """
+        await self.bot_db.update_one(
+            {"_id": bot_id},
+            {"$set": {"auto_end": status}},
+            upsert=True
+        )
+        # Update cache
+        cached = self.bot_cache.get(bot_id, {})
+        cached["auto_end"] = status
+        self.bot_cache[bot_id] = cached
 
     async def get_lang(self, chat_id: int) -> str:
         """
