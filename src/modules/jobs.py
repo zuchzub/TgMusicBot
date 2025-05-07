@@ -28,6 +28,7 @@ class InactiveCallManager:
         self.scheduler = AsyncIOScheduler(
             timezone="Asia/Kolkata", event_loop=self.bot.loop
         )
+        self._lock = asyncio.Lock()
 
     async def _end_inactive_calls(self, chat_id: int, semaphore: asyncio.Semaphore):
         """
@@ -88,27 +89,30 @@ class InactiveCallManager:
         The function logs the number of active chats found and when inactive call checks
         are completed.
         """
-        if not await db.get_auto_end(self.bot.me.id):
-            return
-        active_chats = chat_cache.get_active_chats()
-        self.bot.logger.debug(
-            f"Found {len(active_chats)} active chats. Ending inactive calls..."
-        )
-        if not active_chats:
+        if self._lock.locked():
+            self.bot.logger.warning("end_inactive_calls is already running, skipping...")
             return
 
-        # Use semaphore to limit concurrency
-        semaphore = asyncio.Semaphore(3)
-        tasks = [
-            self._end_inactive_calls(chat_id, semaphore) for chat_id in active_chats
-        ]
+        async with self._lock:
+            if not await db.get_auto_end(self.bot.me.id):
+                return
+            active_chats = chat_cache.get_active_chats()
+            self.bot.logger.debug(
+                f"Found {len(active_chats)} active chats. Ending inactive calls..."
+            )
+            if not active_chats:
+                return
 
-        # Process tasks in batches of 3 with a 1-second delay between batches
-        for i in range(0, len(tasks), 3):
-            await asyncio.gather(*tasks[i : i + 3])
-            await asyncio.sleep(1)
+            semaphore = asyncio.Semaphore(4)
+            tasks = [
+                self._end_inactive_calls(chat_id, semaphore) for chat_id in active_chats
+            ]
 
-        self.bot.logger.debug("Inactive call checks completed.")
+            for i in range(0, len(tasks), 4):
+                await asyncio.gather(*tasks[i: i + 4])
+                await asyncio.sleep(0.5)
+
+            self.bot.logger.debug("Inactive call checks completed.")
 
     async def leave_all(self):
         """

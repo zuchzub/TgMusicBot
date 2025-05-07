@@ -515,7 +515,7 @@ class Database:
         -------
         None
         """
-        LOGGER.info("Added user: %s", user_id)
+        # LOGGER.info("Added user: %s", user_id)
         await self.users_db.update_one(
             {"_id": user_id},
             {"$setOnInsert": {}},
