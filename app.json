@@ -103,8 +103,8 @@
             "value": "",
             "required": false
         },
-        "PROXY_URL": {
-            "description": "Proxy URL for the bot if you want to use it for yt-dlp",
+        "PROXY": {
+            "description": "Proxy URL for the bot if you want to use it for yt-dlp (Optional)",
             "value": "",
             "required": false
         },
