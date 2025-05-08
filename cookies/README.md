@@ -17,10 +17,10 @@ Use a browser extension to export cookies in the **Netscape HTTP Cookie File** f
 #### **2. Upload Cookies to BatBin/PasteBin Service**
 
 1. Go to **[BatBin](https://batbin.me)** or **[PasteBin](https://pastebin.com)**.
-2. Upload your `cookies.txt` file.
+2. Paste your `cookies.txt` file to BatBin/PasteBin.
 3. Copy the generated URL.
 
 #### **3. Configure the Environment Variable**
 
-Paste the BatBin URL into your **`COOKIES_URL`** environment variable.
+Paste the generated URL into your **`COOKIES_URL`** environment variable.
 > **Example:** `COOKIES_URL=https://batbin.me/cookies.txt, https://batbin.me/cookies2.txt` ...

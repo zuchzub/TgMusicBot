@@ -110,14 +110,18 @@ LangsButtons = types.ReplyMarkupInlineKeyboard(
                 type=types.InlineKeyboardButtonTypeCallback(b"lang_ar"),
             ),
             types.InlineKeyboardButton(
-                text="বাংলা (Bengali)",
+                text="Bengali",
                 type=types.InlineKeyboardButtonTypeCallback(b"lang_bn"),
             ),
         ],
         [
             types.InlineKeyboardButton(
-                text="русский (Russian)",
+                text="Russian",
                 type=types.InlineKeyboardButtonTypeCallback(b"lang_ru"),
+            ),
+            types.InlineKeyboardButton(
+                text="Indonesia",
+                type=types.InlineKeyboardButtonTypeCallback(b"lang_id"),
             ),
         ],
         [CLOSE_BTN],
