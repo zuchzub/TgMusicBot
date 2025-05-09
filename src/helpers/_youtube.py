@@ -193,6 +193,28 @@ class YouTubeUtils:
         except Exception as e:
             LOGGER.warning("Error accessing cookie directory: %s", e)
             return None
+    @staticmethod
+    async def fetch_oembed_data(url: str) -> Optional[dict[str, Any]]:
+        client = HttpxClient()
+        oembed_url = f"https://www.youtube.com/oembed?url={url}&format=json"
+        data = await client.make_request(oembed_url, max_retries=1)
+        if data:
+            video_id = url.split("v=")[1]
+            return {
+                "results": [
+                    {
+                        "id": video_id,
+                        "name": data.get("title"),
+                        "duration": 0,
+                        "artist": data.get("author_name", ""),
+                        "cover": data.get("thumbnail_url", ""),
+                        "year": 0,
+                        "url": f"https://www.youtube.com/watch?v={video_id}",
+                        "platform": "youtube",
+                    }
+                ]
+            }
+        return None
 
     @staticmethod
     async def download_with_api(video_id: str) -> Optional[Path]:
@@ -315,8 +337,6 @@ class YouTubeData(MusicService):
 
         try:
             url = (self.query if self.query.startswith(("http://", "https://")) else f"https://youtube.com/watch?v={self.query}")
-
-
             data = await self._fetch_data(url)
             if not data or not data.get("results"):
                 return None
@@ -382,6 +402,9 @@ class YouTubeData(MusicService):
         if not normalized_url:
             return None
 
+        if data := await YouTubeUtils.fetch_oembed_data(normalized_url):
+            return data
+
         try:
             search = VideosSearch(normalized_url, limit=1)
             results = await search.next()
@@ -392,6 +415,7 @@ class YouTubeData(MusicService):
         except Exception as e:
             LOGGER.error(f"Error searching video: {e!r}")
             return None
+
 
     @staticmethod
     async def _get_playlist_data(url: str) -> Optional[Dict[str, Any]]:
