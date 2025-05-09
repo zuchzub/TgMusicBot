@@ -1180,13 +1180,13 @@ wheels = [
 
 [[package]]
 name = "tdjson"
-version = "1.8.48"
+version = "1.8.49"
 source = { registry = "https://pypi.org/simple" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/7e/2e/3c6c1d85fd0ae0821301598dbd72d88bdedabe48d698cff8683e629ae84a/tdjson-1.8.48-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:168d16662583ab4a34ebaf3559a075c6af85a92dfb6b01ab3ab798e605c95783", size = 16292470, upload_time = "2025-04-30T22:53:15.205Z" },
-    { url = "https://files.pythonhosted.org/packages/58/45/aa362af61d6abd9a08be8dd1827403a9a9129b9fdf8324541e9f9f83af63/tdjson-1.8.48-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:868806b6004eaab2f0f79faafb42ce49ebb9d46a623ab24c761dfbce1ca09400", size = 16292491, upload_time = "2025-04-30T22:53:17.908Z" },
-    { url = "https://files.pythonhosted.org/packages/cd/dc/80d71e361c72ba462bd5e72522e05be82fdac7228aaccc80836ebb346c2f/tdjson-1.8.48-cp312-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:548ffb8f3eaa7e91c40291e9a02e0bc66a529004e96f5c64f3d96578f8b956b6", size = 16290184, upload_time = "2025-04-30T22:53:20.136Z" },
-    { url = "https://files.pythonhosted.org/packages/34/53/d205ae6aff889f8834c4113174beb9519d6855d6d65026120e5851399ce7/tdjson-1.8.48-cp313-cp313t-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:fc48a16a81606c31e58f88ce31b852b120e30edadc1b4d5a030ef8364a610e51", size = 16293039, upload_time = "2025-04-30T22:53:22.793Z" },
+    { url = "https://files.pythonhosted.org/packages/6a/e5/8f48734932d5eb8af15add8dc2b69f3a2ada0b4a19c03d397bfda31eb3c0/tdjson-1.8.49-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:ceec70a0dd76c2bffb5fd9e7fea225ff4bfc537df3d4fb9446f1a5985bae4fd8", size = 16359076, upload_time = "2025-05-08T21:57:11.797Z" },
+    { url = "https://files.pythonhosted.org/packages/1f/de/fd999a3c15059eb7d8cb9118663c3388573bb4f62f9d41d5186c204867e7/tdjson-1.8.49-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:fe1170d70c76aaf81b1e06d8f7418b5b418a07098a4451b48cba6fb499b4b819", size = 16359094, upload_time = "2025-05-08T21:57:14.298Z" },
+    { url = "https://files.pythonhosted.org/packages/60/05/ec15a6757c8e3563b93be11dab1ef87b7d1acf564d7769bab7fc79f5ba97/tdjson-1.8.49-cp312-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:d0812ac7366ab8d2fe722398ff60a88a6f0f9c5d103c068c3fa29a9c704aab01", size = 16356791, upload_time = "2025-05-08T21:57:16.997Z" },
+    { url = "https://files.pythonhosted.org/packages/90/3e/2ef18c0e4b32b13f13485b4fb226cd74c70f78df365f3a91637ca578cbc2/tdjson-1.8.49-cp313-cp313t-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:7d678db751d1046b0649dbf7012fe7a0d5e328d4ad6375a36d905fb33f71a608", size = 16359647, upload_time = "2025-05-08T21:57:19.3Z" },
 ]
 
 [[package]]
@@ -1245,7 +1245,7 @@ requires-dist = [
     { name = "pytz", specifier = "~=2025.2" },
     { name = "ruff", marker = "extra == 'dev'" },
     { name = "setuptools", marker = "extra == 'dev'", specifier = "~=78.1.1" },
-    { name = "tdjson", specifier = "~=1.8.48" },
+    { name = "tdjson", specifier = "~=1.8.49" },
     { name = "ujson", specifier = "~=5.10.0" },
     { name = "yt-dlp", specifier = "~=2025.4.30" },
 ]

@@ -165,7 +165,7 @@ tgmusicbot v1.1.9
 ├── pytgcrypto v1.2.9.2
 ├── python-dotenv v1.1.0
 ├── pytz v2025.2
-├── tdjson v1.8.48
+├── tdjson v1.8.49
 ├── ujson v5.10.0
 ├── yt-dlp v2025.4.30
 ├── black v25.1.0 (extra: dev)
@@ -181,96 +181,166 @@ tgmusicbot v1.1.9
 </details>
 
 <details>
-<summary><strong>📌 Using Docker (Recommended) (Click to expand)</strong></summary>
 
-> Check [here](https://docs.docker.com/get-docker/) for installation instructions.
+<summary><strong>📌 Docker Installation (Recommended) (Click to expand)</strong></summary>
 
+### 🐳 Prerequisites
+1. Install Docker:
+   - [Linux](https://docs.docker.com/engine/install/)
+   - [Windows/Mac](https://docs.docker.com/desktop/install/)
+
+### 🚀 Quick Setup
 1. Clone the repository:
    ```sh
    git clone https://github.com/AshokShau/TgMusicBot.git && cd TgMusicBot
    ```
 
-2. Build the Docker image:
+### 🔧 Configuration
+1. Prepare environment file:
+   ```sh
+   cp sample.env .env
+   ```
+
+2. Edit configuration (choose one method):
+   - **Beginner-friendly (nano)**:
+     ```sh
+     nano .env
+     ```
+     - Edit values
+     - Save: `Ctrl+O` → Enter → `Ctrl+X`
+
+   - **Advanced (vim)**:
+     ```sh
+     vi .env
+     ```
+     - Press `i` to edit
+     - Save: `Esc` → `:wq` → Enter
+
+### 🏗️ Build & Run
+1. Build Docker image:
    ```sh
    docker build -t tgmusicbot .
    ```
 
-3. Set up environment variables:
+2. Run container (auto-restarts on crash/reboot):
    ```sh
-   cp sample.env .env && vi .env
+   docker run -d \
+     --name tgmusicbot \
+     --env-file .env \
+     --restart unless-stopped \
+     tgmusicbot
    ```
 
-4. Run the Docker container:
-   ```sh
-   docker run -d --name tgmusicbot --env-file .env --restart always tgmusicbot
-   ```
-
-5. Check the logs:
+### 🔍 Monitoring
+1. Check logs:
    ```sh
    docker logs -f tgmusicbot
    ```
+   (Exit with `Ctrl+C`)
+
+### ⚙️ Management Commands
+- **Stop container**:
+  ```sh
+  docker stop tgmusicbot
+  ```
+
+- **Start container**:
+  ```sh
+  docker start tgmusicbot
+  ```
+
+- **Update the bot**:
+  ```sh
+  docker stop tgmusicbot
+  docker rm tgmusicbot
+  git pull origin master
+  docker build -t tgmusicbot .
+  docker run -d --name tgmusicbot --env-file .env --restart unless-stopped tgmusicbot
+  ```
 
 </details>
 
+
 <details>
-<summary><strong>📌 Manual Installation (Click to expand)</strong></summary>
+<summary><strong>📌 Step-by-Step Installation Guide (Click to Expand)</strong></summary>
 
-1.Update and Upgrade your system:
-
+### 🛠️ System Preparation
+1. **Update your system** (Recommended):
    ```sh
    sudo apt-get update && sudo apt-get upgrade -y
    ```
 
-2.Install tmux to keep running your bot when you close the terminal by:
-
+2. **Install essential tools**:
    ```sh
-   sudo apt install tmux && tmux
+   sudo apt-get install git python3-pip ffmpeg tmux -y
    ```
 
-3.Install required packages and [install uv](https://docs.astral.sh/uv/getting-started/installation/):
-
+### ⚡ Quick Setup
+1. **Install UV package manager**:
    ```sh
-   sudo apt-get install git python3-pip ffmpeg -y && pip3 install uv
+   pip3 install uv
    ```
 
-4.Clone the repository:
-
+2. **Clone the repository**:
    ```sh
    git clone https://github.com/AshokShau/TgMusicBot.git && cd TgMusicBot
    ```
 
-5.Create a [virtual environment](https://docs.astral.sh/uv/pip/environments/):
-
+### 🐍 Python Environment
+1. **Create virtual environment**:
    ```sh
    uv venv
    ```
 
-6.Activate the virtual environment:
+2. **Activate environment**:
+   - Linux/Mac: `source .venv/bin/activate`
+   - Windows (PowerShell): `.\.venv\Scripts\activate`
 
-- Windows: `.venv\Scripts\activate`
-- Linux/Mac: `source .venv/bin/activate`
-
-7.Install dependencies:
-
+3. **Install dependencies**:
    ```sh
    uv pip install -e .
    ```
 
-8.Set up environment variables:
-
+### 🔐 Configuration
+1. **Setup environment file**:
    ```sh
-   cp sample.env .env && vi .env
+   cp sample.env .env
    ```
-> Press `I` on the keyboard to enter the insert mode.
-> Press `Ctrl+C` when you're done with editing env and `:wq` to save the environment variables.
 
-9.Finally, run the bot by:
+2. **Edit configuration** (Choose one method):
+   - **For beginners** (nano editor):
+     ```sh
+     nano .env
+     ```
+     - Edit values
+     - Save: `Ctrl+O` → Enter → `Ctrl+X`
 
+   - **For advanced users** (vim):
+     ```sh
+     vi .env
+     ```
+     - Press `i` to edit
+     - Save: `Esc` → `:wq` → Enter
+
+### 🤖 Running the Bot
+1. **Start in tmux session** (keeps running after logout):
    ```sh
+   tmux new -s musicbot
    tgmusic
    ```
 
-> For getting out from tmux session: Press `Ctrl+b` and then `d`.
+   **Tmux Cheatsheet**:
+   - Detach: `Ctrl+B` then `D`
+   - Reattach: `tmux attach -t musicbot`
+   - Kill session: `tmux kill-session -t musicbot`
+
+### 🔄 After Updates
+To restart the bot:
+```sh
+tmux attach -t musicbot
+# Kill with Ctrl+C
+tgmusic
+```
 
 </details>
 
