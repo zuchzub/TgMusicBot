@@ -46,12 +46,12 @@ async def join_ub(chat_id: int, c: Client, ub: pyrogram.Client) -> Union[types.O
     """
     Handles the userbot joining a chat via invite link or approval.
     """
-    invite_link = chat_invite_cache.get(chat_id, await c.createChatInviteLink(chat_id))
-    if isinstance(invite_link, types.Error):
-        return invite_link
-
-    if isinstance(invite_link, types.ChatInviteLink):
-        invite_link = invite_link.invite_link
+    invite_link = chat_invite_cache.get(chat_id)
+    if not invite_link:
+        get_link = await c.createChatInviteLink(chat_id, name="TgMusicBot")
+        if isinstance(get_link, types.Error):
+            return get_link
+        invite_link = get_link.invite_link
 
     if not invite_link:
         return types.Error(
