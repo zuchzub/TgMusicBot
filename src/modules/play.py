@@ -20,18 +20,16 @@ from src.helpers import (
 )
 from src.helpers import chat_cache
 from src.logger import LOGGER
-from src.modules.utils import Filter, SupportButton, get_audio_duration, sec_to_min
+from src.modules.utils import Filter, SupportButton, get_audio_duration, sec_to_min, check_user_status
+from src.modules.utils import user_status_cache, join_ub
 from src.modules.utils.admins import is_admin, load_admin_cache
 from src.modules.utils.buttons import PlayButton
 from src.modules.utils.play_helpers import (
-    check_user_status,
     del_msg,
     edit_text,
     extract_argument,
     get_url,
-    join_ub,
     unban_ub,
-    user_status_cache,
 )
 from src.modules.utils.thumbnails import gen_thumb
 
@@ -436,12 +434,12 @@ async def handle_play_command(c: Client, msg: types.Message, is_video: bool = Fa
     if isinstance(user_status, types.Error):
         return await edit_text(reply_message, f"❌ {str(user_status)}")
 
-    if user_status in {
-        "chatMemberStatusBanned",
-        "chatMemberStatusLeft",
-        "chatMemberStatusRestricted",
+    if user_status.getType() in {
+        types.ChatMemberStatusLeft().getType(),
+        types.ChatMemberStatusBanned().getType(),
+        types.ChatMemberStatusRestricted().getType(),
     }:
-        if user_status == "chatMemberStatusBanned":
+        if user_status == types.ChatMemberStatusBanned().getType():
             await unban_ub(c, chat_id, ub.me.id)
         join = await join_ub(chat_id, c, ub)
         if isinstance(join, types.Error):

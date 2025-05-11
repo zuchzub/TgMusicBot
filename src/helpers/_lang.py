@@ -3,9 +3,10 @@
 #  Part of the TgMusicBot project. All rights reserved where applicable.
 
 import json
+import logging
 import os
 
-import logging
+from pytdbot import types
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -13,7 +14,20 @@ logger = logging.getLogger(__name__)
 LANG_DIR = "src/locales"
 DEFAULT_LANG = "en"
 
+LANG_NAMES = {
+    "en": "English",
+    "hi": "हिन्दी",
+    "es": "Spanish",
+    "fr": "French",
+    "ar": "Arabic",
+    "bn": "Bengali",
+    "ru": "Russian",
+    "id": "Indonesia",
+    "kur": "Kurdish",
+}
+
 langs = {}
+
 
 def get_string(key: str, lang: str = DEFAULT_LANG) -> str:
     text = langs.get(lang, {}).get(key)
@@ -34,6 +48,7 @@ def get_string(key: str, lang: str = DEFAULT_LANG) -> str:
     )
     return key
 
+
 def load_translations():
     for f_name in os.listdir(LANG_DIR):
         lang_code = f_name.replace(".json", "")
@@ -45,3 +60,27 @@ def load_translations():
             logger.warning(f"Error decoding JSON for language '{lang_code}' in file '{f_name}': {e}")
         except Exception as e:
             logger.error(f"Error decoding JSON for language '{lang_code}': {e}", exc_info=True)
+
+
+def generate_lang_buttons() -> types.ReplyMarkupInlineKeyboard:
+    buttons = []
+    row = []
+
+    for lang_code, lang_name in sorted(LANG_NAMES.items()):
+        row.append(
+            types.InlineKeyboardButton(
+                text=lang_name,
+                type=types.InlineKeyboardButtonTypeCallback(f"lang_{lang_code}".encode()),
+            )
+        )
+
+        if len(row) == 2:
+            buttons.append(row)
+            row = []
+
+    if row:
+        buttons.append(row)
+
+    return types.ReplyMarkupInlineKeyboard(buttons)
+
+LangsButtons = generate_lang_buttons()

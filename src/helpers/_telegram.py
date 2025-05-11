@@ -15,7 +15,7 @@ class Telegram:
     Helper class to validate and process playable Telegram media messages.
     """
 
-    MAX_FILE_SIZE = 600 * 1024 * 1024  # 600MB
+    MAX_FILE_SIZE = 1000 * 1024 * 1024  # 1000MB
     UNSUPPORTED_TYPES = (
         types.MessageText,
         types.MessagePhoto,

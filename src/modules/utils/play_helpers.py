@@ -1,19 +1,13 @@
 #  Copyright (c) 2025 AshokShau
 #  Licensed under the GNU AGPL v3.0: https://www.gnu.org/licenses/agpl-3.0.html
 #  Part of the TgMusicBot project. All rights reserved where applicable.
-import asyncio
-from types import NoneType
-from typing import Any, Literal, Union
 
-import pyrogram
-from cachetools import TTLCache
-from pyrogram import errors
+import asyncio
+from typing import Any, Union
+
 from pytdbot import Client, types
 
 from src.logger import LOGGER
-
-user_status_cache = TTLCache(maxsize=5000, ttl=1000)
-chat_invite_cache = TTLCache(maxsize=1000, ttl=1000)
 
 
 async def get_url(
@@ -125,52 +119,6 @@ async def edit_text(
     return reply
 
 
-async def join_ub(chat_id: int, c: Client, ub: pyrogram.Client):
-    """
-    Handles the userbot joining a chat via invite link or approval.
-    """
-    invite_link = chat_invite_cache.get(chat_id, await c.createChatInviteLink(chat_id))
-    if isinstance(invite_link, types.Error):
-        return invite_link
-
-    if isinstance(invite_link, types.ChatInviteLink):
-        invite_link = invite_link.invite_link
-
-    if not invite_link:
-        return types.Error(
-            code=400, message=f"Failed to get invite link for chat {chat_id}"
-        )
-
-    chat_invite_cache[chat_id] = invite_link
-    invite_link = invite_link.replace("https://t.me/+", "https://t.me/joinchat/")
-    if isinstance(ub.me, (NoneType, types.Error)):
-        return types.Error(code=400, message="Failed to get userbot info")
-
-    user_key = f"{chat_id}:{ub.me.id}"
-    try:
-        await ub.join_chat(invite_link)
-        user_status_cache[user_key] = "chatMemberStatusMember"
-        return None
-    except errors.InviteHashExpired:
-        return types.Error(
-            message=(
-                f"It seems my assistant ({ub.me.id}) is either banned from chat {chat_id}, "
-                "or doesn't have permission to unban members.\n\n"
-                "Please use /reload to verify the current status."
-            )
-        )
-    except errors.InviteRequestSent:
-        ok = await c.processChatJoinRequest(
-            chat_id=chat_id, user_id=ub.me.id, approve=True
-        )
-        return ok if isinstance(ok, types.Error) else None
-    except errors.UserAlreadyParticipant:
-        user_status_cache[user_key] = "chatMemberStatusMember"
-        return None
-    except Exception as e:
-        return types.Error(code=400, message=f"Failed to join chat {chat_id}: {e}")
-
-
 async def unban_ub(c: Client, chat_id: int, user_id: int):
     """
     Unbans a user from a chat.
@@ -182,30 +130,3 @@ async def unban_ub(c: Client, chat_id: int, user_id: int):
     )
 
 
-async def check_user_status(c: Client, chat_id: int, user_id: int) -> (
-    Literal[
-        "chatMemberStatusLeft",
-        "chatMemberStatusCreator",
-        "chatMemberStatusAdministrator",
-        "chatMemberStatusMember",
-        "chatMemberStatusRestricted",
-        "chatMemberStatusBanned",
-    ]
-    | Any
-):
-    """
-    Checks the status of a user in a chat.
-    """
-    user_status = user_status_cache.get((chat_id, user_id))
-    if not user_status:
-        user = await c.getChatMember(
-            chat_id=chat_id, member_id=types.MessageSenderUser(user_id)
-        )
-        if isinstance(user, types.Error) or user.status is None:
-            if user.code == 400:
-                return types.ChatMemberStatusLeft().getType()
-            else:
-                raise user
-        user_status = user.status.getType()
-        user_status_cache[(chat_id, user_id)] = user_status
-    return user_status

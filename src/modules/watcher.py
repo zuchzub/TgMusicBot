@@ -10,10 +10,10 @@ from src import call
 from src.helpers import chat_cache
 from src.helpers import db
 from src.logger import LOGGER
-from src.modules.utils import SupportButton
+from src.modules.utils import SupportButton, ChatMemberStatus
+from src.modules.utils import user_status_cache
 from src.modules.utils.admins import load_admin_cache
 from src.modules.utils.buttons import add_me_markup
-from src.modules.utils.play_helpers import user_status_cache
 
 
 async def handle_non_supergroup(client: Client, chat_id: int) -> None:
@@ -132,19 +132,19 @@ async def _handle_join(client: Client, chat_id: int, user_id: int) -> None:
 async def _handle_leave_or_kick(chat_id: int, user_id: int) -> None:
     """Handle user leaving or being kicked from chat."""
     LOGGER.info("User %s left or was kicked from %s.", user_id, chat_id)
-    await _update_user_status_cache(chat_id, user_id, "chatMemberStatusLeft")
+    await _update_user_status_cache(chat_id, user_id, types.ChatMemberStatusLeft())
 
 
 async def _handle_ban(chat_id: int, user_id: int) -> None:
     """Handle user being banned from chat."""
     LOGGER.info("User %s was banned in %s.", user_id, chat_id)
-    await _update_user_status_cache(chat_id, user_id, "chatMemberStatusBanned")
+    await _update_user_status_cache(chat_id, user_id, types.ChatMemberStatusBanned())
 
 
 async def _handle_unban(chat_id: int, user_id: int) -> None:
     """Handle user being unbanned from chat."""
     LOGGER.info("User %s was unbanned in %s.", user_id, chat_id)
-    await _update_user_status_cache(chat_id, user_id, "chatMemberStatusLeft")
+    await _update_user_status_cache(chat_id, user_id, types.ChatMemberStatusLeft())
 
 
 async def _handle_promotion_demotion(
@@ -172,7 +172,7 @@ async def _handle_promotion_demotion(
     await load_admin_cache(client, chat_id, True)
 
 
-async def _update_user_status_cache(chat_id: int, user_id: int, status: str) -> None:
+async def _update_user_status_cache(chat_id: int, user_id: int, status: ChatMemberStatus) -> None:
     """Update the user status cache if the user is the bot."""
     ub = await call.get_client(chat_id)
     if isinstance(ub, types.Error):
@@ -180,8 +180,8 @@ async def _update_user_status_cache(chat_id: int, user_id: int, status: str) -> 
         return
 
     if user_id == ub.me.id:
-        user_key = f"{chat_id}:{ub.me.id}"
-        user_status_cache[user_key] = status
+        cache_key = f"{chat_id}:{ub.me.id}"
+        user_status_cache[cache_key] = status
 
 
 @Client.on_updateNewMessage(position=1)

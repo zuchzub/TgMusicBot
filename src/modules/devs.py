@@ -319,7 +319,7 @@ async def logger(c: Client, message: types.Message):
         await del_msg(message)
         return
 
-    if not LOGGER_ID:
+    if not LOGGER_ID or LOGGER_ID == 0:
         await message.reply_text("Please set LOGGER_ID in .env first.")
         return
 

@@ -82,52 +82,6 @@ HelpMenu = types.ReplyMarkupInlineKeyboard(
 
 BackHelpMenu = types.ReplyMarkupInlineKeyboard([[HELP_BTN, CLOSE_BTN]])
 
-LangsButtons = types.ReplyMarkupInlineKeyboard(
-    [
-        [
-            types.InlineKeyboardButton(
-                text="English",
-                type=types.InlineKeyboardButtonTypeCallback(b"lang_en"),
-            ),
-            types.InlineKeyboardButton(
-                text="हिन्दी",
-                type=types.InlineKeyboardButtonTypeCallback(b"lang_hi"),
-            ),
-        ],
-        [
-            types.InlineKeyboardButton(
-                text="Spanish",
-                type=types.InlineKeyboardButtonTypeCallback(b"lang_es"),
-            ),
-            types.InlineKeyboardButton(
-                text="French",
-                type=types.InlineKeyboardButtonTypeCallback(b"lang_fr"),
-            ),
-        ],
-        [
-            types.InlineKeyboardButton(
-                text="Arabic",
-                type=types.InlineKeyboardButtonTypeCallback(b"lang_ar"),
-            ),
-            types.InlineKeyboardButton(
-                text="Bengali",
-                type=types.InlineKeyboardButtonTypeCallback(b"lang_bn"),
-            ),
-        ],
-        [
-            types.InlineKeyboardButton(
-                text="Russian",
-                type=types.InlineKeyboardButtonTypeCallback(b"lang_ru"),
-            ),
-            types.InlineKeyboardButton(
-                text="Indonesia",
-                type=types.InlineKeyboardButtonTypeCallback(b"lang_id"),
-            ),
-        ],
-        [CLOSE_BTN],
-    ]
-)
-
 # ─────────────────────
 # Dynamic Keyboard Generator
 # ─────────────────────

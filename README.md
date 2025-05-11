@@ -30,7 +30,7 @@ Supporting platforms like YouTube, Spotify, Apple Music, Soundcloud, JioSaavn an
   </a>
 
   <!-- License -->
-  <a href="https://github.com/AshokShau/TgMusicBot/blob/AshokShau/LICENSE">
+  <a href="https://github.com/AshokShau/TgMusicBot/blob/master/LICENSE">
     <img src="https://img.shields.io/github/license/AshokShau/TgMusicBot?style=for-the-badge&color=blue" alt="License"/>
   </a>
 
@@ -115,10 +115,10 @@ tgmusicbot v1.1.9
 ├── motor v3.7.0
 │   └── pymongo v4.12.1
 │       └── dnspython v2.7.0
-├── ntgcalls v1.4.0rc1
+├── ntgcalls v2.0.0rc3
 ├── pillow v11.2.1
 ├── psutil v7.0.0
-├── py-tgcalls v2.2.0b1
+├── py-tgcalls v2.2.0rc1
 │   ├── aiohttp v3.11.18
 │   │   ├── aiohappyeyeballs v2.6.1
 │   │   ├── aiosignal v1.3.2
@@ -133,7 +133,7 @@ tgmusicbot v1.1.9
 │   │       └── propcache v0.3.1
 │   ├── deprecation v2.1.0
 │   │   └── packaging v25.0
-│   └── ntgcalls v1.4.0rc1
+│   └── ntgcalls v2.0.0rc3
 ├── py-yt-search v0.3
 │   ├── httpx v0.28.1
 │   │   ├── anyio v4.9.0

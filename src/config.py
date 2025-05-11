@@ -44,7 +44,7 @@ SESSION_STRINGS: list[str] = [getenv(f"STRING{i}", None) for i in range(1, 11)]
 SESSION_STRINGS = [s for s in SESSION_STRINGS if s]
 
 OWNER_ID: int = get_env_int("OWNER_ID", 5938660179)
-LOGGER_ID: int = get_env_int("LOGGER_ID", OWNER_ID)
+LOGGER_ID: int = get_env_int("LOGGER_ID", 0)
 MONGO_URI: Optional[str] = getenv("MONGO_URI")
 API_URL: Optional[str] = getenv("API_URL")
 API_KEY: Optional[str] = getenv("API_KEY")
