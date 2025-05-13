@@ -842,7 +842,7 @@ wheels = [
 
 [[package]]
 name = "py-tgcalls"
-version = "2.2.0rc1"
+version = "2.2.0rc2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiohttp" },
@@ -850,7 +850,7 @@ dependencies = [
     { name = "ntgcalls" },
 ]
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/2e/3c/8921476e14a57c4354c4ab4475e8e88d845fde03d39dfa8905fdc1d70f4a/py_tgcalls-2.2.0rc1-py3-none-any.whl", hash = "sha256:2f3b1e5ede1d3d91c3139806bed19549ded987840d14e4acac8c02a127eb6815", size = 81888, upload_time = "2025-05-09T22:46:28.503Z" },
+    { url = "https://files.pythonhosted.org/packages/fb/b9/881ef74c7a472543800c64c3d39133480a004253f2def156e38d821d36ab/py_tgcalls-2.2.0rc2-py3-none-any.whl", hash = "sha256:bdede0d51b562a9f1b9904d676e2c30eaa286242d34c528793a58c2774dd6806", size = 83176, upload_time = "2025-05-13T01:17:20.736Z" },
 ]
 
 [[package]]
@@ -1235,7 +1235,7 @@ requires-dist = [
     { name = "ntgcalls", specifier = "~=2.0.0rc4" },
     { name = "pillow", specifier = "~=11.2.1" },
     { name = "psutil", specifier = "~=7.0.0" },
-    { name = "py-tgcalls", specifier = "~=2.2.0rc1" },
+    { name = "py-tgcalls", specifier = "~=2.2.0rc2" },
     { name = "py-yt-search", specifier = "~=0.3" },
     { name = "pycryptodome", specifier = "~=3.22.0" },
     { name = "pydantic", specifier = "~=2.11.4" },
