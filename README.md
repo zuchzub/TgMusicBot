@@ -384,6 +384,7 @@ tgmusic
 - **IGNORE_BACKGROUND_UPDATES** – Ignore background updates
 - **LOGGER_ID** – Log Group ID
 - **AUTO_LEAVE** – Leave all chats for all userbot clients.
+- **MIN_MEMBER_COUNT** – Minimum number of members required for the bot to stay in a group.
 
 ### 🎵 Music Download Options
 

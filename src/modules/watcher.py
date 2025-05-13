@@ -7,6 +7,7 @@ import asyncio
 from pytdbot import Client, types
 
 from src import call
+from src.config import MIN_MEMBER_COUNT
 from src.helpers import chat_cache
 from src.helpers import db
 from src.logger import LOGGER
@@ -55,11 +56,11 @@ async def handle_bot_join(client: Client, chat_id: int) -> None:
         client.logger.warning("Failed to get supergroup info for %s, %s", chat_id, chat_info.message)
         return
 
-    if chat_info.member_count < 50:
+    if chat_info.member_count < MIN_MEMBER_COUNT:
         text = (
             f"⚠️ This group has too few members ({chat_info.member_count}).\n\n"
             "To prevent spam and ensure proper functionality, "
-            "this bot only works in groups with at least 50 members.\n"
+            f"this bot only works in groups with at least {MIN_MEMBER_COUNT} members.\n"
             "Please grow your community and add me again later.\n"
             "If you have any questions, join our support group:"
         )
