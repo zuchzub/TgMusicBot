@@ -10,7 +10,7 @@ from src import call
 from src.helpers import chat_cache
 from src.helpers import db
 from src.logger import LOGGER
-from src.modules.utils import SupportButton, ChatMemberStatus
+from src.modules.utils import SupportButton, ChatMemberStatus, chat_invite_cache
 from src.modules.utils import user_status_cache
 from src.modules.utils.admins import load_admin_cache
 from src.modules.utils.buttons import add_me_markup
@@ -49,11 +49,10 @@ async def handle_bot_join(client: Client, chat_id: int) -> None:
     """
     Handle logic when bot is added to a new chat.
     """
-    LOGGER.info("Bot joined the chat %s.", chat_id)
-    chat_id = int(str(chat_id)[4:]) if str(chat_id).startswith("-100") else chat_id
-    chat_info = await client.getSupergroupFullInfo(chat_id)
+    _chat_id = int(str(chat_id)[4:]) if str(chat_id).startswith("-100") else chat_id
+    chat_info = await client.getSupergroupFullInfo(_chat_id)
     if isinstance(chat_info, types.Error):
-        LOGGER.warning("Failed to get supergroup info for %s; %s", chat_id, chat_info)
+        client.logger.warning("Failed to get supergroup info for %s, %s", chat_id, chat_info.message)
         return
 
     if chat_info.member_count < 50:
@@ -68,6 +67,9 @@ async def handle_bot_join(client: Client, chat_id: int) -> None:
         await asyncio.sleep(1)
         await client.leaveChat(chat_id)
         await db.remove_chat(chat_id)
+        client.logger.info("Bot left chat %s due to insufficient members (only %d present).", chat_id, chat_info.member_count)
+    else:
+        chat_invite_cache[chat_id] = chat_info.invite_link.invite_link
 
 
 @Client.on_updateChatMember()
@@ -78,6 +80,7 @@ async def chat_member(client: Client, update: types.UpdateChatMember) -> None:
     # Early return for non-group chats
     if chat_id > 0 or not await _validate_chat(client, chat_id):
         return None
+
     await db.add_chat(chat_id)
     user_id = update.new_chat_member.member_id.user_id
     old_status = update.old_chat_member.status["@type"]
@@ -170,7 +173,8 @@ async def _handle_promotion_demotion(
         LOGGER.info("User %s was %s in %s.", user_id, action, chat_id)
 
     await load_admin_cache(client, chat_id, True)
-
+    await asyncio.sleep(1)
+    await handle_bot_join(client, chat_id)
 
 async def _update_user_status_cache(chat_id: int, user_id: int, status: ChatMemberStatus) -> None:
     """Update the user status cache if the user is the bot."""
