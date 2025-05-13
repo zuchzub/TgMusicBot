@@ -140,7 +140,7 @@ async def broadcast_to_targets(
 
 
 @Client.on_message(filters=Filter.command("broadcast"))
-async def broadcast(_: Client, message: types.Message):
+async def broadcast(c: Client, message: types.Message) -> None:
     """
     Broadcast a message to all users and/or chats.
 
@@ -157,13 +157,15 @@ async def broadcast(_: Client, message: types.Message):
 
     args = extract_argument(message.text)
     if not args:
-        await message.reply_text(
+        reply = await message.reply_text(
             "Usage: <code>/broadcast [all|users|chats] [copy]</code>\n"
             "• <b>all</b>: All users and chats\n"
             "• <b>users</b>: Only users\n"
             "• <b>chats</b>: Only groups/channels\n"
             "• <b>copy</b>: Send as copy (no forward tag)"
         )
+        if isinstance(reply, types.Error):
+            c.logger.warning(reply.message)
         return None
 
     parts = args.lower().split()
@@ -171,19 +173,28 @@ async def broadcast(_: Client, message: types.Message):
     target = next((p for p in parts if p in VALID_TARGETS), None)
 
     if not target:
-        return await message.reply_text(
+        reply = await message.reply_text(
             "Please specify a valid target: all, users, or chats."
         )
+        if isinstance(reply, types.Error):
+            c.logger.warning(reply.message)
+        return None
 
     reply = await message.getRepliedMessage() if message.reply_to_message_id else None
     if not reply or isinstance(reply, types.Error):
-        return await message.reply_text("Please reply to a message to broadcast.")
+        _reply = await message.reply_text("Please reply to a message to broadcast.")
+        if isinstance(_reply, types.Error):
+            c.logger.warning(_reply.message)
+        return None
 
     users, chats = await get_broadcast_targets(target)
     total_targets = len(users) + len(chats)
 
     if total_targets == 0:
-        return await message.reply_text("No users or chats to broadcast to.")
+        _reply = await message.reply_text("No users or chats to broadcast to.")
+        if isinstance(_reply, types.Error):
+            c.logger.warning(_reply.message)
+        return None
 
     started = await message.reply_text(
         text=f"📣 Starting broadcast to {total_targets} target(s)...\n"
@@ -194,7 +205,7 @@ async def broadcast(_: Client, message: types.Message):
     )
 
     if isinstance(started, types.Error):
-        LOGGER.warning("Error starting broadcast: %s", started)
+        c.logger.warning("Error starting broadcast: %s", started)
         return None
 
     start_time = time.monotonic()
@@ -204,7 +215,7 @@ async def broadcast(_: Client, message: types.Message):
 
     end_time = time.monotonic()
 
-    await started.edit_text(
+    reply = await started.edit_text(
         text=f"✅ <b>Broadcast Summary</b>\n"
         f"• Total Sent: {user_sent + chat_sent}\n"
         f"  - Users: {user_sent}\n"
@@ -215,4 +226,7 @@ async def broadcast(_: Client, message: types.Message):
         f"🕒 Time Taken: <code>{end_time - start_time:.2f} sec</code>",
         disable_web_page_preview=True,
     )
+
+    if isinstance(reply, types.Error):
+        c.logger.warning("Error sending broadcast summary: %s", reply)
     return None

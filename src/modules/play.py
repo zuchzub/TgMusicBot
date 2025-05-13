@@ -22,7 +22,7 @@ from src.helpers import chat_cache
 from src.logger import LOGGER
 from src.modules.utils import Filter, SupportButton, get_audio_duration, sec_to_min, check_user_status
 from src.modules.utils import user_status_cache, join_ub
-from src.modules.utils.admins import is_admin, load_admin_cache
+from src.modules.utils.admins import is_admin, load_admin_cache, is_owner
 from src.modules.utils.buttons import PlayButton
 from src.modules.utils.play_helpers import (
     del_msg,
@@ -532,3 +532,36 @@ async def play_video(c: Client, msg: types.Message) -> None:
         None
     """
     await handle_play_command(c, msg, is_video=True)
+
+
+@Client.on_message(filters=Filter.command("direct"))
+async def play_file(_: Client, msg: types.Message) -> None:
+    """Play a direct link. JUST FOR TESTING"""
+
+    chat_id = msg.chat_id
+    lang = await db.get_lang(chat_id)
+    if chat_id > 0:
+        await msg.reply_text(get_string("only_supergroup", lang))
+        return None
+
+    if chat_cache.is_active(chat_id):
+        await msg.reply_text(f"first stop (/end) the song: {chat_cache.get_queue(chat_id)[0].name}")
+        return None
+
+    if not await is_owner(msg.chat_id, msg.from_id):
+        await msg.reply_text(get_string("only_owner", lang))
+        return None
+
+    link = extract_argument(msg.text)
+    if not link:
+        await msg.reply_text("Give me an direct playable link to play.")
+        return None
+
+    chat_id = msg.chat_id
+    _call = await call.play_media(chat_id, link, True)
+    if isinstance(_call, types.Error):
+        await edit_text(msg, text=f"⚠️ {str(_call)}")
+        return None
+
+    chat_cache.add_song(chat_id, CachedTrack(name="", artist="", track_id="", loop=0, duration=0, file_path=link, thumbnail="", user="", platform="", is_video=True, url=link))
+    return None

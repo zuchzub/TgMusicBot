@@ -14,7 +14,7 @@ import uuid
 from datetime import datetime, timedelta
 from html import escape
 from sys import version as pyver
-from typing import Any, Optional, Tuple
+from typing import Any, Optional, Tuple, Union
 
 import psutil
 from meval import meval
@@ -26,9 +26,9 @@ from pytgcalls import __version__ as pytgver
 
 from src import StartTime
 from src.config import OWNER_ID, DEVS, LOGGER_ID
+from src.helpers import call
 from src.helpers import chat_cache, get_string
 from src.helpers import db
-from src.logger import LOGGER
 from src.modules.utils import Filter
 from src.modules.utils.play_helpers import del_msg, extract_argument
 
@@ -58,7 +58,7 @@ def format_exception(
 
 
 @Client.on_message(filters=Filter.command("eval"))
-async def exec_eval(c: Client, m: types.Message):
+async def exec_eval(c: Client, m: types.Message) -> None:
     """
     Run python code.
     """
@@ -67,13 +67,16 @@ async def exec_eval(c: Client, m: types.Message):
 
     text = m.text.split(None, 1)
     if len(text) <= 1:
-        return await m.reply_text("Usage: /eval &lt code &gt")
+        reply = await m.reply_text("Usage: /eval &lt code &gt")
+        if isinstance(reply, types.Error):
+            c.logger.warning(reply.message)
+        return None
 
     code = text[1]
     out_buf = io.StringIO()
 
     async def _eval() -> Tuple[str, Optional[str]]:
-        async def send(*args: Any, **kwargs: Any) -> types.Message:
+        async def send(*args: Any, **kwargs: Any) -> Union["types.Error", "types.Message"]:
             return await m.reply_text(*args, **kwargs)
 
         def _print(*args: Any, **kwargs: Any) -> None:
@@ -99,6 +102,8 @@ async def exec_eval(c: Client, m: types.Message):
             "traceback": traceback,
             "uuid": uuid,
             "io": io,
+            "db": db,
+            "call": call,
         }
 
         try:
@@ -142,30 +147,38 @@ async def exec_eval(c: Client, m: types.Message):
         caption = f"""{prefix}<b>ᴇᴠᴀʟ:</b>
     <pre language="python">{escape(code)}</pre>
     """
-        await m.reply_document(
+        reply = await m.reply_document(
             document=types.InputFileLocal(filename),
             caption=caption,
             disable_notification=True,
             parse_mode="html",
         )
+        if isinstance(reply, types.Error):
+            c.logger.warning(reply.message)
+
         if os.path.exists(filename):
             os.remove(filename)
+
         return None
 
-    await m.reply_text(str(result), parse_mode="html")
+    reply = await m.reply_text(str(result), parse_mode="html")
+    if isinstance(reply, types.Error):
+        c.logger.warning(reply.message)
     return None
 
 
 @Client.on_message(filters=Filter.command("stats"))
-async def sys_stats(client: Client, message: types.Message):
+async def sys_stats(client: Client, message: types.Message) -> None:
     """Get comprehensive bot and system statistics including hardware, software, and performance metrics."""
     if message.from_id not in DEVS:
         await del_msg(message)
-        return
+        return None
 
     sys_msg = await message.reply_text(
         f"📊 Gathering <b>{client.me.first_name}</b> system statistics..."
     )
+    if isinstance(sys_msg, types.Error):
+        client.logger.warning(sys_msg.message)
 
     # System Information
     hostname = socket.gethostname()
@@ -174,12 +187,10 @@ async def sys_stats(client: Client, message: types.Message):
     architecture = platform.machine()
     system = platform.system()
     release = platform.release()
-    # version = platform.version()
     processor = platform.processor() or "Unknown"
 
     # Hardware Information
     ram = psutil.virtual_memory()
-    swap = psutil.swap_memory()
     cores_physical = psutil.cpu_count(logical=False)
     cores_total = psutil.cpu_count(logical=True)
 
@@ -251,7 +262,6 @@ async def sys_stats(client: Client, message: types.Message):
 
 <b>💾 Memory:</b>
   • <b>RAM:</b> <code>{ram.used / (1024 ** 3):.2f} GiB / {ram.total / (1024 ** 3):.2f} GiB ({ram.percent}%)</code>
-  • <b>Swap:</b> <code>{swap.used / (1024 ** 3):.2f} GiB / {swap.total / (1024 ** 3):.2f} GiB ({swap.percent}%)</code>
 
 <b>🔧 CPU:</b>
   • <b>Cores:</b> <code>{cores_physical} physical, {cores_total} logical</code>
@@ -269,11 +279,14 @@ async def sys_stats(client: Client, message: types.Message):
   • <b>Interfaces:</b> <code>{len(net_if)} available</code>
 """
 
-    await sys_msg.edit_text(response, disable_web_page_preview=True)
+    reply = await sys_msg.edit_text(response, disable_web_page_preview=True)
+    if isinstance(reply, types.Error):
+        client.logger.warning(reply.message)
+    return None
 
 
-@Client.on_message(filters=Filter.command("activevc"))
-async def active_vc(_: Client, message: types.Message):
+@Client.on_message(filters=Filter.command(["activevc", "av"]))
+async def active_vc(c: Client, message: types.Message) -> None:
     """
     Get active voice chats.
     """
@@ -283,7 +296,10 @@ async def active_vc(_: Client, message: types.Message):
 
     active_chats = chat_cache.get_active_chats()
     if not active_chats:
-        await message.reply_text("No active voice chats.")
+        reply = await message.reply_text("No active voice chats.")
+        if isinstance(reply, types.Error):
+            c.logger.warning(reply.message)
+
         return None
 
     text = f"🎵 <b>Active Voice Chats</b> ({len(active_chats)}):\n\n"
@@ -306,12 +322,13 @@ async def active_vc(_: Client, message: types.Message):
 
     reply = await message.reply_text(text, disable_web_page_preview=True)
     if isinstance(reply, types.Error):
-        return await message.reply_text(reply.message)
+        c.logger.warning(reply.message)
+        await message.reply_text(reply.message)
     return None
 
 
 @Client.on_message(filters=Filter.command("logger"))
-async def logger(c: Client, message: types.Message):
+async def logger(c: Client, message: types.Message) -> None:
     """
     Enable or disable logging.
     """
@@ -320,7 +337,9 @@ async def logger(c: Client, message: types.Message):
         return
 
     if not LOGGER_ID or LOGGER_ID == 0:
-        await message.reply_text("Please set LOGGER_ID in .env first.")
+        reply = await message.reply_text("Please set LOGGER_ID in .env first.")
+        if isinstance(reply, types.Error):
+            c.logger.warning(reply.message)
         return
 
     lang = await db.get_lang(message.chat_id)
@@ -331,25 +350,31 @@ async def logger(c: Client, message: types.Message):
         status = (
             get_string("enabled", lang) if enabled else get_string("disabled", lang)
         )
-        await message.reply_text(
+        reply = await message.reply_text(
             get_string("logger_usage_status", lang).format(status=status)
         )
+        if isinstance(reply, types.Error):
+            c.logger.warning(reply.message)
         return
 
     arg = args.lower()
     if arg in ["on", "enable"]:
         await db.set_logger_status(c.me.id, True)
-        await message.reply_text(get_string("logger_enabled", lang))
+        reply = await message.reply_text(get_string("logger_enabled", lang))
+        if isinstance(reply, types.Error):
+            c.logger.warning(reply.message)
         return
     if arg in ["off", "disable"]:
         await db.set_logger_status(c.me.id, False)
-        await message.reply_text(get_string("logger_disabled", lang))
+        reply = await message.reply_text(get_string("logger_disabled", lang))
+        if isinstance(reply, types.Error):
+            c.logger.warning(reply.message)
         return
 
     await message.reply_text(get_string("logger_invalid_usage", lang).format(arg=args))
 
 @Client.on_message(filters=Filter.command(["autoend", "auto_end"]))
-async def auto_end(c: Client, message: types.Message):
+async def auto_end(c: Client, message: types.Message) -> None:
     if message.from_id not in DEVS:
         await del_msg(message)
         return
@@ -359,35 +384,45 @@ async def auto_end(c: Client, message: types.Message):
     if not args:
         status = await db.get_auto_end(c.me.id)
         status_text = "enabled ✅" if status else "disabled ❌"
-        await message.reply_text(
+        reply = await message.reply_text(
             f"<b>Auto End</b> is currently <b>{status_text}</b>.\n\n"
             "When enabled, the bot will automatically end group voice chats "
             "if no users are listening. Useful for saving resources and keeping chats clean.",
             disable_web_page_preview=True
         )
+        if isinstance(reply, types.Error):
+            c.logger.warning(reply.message)
         return
 
     args = args.lower()
     if args in ["on", "enabled"]:
         await db.set_auto_end(c.me.id, True)
-        await message.reply_text("✅ <b>Auto End</b> has been <b>enabled</b>.")
+        reply = await message.reply_text("✅ <b>Auto End</b> has been <b>enabled</b>.")
+        if isinstance(reply, types.Error):
+            c.logger.warning(reply.message)
     elif args in ["off", "disabled"]:
         await db.set_auto_end(c.me.id, False)
-        await message.reply_text("❌ <b>Auto End</b> has been <b>disabled</b>.")
+        reply = await message.reply_text("❌ <b>Auto End</b> has been <b>disabled</b>.")
+        if isinstance(reply, types.Error):
+            c.logger.warning(reply.message)
     else:
-        await message.reply_text(
+        reply = await message.reply_text(
             f"⚠️ Unknown argument: <b>{args}</b>\nUse <code>/autoend on</code> or <code>/autoend off</code>.",
             disable_web_page_preview=True
         )
+        if isinstance(reply, types.Error):
+            c.logger.warning(reply.message)
 
 
 @Client.on_message(filters=Filter.command(["clearass", "clearallassistants"]))
-async def clear_all_assistants(_: Client, message: types.Message):
+async def clear_all_assistants(c: Client, message: types.Message) -> None:
     if message.from_id not in DEVS:
         await del_msg(message)
         return
+
     count = await db.clear_all_assistants()
-    LOGGER.info("Cleared assistants from %s chats by command from %s", count, message.from_id)
-    await message.reply_text(f"♻️ Cleared assistants from {count} chats")
-
-
+    c.logger.info("Cleared assistants from %s chats by command from %s", count, message.from_id)
+    reply = await message.reply_text(f"♻️ Cleared assistants from {count} chats")
+    if isinstance(reply, types.Error):
+        c.logger.warning(reply.message)
+    return
