@@ -17,7 +17,7 @@ from src.modules.utils.admins import is_admin
 from src.modules.utils.play_helpers import del_msg, edit_text, extract_argument
 
 
-async def is_admin_or_reply(msg: types.Message) -> Union[int, types.Message]:
+async def is_admin_or_reply(msg: types.Message) -> Union[int, types.Message, types.Error]:
     """
     Check if user is admin and if a song is playing.
     """
@@ -33,12 +33,16 @@ async def is_admin_or_reply(msg: types.Message) -> Union[int, types.Message]:
 
 
 async def handle_playback_action(
-    _: Client, msg: types.Message, action, success_msg: str, fail_msg: str
+    c: Client, msg: types.Message, action, success_msg: str, fail_msg: str
 ) -> None:
     """
     Handle playback actions like stop, pause, resume, mute, unmute.
     """
     chat_id = await is_admin_or_reply(msg)
+    if isinstance(chat_id, types.Error):
+        c.logger.warning(f"Error sending reply: {chat_id}")
+        return
+
     if isinstance(chat_id, types.Message):
         return
     lang = await db.get_lang(chat_id)
@@ -356,11 +360,15 @@ async def clear_queue(c: Client, msg: types.Message) -> None:
 
 
 @Client.on_message(filters=Filter.command(["stop", "end"]))
-async def stop_song(_: Client, msg: types.Message) -> None:
+async def stop_song(c: Client, msg: types.Message) -> None:
     """
     Stop the current song.
     """
     chat_id = await is_admin_or_reply(msg)
+    if isinstance(chat_id, types.Error):
+        c.logger.warning(f"Error sending reply: {chat_id}")
+        return None
+
     if isinstance(chat_id, types.Message):
         return
 
@@ -380,11 +388,11 @@ async def stop_song(_: Client, msg: types.Message) -> None:
 
 
 @Client.on_message(filters=Filter.command("pause"))
-async def pause_song(_: Client, msg: types.Message) -> None:
+async def pause_song(c: Client, msg: types.Message) -> None:
     """Pause the current song."""
     lang = await db.get_lang(msg.chat_id)
     await handle_playback_action(
-        _,
+        c,
         msg,
         call.pause,
         get_string("stream_paused", lang),
@@ -393,11 +401,11 @@ async def pause_song(_: Client, msg: types.Message) -> None:
 
 
 @Client.on_message(filters=Filter.command("resume"))
-async def resume(_: Client, msg: types.Message) -> None:
+async def resume(c: Client, msg: types.Message) -> None:
     """Resume the current song."""
     lang = await db.get_lang(msg.chat_id)
     await handle_playback_action(
-        _,
+        c,
         msg,
         call.resume,
         get_string("stream_resumed", lang),
@@ -406,11 +414,11 @@ async def resume(_: Client, msg: types.Message) -> None:
 
 
 @Client.on_message(filters=Filter.command("mute"))
-async def mute_song(_: Client, msg: types.Message) -> None:
+async def mute_song(c: Client, msg: types.Message) -> None:
     """Mute the current song."""
     lang = await db.get_lang(msg.chat_id)
     await handle_playback_action(
-        _,
+        c,
         msg,
         call.mute,
         get_string("stream_muted", lang),
@@ -419,11 +427,11 @@ async def mute_song(_: Client, msg: types.Message) -> None:
 
 
 @Client.on_message(filters=Filter.command("unmute"))
-async def unmute_song(_: Client, msg: types.Message) -> None:
+async def unmute_song(c: Client, msg: types.Message) -> None:
     """Unmute the current song."""
     lang = await db.get_lang(msg.chat_id)
     await handle_playback_action(
-        _,
+        c,
         msg,
         call.unmute,
         get_string("stream_unmuted", lang),
@@ -432,11 +440,15 @@ async def unmute_song(_: Client, msg: types.Message) -> None:
 
 
 @Client.on_message(filters=Filter.command("volume"))
-async def volume(_: Client, msg: types.Message) -> None:
+async def volume(c: Client, msg: types.Message) -> None:
     """
     Change the volume of the current song.
     """
     chat_id = await is_admin_or_reply(msg)
+    if isinstance(chat_id, types.Error):
+        c.logger.warning(f"Error sending reply: {chat_id}")
+        return None
+
     if isinstance(chat_id, types.Message):
         return None
 
@@ -477,6 +489,10 @@ async def skip_song(c: Client, msg: types.Message) -> None:
     Skip the current song.
     """
     chat_id = await is_admin_or_reply(msg)
+    if isinstance(chat_id, types.Error):
+        c.logger.warning(f"Error sending reply: {chat_id}")
+        return None
+
     if isinstance(chat_id, types.Message):
         return None
 
