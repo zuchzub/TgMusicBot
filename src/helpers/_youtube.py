@@ -221,9 +221,7 @@ class YouTubeUtils:
         """
         Download audio using the API.
         """
-        download_path = Path(DOWNLOADS_DIR) / f"{video_id}.webm"
-        client = HttpxClient()
-        dl = await client.download_file(f"{API_URL}/yt?id={video_id}", download_path)
+        dl = await HttpxClient().download_file(f"{API_URL}/yt?id={video_id}")
         return dl.file_path if dl.success else None
 
     @staticmethod
