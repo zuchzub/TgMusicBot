@@ -108,17 +108,17 @@ tgmusicbot v1.1.9
 ├── apscheduler v3.11.0
 │   └── tzlocal v5.3.1
 ├── cachetools v5.5.2
-├── kurigram v2.2.2
+├── kurigram v2.2.3
 │   ├── pyaes v1.6.1
 │   └── pysocks v1.7.1
 ├── meval v2.5
 ├── motor v3.7.0
 │   └── pymongo v4.12.1
 │       └── dnspython v2.7.0
-├── ntgcalls v2.0.0rc3
+├── ntgcalls v2.0.0rc5
 ├── pillow v11.2.1
 ├── psutil v7.0.0
-├── py-tgcalls v2.2.0rc1
+├── py-tgcalls v2.2.0rc3
 │   ├── aiohttp v3.11.18
 │   │   ├── aiohappyeyeballs v2.6.1
 │   │   ├── aiosignal v1.3.2
@@ -133,7 +133,7 @@ tgmusicbot v1.1.9
 │   │       └── propcache v0.3.1
 │   ├── deprecation v2.1.0
 │   │   └── packaging v25.0
-│   └── ntgcalls v2.0.0rc3
+│   └── ntgcalls v2.0.0rc5
 ├── py-yt-search v0.3
 │   ├── httpx v0.28.1
 │   │   ├── anyio v4.9.0
@@ -153,7 +153,7 @@ tgmusicbot v1.1.9
 │   ├── typing-extensions v4.13.2
 │   └── typing-inspection v0.4.0
 │       └── typing-extensions v4.13.2
-├── pytdbot v0.9.2
+├── pytdbot v0.9.3
 │   ├── aio-pika v9.5.5
 │   │   ├── aiormq v6.8.1
 │   │   │   ├── pamqp v3.3.0
@@ -453,5 +453,3 @@ Every contribution helps! ❤️
 📢 **Join our Telegram community:**  
 [![Telegram Group](https://img.shields.io/badge/Telegram%20Group-Join%20Now-blue?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/GuardxSupport)  
 [![Telegram Channel](https://img.shields.io/badge/Telegram%20Channel-Join%20Now-blue?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/FallenProjects)
-
----
