@@ -13,8 +13,8 @@ from src.logger import LOGGER
 from src.modules.utils import Filter
 from src.modules.utils.play_helpers import del_msg, extract_argument
 
-REQUEST_LIMIT = 50
-BATCH_SIZE = 500
+REQUEST_LIMIT = 30
+BATCH_SIZE = 400
 BATCH_DELAY = 2
 MAX_RETRIES = 2
 
@@ -42,30 +42,28 @@ async def send_message_with_retry(
     target_id: int, message: types.Message, is_copy: bool
 ) -> int:
     """
-    Send a message to a target with retrying on 429 errors.
+    Send a message to a target with retrying only on FloodWait (429) errors.
 
     Args:
-    target_id: int, the target ID to send the message to.
-    message: types.Message, the message to send.
-    is_copy: bool, whether to copy the message instead of forwarding it.
+        target_id (int): The target ID to send the message to.
+        message (types.Message): The message to send.
+        is_copy (bool): Whether to copy the message instead of forwarding it.
 
     Returns:
-    int: 1 on success, 0 on failure.
-
-    Raises:
-    Exception: if there's an unexpected error.
+        int: 1 on success, 0 on failure.
     """
     for attempt in range(1, MAX_RETRIES + 1):
         async with semaphore:
             result = await (
                 message.copy(target_id) if is_copy else message.forward(target_id)
             )
+
             if isinstance(result, types.Error):
                 if result.code == 429:
                     retry_after = (
                         int(result.message.split("retry after ")[1])
                         if "retry after" in result.message
-                        else 2
+                        else 1
                     )
                     LOGGER.warning(
                         "[FloodWait] Retry %s/%s in %ss for %s",
@@ -76,11 +74,21 @@ async def send_message_with_retry(
                     )
                     await asyncio.sleep(retry_after)
                     continue
-                elif result.code == 400:
-                    LOGGER.warning("Bad request for %s: %s", target_id, result.message)
+
+                if result.code == 400 and result.message in {
+                    "Have no write access to the chat",
+                    "USER_IS_BLOCKED",
+                    "Chat not found",
+                }:
+                    if target_id < 0:
+                        await db.remove_chat(target_id)
+                    else:
+                        await db.remove_user(target_id)
                     return 0
-                LOGGER.error("[Error] %s: %s", target_id, result.message)
+
+                LOGGER.warning("Message failed for %s: [%d] %s", target_id, result.code, result.message)
                 return 0
+
             return 1
     return 0
 
