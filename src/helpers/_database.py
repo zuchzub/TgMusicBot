@@ -27,6 +27,7 @@ class Database:
     async def ping(self) -> None:
         try:
             await self.mongo_client.aconnect()
+            await self.mongo_client.admin.command("ping")
             LOGGER.info("Database connection completed.")
         except Exception as e:
             LOGGER.error("Database connection failed: %s", e)
