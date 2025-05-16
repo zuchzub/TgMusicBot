@@ -63,13 +63,10 @@ Supporting platforms like YouTube, Spotify, Apple Music, Soundcloud, JioSaavn an
 Say goodbye to restrictions with our **Premium Music API** – your ultimate solution for seamless, high-quality
 downloads.
 
-- **Easy Integration** – Just set `API_URL` in your bot configuration.
-- **High-Quality Downloads** – Get music from **Spotify, Apple Music, SoundCloud**, and **YouTube** in top quality.
-- **Unlimited Access** – No limits, no interruptions – download as much as you want.
+- **Easy Integration** – Just set `API_URL` & `API_KEY` variables in your bot configuration.
+- **High-Quality Downloads** – Get music from **Spotify, SoundCloud**, and **YouTube** in top quality.
 
-[➡️ Click here for more details](https://gist.github.com/AshokShau/7528cddc5b264035dee40523a44ff153)
-
-📩 **[Contact me on Telegram](https://t.me/AshokShau) to get access!**
+📩 **[Contact me on Telegram](https://t.me/AshokShau) to get access or use [@FallenApiBot](https://t.me/FallenApiBot)**
 
 ---
 
@@ -103,7 +100,7 @@ downloads.
 <summary>Dependency Tree: Click to expand</summary>
 
 ```
-tgmusicbot v1.1.9
+tgmusicbot v1.2.0
 ├── aiofiles v24.1.0
 ├── apscheduler v3.11.0
 │   └── tzlocal v5.3.1
@@ -112,9 +109,6 @@ tgmusicbot v1.1.9
 │   ├── pyaes v1.6.1
 │   └── pysocks v1.7.1
 ├── meval v2.5
-├── motor v3.7.0
-│   └── pymongo v4.12.1
-│       └── dnspython v2.7.0
 ├── ntgcalls v2.0.0rc5
 ├── pillow v11.2.1
 ├── psutil v7.0.0
@@ -153,6 +147,8 @@ tgmusicbot v1.1.9
 │   ├── typing-extensions v4.13.2
 │   └── typing-inspection v0.4.0
 │       └── typing-extensions v4.13.2
+├── pymongo v4.13.0
+│   └── dnspython v2.7.0
 ├── pytdbot v0.9.3
 │   ├── aio-pika v9.5.5
 │   │   ├── aiormq v6.8.1
