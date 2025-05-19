@@ -10,7 +10,7 @@ from pytdbot import Client, types
 from src.helpers import db
 from src.logger import LOGGER
 
-admin_cache = TTLCache(maxsize=1000, ttl=30 * 60)
+admin_cache = TTLCache(maxsize=1000, ttl=60 * 60)
 
 
 class AdminCache:

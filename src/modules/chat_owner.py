@@ -195,55 +195,58 @@ async def thumbnail(_: Client, msg: types.Message) -> None:
 async def set_channel_id(c: Client, msg: types.Message) -> None:
     chat_id = msg.chat_id
     lang = await db.get_lang(chat_id)
+
+    # Only allow in supergroups
     if chat_id > 0:
         await msg.reply_text(get_string("only_supergroup", lang))
-        return
+        return None
 
     user_id = msg.from_id
-    reply = await msg.getRepliedMessage() if msg.reply_to_message_id else None
     args = extract_argument(msg.text)
+    reply = await msg.getRepliedMessage() if msg.reply_to_message_id else None
+
+    # Disable play channel
     if args and args.lower() in ["off", "disable"]:
         await db.set_channel_id(chat_id, None)
-        await msg.reply_text("Play channel removed.")
-        return
+        await msg.reply_text("✅ Play channel removed.")
+        return None
 
-    # Ensure the message is a reply with a forwarded channel message
+    # Check for a forwarded message from a channel
     if not reply or not reply.forward_info:
-        text = "⚠️ Reply to a forwarded message from a channel to set it as the play channel."
-        if channel_id := await db.get_channel_id(chat_id):
-            text += f"\n\nCurrent channel: <code>{channel_id}</code>"
-            text += f"\nChat ID: <code>{chat_id}</code>"
+        text = "⚠️ Reply to a <b>forwarded message</b> from the desired channel to set it."
+        current = await db.get_channel_id(chat_id)
+        if current and current != chat_id:
+            text += f"\n\nCurrent channel: <code>{current}</code>\nChat ID: <code>{chat_id}</code>"
         await msg.reply_text(text)
-        return
+        return None
 
     origin = reply.forward_info.origin
     if not origin or origin.getType() != types.MessageOriginChannel().getType():
         await msg.reply_text("⚠️ The forwarded message must be from a channel.")
-        return
+        return None
 
     channel_id = origin.chat_id
     reload, _ = await load_admin_cache(c, channel_id, True)
     if not reload:
-        await msg.reply_text("❌ I must be an admin of the channel to link it.")
-        return
+        await msg.reply_text("❌ I must be an admin of the channel to access it.")
+        return None
 
-    # bot admin checks
+    # Ensure bot is admin in both chat and channel
     if not await is_admin(chat_id, c.me.id):
-        await msg.reply_text("❌ I must be an admin of this chat to set a play channel.\nUse /reload if i'm admin.")
-        return
-
+        await msg.reply_text("❌ I need to be an admin of this chat. Use /reload if I am.")
+        return None
     if not await is_admin(channel_id, c.me.id):
-        await msg.reply_text("❌ I must also be an admin of the channel to link it.")
-        return
+        await msg.reply_text("❌ I also need to be an admin in the channel to link it.")
+        return None
 
-    # Owner checks
+    # Ensure user is owner of both chat and channel
     if not await is_owner(chat_id, user_id):
-        await msg.reply_text("❌ You must be the owner of this chat to set a play channel.\nUse /reload if you are.")
-        return
-
+        await msg.reply_text("❌ You must be the <b>owner</b> of this chat. Use /reload if you are.")
+        return None
     if not await is_owner(channel_id, user_id):
-        await msg.reply_text("❌ You must also be the owner of the channel to link it.\nUse /creload if you are.")
-        return
+        await msg.reply_text("❌ You must also be the <b>owner</b> of the channel.")
+        return None
 
     await db.set_channel_id(chat_id, channel_id)
-    await msg.reply_text(f"✅ Channel set to: <code>{channel_id}</code>")
+    await msg.reply_text(f"✅ Play channel successfully set to: <code>{channel_id}</code>")
+    return None
