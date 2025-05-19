@@ -52,6 +52,7 @@ async def handle_bot_join(client: Client, chat_id: int) -> None:
     """
     _chat_id = int(str(chat_id)[4:]) if str(chat_id).startswith("-100") else chat_id
     chat_info = await client.getSupergroupFullInfo(_chat_id)
+
     if isinstance(chat_info, types.Error):
         client.logger.warning("Failed to get supergroup info for %s, %s", chat_id, chat_info.message)
         return
@@ -69,8 +70,10 @@ async def handle_bot_join(client: Client, chat_id: int) -> None:
         await client.leaveChat(chat_id)
         await db.remove_chat(chat_id)
         client.logger.info("Bot left chat %s due to insufficient members (only %d present).", chat_id, chat_info.member_count)
-    else:
-        chat_invite_cache[chat_id] = chat_info.invite_link.invite_link
+        return
+
+    if invite_link := getattr(chat_info.invite_link, "invite_link", None):
+        chat_invite_cache[chat_id] = invite_link
 
 
 @Client.on_updateChatMember()
@@ -175,7 +178,8 @@ async def _handle_promotion_demotion(
 
     await load_admin_cache(client, chat_id, True)
     await asyncio.sleep(1)
-    await handle_bot_join(client, chat_id)
+    if is_promoted:
+        await handle_bot_join(client, chat_id)
 
 async def _update_user_status_cache(chat_id: int, user_id: int, status: ChatMemberStatus) -> None:
     """Update the user status cache if the user is the bot."""
