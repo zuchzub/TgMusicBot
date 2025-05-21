@@ -77,7 +77,7 @@ class Call:
             LOGGER.info("Set assistant for %s to %s", chat_id, new_client)
             return new_client
 
-    async def _group_assistant(self, chat_id: int) -> Union[PyTgCalls, types.Error]:
+    async def group_assistant(self, chat_id: int) -> Union[PyTgCalls, types.Error]:
         client_name = await self._get_client_name(chat_id)
         if isinstance(client_name, types.Error):
             return client_name
@@ -93,7 +93,7 @@ class Call:
         Returns:
             PyroClient instance or types.Error if unavailable
         """
-        client = await self._group_assistant(chat_id)
+        client = await self.group_assistant(chat_id)
         if isinstance(client, types.Error):
             return client
 
@@ -180,7 +180,7 @@ class Call:
             "Playing media for chat %s: %s (video=%s)", chat_id, file_path, video
         )
 
-        client = await self._group_assistant(chat_id)
+        client = await self.group_assistant(chat_id)
         if isinstance(client, types.Error):
             return client
 
@@ -195,6 +195,7 @@ class Call:
             media_path=file_path,
             audio_parameters=AudioQuality.HIGH if video else AudioQuality.STUDIO,
             video_parameters=VideoQuality.FHD_1080p if video else VideoQuality.SD_360p,
+            audio_flags=MediaStream.Flags.REQUIRED,
             video_flags=(
                 MediaStream.Flags.AUTO_DETECT if video else MediaStream.Flags.IGNORE
             ),
@@ -211,13 +212,6 @@ class Call:
                 )
 
             return types.Ok()
-
-        except errors.ChatAdminRequired:
-            return types.Error(
-                code=403,
-                message="No active voice chat found.\n\n"
-                "Please start a voice chat and try again.",
-            )
         except (exceptions.NoActiveGroupCall, ConnectionNotFound):
             return types.Error(
                 code=404,
@@ -230,6 +224,9 @@ class Call:
                 code=502,
                 message="Telegram server issues detected. Please try again later.",
             )
+        except exceptions.NoAudioSourceFound as e:
+            LOGGER.error("Audio source not found in chat %s: %s", chat_id, str(e))
+            return types.Error(code=404, message="Audio source not found.")
         except errors.RPCError as e:
             LOGGER.error("Playback failed in chat %s: %s", chat_id, str(e))
             return types.Error(code=e.CODE or 500, message=f"Playback error: {str(e)}")
@@ -448,7 +445,7 @@ class Call:
         """
         LOGGER.info("Ending playback for chat %s", chat_id)
         try:
-            client = await self._group_assistant(chat_id)
+            client = await self.group_assistant(chat_id)
             if isinstance(client, types.Error):
                 return client
 
@@ -551,7 +548,7 @@ class Call:
             None on success or types.Error on failure
         """
         try:
-            client = await self._group_assistant(chat_id)
+            client = await self.group_assistant(chat_id)
             if isinstance(client, types.Error):
                 return client
 
@@ -576,7 +573,7 @@ class Call:
             types.Ok on success or types.Error on failure
         """
         try:
-            client = await self._group_assistant(chat_id)
+            client = await self.group_assistant(chat_id)
             if isinstance(client, types.Error):
                 return client
 
@@ -596,7 +593,7 @@ class Call:
             types.Ok on success or types.Error on failure
         """
         try:
-            client = await self._group_assistant(chat_id)
+            client = await self.group_assistant(chat_id)
             if isinstance(client, types.Error):
                 return client
 
@@ -618,7 +615,7 @@ class Call:
             types.Ok on success or types.Error on failure
         """
         try:
-            client = await self._group_assistant(chat_id)
+            client = await self.group_assistant(chat_id)
             if isinstance(client, types.Error):
                 return client
 
@@ -640,7 +637,7 @@ class Call:
             types.Ok on success or types.Error on failure
         """
         try:
-            client = await self._group_assistant(chat_id)
+            client = await self.group_assistant(chat_id)
             if isinstance(client, types.Error):
                 return client
 
@@ -660,7 +657,7 @@ class Call:
             Current position in seconds or types.Error on failure
         """
         try:
-            client = await self._group_assistant(chat_id)
+            client = await self.group_assistant(chat_id)
             if isinstance(client, types.Error):
                 return client
 
@@ -686,7 +683,7 @@ class Call:
             List of participants or types.Error on failure
         """
         try:
-            client = await self._group_assistant(chat_id)
+            client = await self.group_assistant(chat_id)
             if isinstance(client, types.Error):
                 return client
 
@@ -716,7 +713,7 @@ class Call:
             Tuple of (ping, cpu_usage) or types.Error on failure
         """
         try:
-            client = await self._group_assistant(chat_id)
+            client = await self.group_assistant(chat_id)
             if isinstance(client, types.Error):
                 return client
 

@@ -422,3 +422,16 @@ async def clear_all_assistants(c: Client, message: types.Message) -> None:
     if isinstance(reply, types.Error):
         c.logger.warning(reply.message)
     return
+
+@Client.on_message(filters=Filter.command("logs"))
+async def logs(c: Client, message: types.Message) -> None:
+    if message.from_id not in DEVS:
+        await del_msg(message)
+        return
+
+    reply = await message.reply_document(
+        document=types.InputFileLocal("bot.log"),
+        disable_notification=True,
+    )
+    if isinstance(reply, types.Error):
+        c.logger.warning(reply.message)

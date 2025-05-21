@@ -555,8 +555,9 @@ async def play_file(_: Client, msg: types.Message) -> None:
 
     _call = await call.play_media(chat_id, link, True)
     if isinstance(_call, types.Error):
-        await edit_text(msg, text=f"⚠️ {str(_call)}")
+        await msg.reply_text(text=f"⚠️ {_call.message}")
         return None
 
     chat_cache.add_song(chat_id, CachedTrack(name="", artist="", track_id="", loop=0, duration=0, file_path=link, thumbnail="", user="", platform="", is_video=True, url=link, channel=channel))
+    await msg.reply_text("✅ Direct link played.")
     return None
