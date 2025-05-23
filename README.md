@@ -100,7 +100,7 @@ downloads.
 <summary>Dependency Tree: Click to expand</summary>
 
 ```
-tgmusicbot v1.2.0
+tgmusicbot v1.2.0.dev0
 ├── aiofiles v24.1.0
 ├── apscheduler v3.11.0
 │   └── tzlocal v5.3.1
@@ -109,7 +109,7 @@ tgmusicbot v1.2.0
 │   ├── pyaes v1.6.1
 │   └── pysocks v1.7.1
 ├── meval v2.5
-├── ntgcalls v2.0.0rc5
+├── ntgcalls v2.0.0rc7
 ├── pillow v11.2.1
 ├── psutil v7.0.0
 ├── py-tgcalls v2.2.0rc3
@@ -127,7 +127,7 @@ tgmusicbot v1.2.0
 │   │       └── propcache v0.3.1
 │   ├── deprecation v2.1.0
 │   │   └── packaging v25.0
-│   └── ntgcalls v2.0.0rc5
+│   └── ntgcalls v2.0.0rc7
 ├── py-yt-search v0.3
 │   ├── httpx v0.28.1
 │   │   ├── anyio v4.9.0
@@ -139,7 +139,7 @@ tgmusicbot v1.2.0
 │   │   │   └── h11 v0.16.0
 │   │   └── idna v3.10
 │   └── python-dotenv v1.1.0
-├── pycryptodome v3.22.0
+├── pycryptodome v3.23.0
 ├── pydantic v2.11.4
 │   ├── annotated-types v0.7.0
 │   ├── pydantic-core v2.33.2
@@ -158,12 +158,12 @@ tgmusicbot v1.2.0
 │   │   └── yarl v1.20.0 (*)
 │   └── deepdiff v8.4.2
 │       └── orderly-set v5.4.0
-├── pytgcrypto v1.2.9.2
+├── pytgcrypto v1.2.11
 ├── python-dotenv v1.1.0
 ├── pytz v2025.2
 ├── tdjson v1.8.49
 ├── ujson v5.10.0
-├── yt-dlp v2025.4.30
+├── yt-dlp v2025.5.22
 ├── black v25.1.0 (extra: dev)
 │   ├── click v8.1.8
 │   ├── mypy-extensions v1.1.0
