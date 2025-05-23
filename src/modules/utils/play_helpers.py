@@ -117,16 +117,3 @@ async def edit_text(
             return await edit_text(reply_message, *args, **kwargs)
         LOGGER.warning("Error editing message: %s", reply)
     return reply
-
-
-async def unban_ub(c: Client, chat_id: int, user_id: int):
-    """
-    Unbans a user from a chat.
-    """
-    await c.setChatMemberStatus(
-        chat_id=chat_id,
-        member_id=types.MessageSenderUser(user_id),
-        status=types.ChatMemberStatusMember(),
-    )
-
-

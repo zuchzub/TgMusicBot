@@ -14,7 +14,9 @@ from src.modules.utils.admins import is_admin
 from src.modules.utils.play_helpers import del_msg, extract_argument
 
 
-async def is_admin_or_reply(msg: types.Message) -> Union[int, types.Message, types.Error]:
+async def is_admin_or_reply(
+    msg: types.Message,
+) -> Union[int, types.Message, types.Error]:
     """
     Check if user is admin and if a song is playing.
     """
@@ -56,7 +58,9 @@ async def handle_playback_action(
     return
 
 
-@Client.on_message(filters=Filter.command(["playtype", "setPlayType", "cplaytype", "csetPlayType"]))
+@Client.on_message(
+    filters=Filter.command(["playtype", "setPlayType", "cplaytype", "csetPlayType"])
+)
 async def set_play_type(_: Client, msg: types.Message) -> None:
     """
     Set the play type for a given chat.
@@ -70,7 +74,11 @@ async def set_play_type(_: Client, msg: types.Message) -> None:
     -------
     None
     """
-    chat_id = await db.get_channel_id(msg.chat_id) if is_channel_cmd(msg.text) else msg.chat_id
+    chat_id = (
+        await db.get_channel_id(msg.chat_id)
+        if is_channel_cmd(msg.text)
+        else msg.chat_id
+    )
     lang = await db.get_lang(chat_id)
     if chat_id > 0:
         return
@@ -101,7 +109,11 @@ async def queue_info(_: Client, msg: types.Message) -> None:
     if msg.chat_id > 0:
         return
 
-    chat_id = await db.get_channel_id(msg.chat_id) if is_channel_cmd(msg.text) else msg.chat_id
+    chat_id = (
+        await db.get_channel_id(msg.chat_id)
+        if is_channel_cmd(msg.text)
+        else msg.chat_id
+    )
     _queue = chat_cache.get_queue(chat_id)
     if not _queue:
         await msg.reply_text(text="🛑 The queue is empty. No tracks left to play!")
@@ -153,7 +165,11 @@ async def modify_loop(c: Client, msg: types.Message) -> None:
     """
     Modify the loop count for the current song.
     """
-    chat_id = await db.get_channel_id(msg.chat_id) if is_channel_cmd(msg.text) else msg.chat_id
+    chat_id = (
+        await db.get_channel_id(msg.chat_id)
+        if is_channel_cmd(msg.text)
+        else msg.chat_id
+    )
     lang = await db.get_lang(chat_id)
     if chat_id > 0:
         return None
@@ -189,7 +205,11 @@ async def seek_song(c: Client, msg: types.Message) -> None:
     """
     Seek to a specific time in the current song.
     """
-    chat_id = await db.get_channel_id(msg.chat_id) if is_channel_cmd(msg.text) else msg.chat_id
+    chat_id = (
+        await db.get_channel_id(msg.chat_id)
+        if is_channel_cmd(msg.text)
+        else msg.chat_id
+    )
     lang = await db.get_lang(chat_id)
     if chat_id > 0:
         return
@@ -254,7 +274,11 @@ async def change_speed(_: Client, msg: types.Message) -> None:
     """
     Change the playback speed of the current song.
     """
-    chat_id = await db.get_channel_id(msg.chat_id) if is_channel_cmd(msg.text) else msg.chat_id
+    chat_id = (
+        await db.get_channel_id(msg.chat_id)
+        if is_channel_cmd(msg.text)
+        else msg.chat_id
+    )
     lang = await db.get_lang(chat_id)
     if chat_id > 0:
         return
@@ -287,7 +311,11 @@ async def change_speed(_: Client, msg: types.Message) -> None:
 @Client.on_message(filters=Filter.command(["remove", "cremove"]))
 async def remove_song(c: Client, msg: types.Message) -> None:
     """Remove a track from the queue."""
-    chat_id = await db.get_channel_id(msg.chat_id) if is_channel_cmd(msg.text) else msg.chat_id
+    chat_id = (
+        await db.get_channel_id(msg.chat_id)
+        if is_channel_cmd(msg.text)
+        else msg.chat_id
+    )
     lang = await db.get_lang(chat_id)
     if chat_id > 0:
         return None
@@ -332,7 +360,11 @@ async def clear_queue(c: Client, msg: types.Message) -> None:
     """
     Clear the queue.
     """
-    chat_id = await db.get_channel_id(msg.chat_id) if is_channel_cmd(msg.text) else msg.chat_id
+    chat_id = (
+        await db.get_channel_id(msg.chat_id)
+        if is_channel_cmd(msg.text)
+        else msg.chat_id
+    )
     lang = await db.get_lang(chat_id)
     if chat_id > 0:
         return None

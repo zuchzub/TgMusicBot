@@ -65,7 +65,7 @@ async def auth(c: Client, msg: types.Message) -> None:
     lang = await db.get_lang(chat_id)
 
     if user_id in await db.get_auth_users(chat_id):
-        reply =await msg.reply_text(get_string("user_already_auth", lang))
+        reply = await msg.reply_text(get_string("user_already_auth", lang))
         if isinstance(reply, types.Error):
             c.logger.warning(reply.message)
     else:
@@ -171,7 +171,9 @@ async def _handle_toggle_command(
         await set_func(chat_id, False)
         reply = await msg.reply_text(get_string(f"{key}_status_disabled", lang))
     else:
-        reply = await msg.reply_text(get_string("invalid_toggle_usage", lang).format(key=key))
+        reply = await msg.reply_text(
+            get_string("invalid_toggle_usage", lang).format(key=key)
+        )
     if isinstance(reply, types.Error):
         LOGGER.warning(reply.message)
 
@@ -190,6 +192,7 @@ async def thumbnail(_: Client, msg: types.Message) -> None:
         msg, "thumbnail", "Thumbnail", db.get_thumb_status, db.set_thumb_status
     )
     return
+
 
 @Client.on_message(filters=Filter.command("channelplay"))
 async def set_channel_id(c: Client, msg: types.Message) -> None:
@@ -213,7 +216,9 @@ async def set_channel_id(c: Client, msg: types.Message) -> None:
 
     # Check for a forwarded message from a channel
     if not reply or not reply.forward_info:
-        text = "⚠️ Reply to a <b>forwarded message</b> from the desired channel to set it."
+        text = (
+            "⚠️ Reply to a <b>forwarded message</b> from the desired channel to set it."
+        )
         current = await db.get_channel_id(chat_id)
         if current and current != chat_id:
             text += f"\n\nCurrent channel: <code>{current}</code>\nChat ID: <code>{chat_id}</code>"
@@ -233,7 +238,9 @@ async def set_channel_id(c: Client, msg: types.Message) -> None:
 
     # Ensure bot is admin in both chat and channel
     if not await is_admin(chat_id, c.me.id):
-        await msg.reply_text("❌ I need to be an admin of this chat. Use /reload if I am.")
+        await msg.reply_text(
+            "❌ I need to be an admin of this chat. Use /reload if I am."
+        )
         return None
     if not await is_admin(channel_id, c.me.id):
         await msg.reply_text("❌ I also need to be an admin in the channel to link it.")
@@ -241,12 +248,16 @@ async def set_channel_id(c: Client, msg: types.Message) -> None:
 
     # Ensure user is owner of both chat and channel
     if not await is_owner(chat_id, user_id):
-        await msg.reply_text("❌ You must be the <b>owner</b> of this chat. Use /reload if you are.")
+        await msg.reply_text(
+            "❌ You must be the <b>owner</b> of this chat. Use /reload if you are."
+        )
         return None
     if not await is_owner(channel_id, user_id):
         await msg.reply_text("❌ You must also be the <b>owner</b> of the channel.")
         return None
 
     await db.set_channel_id(chat_id, channel_id)
-    await msg.reply_text(f"✅ Play channel successfully set to: <code>{channel_id}</code>")
+    await msg.reply_text(
+        f"✅ Play channel successfully set to: <code>{channel_id}</code>"
+    )
     return None

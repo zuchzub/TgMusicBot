@@ -100,7 +100,7 @@ downloads.
 <summary>Dependency Tree: Click to expand</summary>
 
 ```
-tgmusicbot v1.2.0.dev0
+tgmusicbot v1.2.1
 ├── aiofiles v24.1.0
 ├── apscheduler v3.11.0
 │   └── tzlocal v5.3.1
@@ -140,7 +140,7 @@ tgmusicbot v1.2.0.dev0
 │   │   └── idna v3.10
 │   └── python-dotenv v1.1.0
 ├── pycryptodome v3.23.0
-├── pydantic v2.11.4
+├── pydantic v2.11.5
 │   ├── annotated-types v0.7.0
 │   ├── pydantic-core v2.33.2
 │   │   └── typing-extensions v4.13.2

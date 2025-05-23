@@ -23,11 +23,16 @@ user_status_cache: TTLCache[str, ChatMemberStatus] = TTLCache(maxsize=5000, ttl=
 
 chat_invite_cache = TTLCache(maxsize=1000, ttl=1000)
 
-async def check_user_status(c: Client, chat_id: int, user_id: int) -> ChatMemberStatusResult:
+
+async def check_user_status(
+    c: Client, chat_id: int, user_id: int
+) -> ChatMemberStatusResult:
     cache_key = f"{chat_id}:{user_id}"
     user_status = user_status_cache.get(cache_key)
     if not user_status:
-        user = await c.getChatMember(chat_id=chat_id, member_id=types.MessageSenderUser(user_id))
+        user = await c.getChatMember(
+            chat_id=chat_id, member_id=types.MessageSenderUser(user_id)
+        )
         if isinstance(user, types.Error):
             if user.code == 400:
                 return types.ChatMemberStatusLeft()
@@ -41,7 +46,10 @@ async def check_user_status(c: Client, chat_id: int, user_id: int) -> ChatMember
 
     return user_status
 
-async def join_ub(chat_id: int, c: Client, ub: pyrogram.Client) -> Union[types.Ok, types.Error]:
+
+async def join_ub(
+    chat_id: int, c: Client, ub: pyrogram.Client
+) -> Union[types.Ok, types.Error]:
     """
     Handles the userbot joining a chat via invite link or approval.
     """
@@ -73,6 +81,9 @@ async def join_ub(chat_id: int, c: Client, ub: pyrogram.Client) -> Union[types.O
         user_status_cache[cache_key] = types.ChatMemberStatusMember()
         return types.Ok()
     except errors.InviteHashExpired:
-        return types.Error(code=400, message=f"Invite link has expired or my assistant ({ub.me.id}) is banned from this group.")
+        return types.Error(
+            code=400,
+            message=f"Invite link has expired or my assistant ({ub.me.id}) is banned from this group.",
+        )
     except Exception as e:
         return types.Error(code=400, message=f"Failed to join {ub.me.id}: {e}")

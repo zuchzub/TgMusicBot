@@ -64,7 +64,9 @@ class InactiveCallManager:
 
     async def end_inactive_calls(self):
         if self._lock.locked():
-            self.bot.logger.warning("end_inactive_calls is already running, skipping...")
+            self.bot.logger.warning(
+                "end_inactive_calls is already running, skipping..."
+            )
             return
 
         async with self._lock:
@@ -78,8 +80,7 @@ class InactiveCallManager:
             self.bot.logger.debug(f"Checking {len(active_chats)} active chats...")
             semaphore = asyncio.Semaphore(4)
             tasks = [
-                self._end_inactive_calls(chat_id, semaphore)
-                for chat_id in active_chats
+                self._end_inactive_calls(chat_id, semaphore) for chat_id in active_chats
             ]
             await asyncio.gather(*tasks)
 
@@ -137,7 +138,7 @@ class InactiveCallManager:
             self.bot.logger.info(f"[{client_name}] Leaving all chats completed.")
 
     async def start_scheduler(self):
-        self.scheduler.add_job(self.end_inactive_calls, CronTrigger(minute='*/1'))
+        self.scheduler.add_job(self.end_inactive_calls, CronTrigger(minute="*/1"))
         self.scheduler.add_job(self.leave_all, CronTrigger(hour=0, minute=0))
         self.scheduler.start()
         self.bot.logger.info("Scheduler started.")

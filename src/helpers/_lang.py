@@ -57,9 +57,13 @@ def load_translations():
             with open(file_path, "r", encoding="utf-8") as f:
                 langs[lang_code] = json.load(f)
         except json.JSONDecodeError as e:
-            logger.warning(f"Error decoding JSON for language '{lang_code}' in file '{f_name}': {e}")
+            logger.warning(
+                f"Error decoding JSON for language '{lang_code}' in file '{f_name}': {e}"
+            )
         except Exception as e:
-            logger.error(f"Error decoding JSON for language '{lang_code}': {e}", exc_info=True)
+            logger.error(
+                f"Error decoding JSON for language '{lang_code}': {e}", exc_info=True
+            )
 
 
 def generate_lang_buttons() -> types.ReplyMarkupInlineKeyboard:
@@ -70,7 +74,9 @@ def generate_lang_buttons() -> types.ReplyMarkupInlineKeyboard:
         row.append(
             types.InlineKeyboardButton(
                 text=lang_name,
-                type=types.InlineKeyboardButtonTypeCallback(f"lang_{lang_code}".encode()),
+                type=types.InlineKeyboardButtonTypeCallback(
+                    f"lang_{lang_code}".encode()
+                ),
             )
         )
 
@@ -82,5 +88,6 @@ def generate_lang_buttons() -> types.ReplyMarkupInlineKeyboard:
         buttons.append(row)
 
     return types.ReplyMarkupInlineKeyboard(buttons)
+
 
 LangsButtons = generate_lang_buttons()

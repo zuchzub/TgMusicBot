@@ -76,7 +76,9 @@ async def exec_eval(c: Client, m: types.Message) -> None:
     out_buf = io.StringIO()
 
     async def _eval() -> Tuple[str, Optional[str]]:
-        async def send(*args: Any, **kwargs: Any) -> Union["types.Error", "types.Message"]:
+        async def send(
+            *args: Any, **kwargs: Any
+        ) -> Union["types.Error", "types.Message"]:
             return await m.reply_text(*args, **kwargs)
 
         def _print(*args: Any, **kwargs: Any) -> None:
@@ -373,6 +375,7 @@ async def logger(c: Client, message: types.Message) -> None:
 
     await message.reply_text(get_string("logger_invalid_usage", lang).format(arg=args))
 
+
 @Client.on_message(filters=Filter.command(["autoend", "auto_end"]))
 async def auto_end(c: Client, message: types.Message) -> None:
     if message.from_id not in DEVS:
@@ -388,7 +391,7 @@ async def auto_end(c: Client, message: types.Message) -> None:
             f"<b>Auto End</b> is currently <b>{status_text}</b>.\n\n"
             "When enabled, the bot will automatically end group voice chats "
             "if no users are listening. Useful for saving resources and keeping chats clean.",
-            disable_web_page_preview=True
+            disable_web_page_preview=True,
         )
         if isinstance(reply, types.Error):
             c.logger.warning(reply.message)
@@ -404,7 +407,7 @@ async def auto_end(c: Client, message: types.Message) -> None:
     else:
         reply = await message.reply_text(
             f"⚠️ Unknown argument: <b>{args}</b>\nUse <code>/autoend on</code> or <code>/autoend off</code>.",
-            disable_web_page_preview=True
+            disable_web_page_preview=True,
         )
     if isinstance(reply, types.Error):
         c.logger.warning(reply.message)
@@ -417,11 +420,14 @@ async def clear_all_assistants(c: Client, message: types.Message) -> None:
         return
 
     count = await db.clear_all_assistants()
-    c.logger.info("Cleared assistants from %s chats by command from %s", count, message.from_id)
+    c.logger.info(
+        "Cleared assistants from %s chats by command from %s", count, message.from_id
+    )
     reply = await message.reply_text(f"♻️ Cleared assistants from {count} chats")
     if isinstance(reply, types.Error):
         c.logger.warning(reply.message)
     return
+
 
 @Client.on_message(filters=Filter.command("logs"))
 async def logs(c: Client, message: types.Message) -> None:

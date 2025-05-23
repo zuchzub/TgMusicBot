@@ -12,6 +12,7 @@ class ChannelPlay(BaseModel):
     chat_id: int
     is_channel: bool
 
+
 class CachedTrack(BaseModel):
     url: str
     name: str

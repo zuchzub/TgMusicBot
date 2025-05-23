@@ -86,7 +86,12 @@ async def send_message_with_retry(
                         await db.remove_user(target_id)
                     return 0
 
-                LOGGER.warning("Message failed for %s: [%d] %s", target_id, result.code, result.message)
+                LOGGER.warning(
+                    "Message failed for %s: [%d] %s",
+                    target_id,
+                    result.code,
+                    result.message,
+                )
                 return 0
 
             return 1

@@ -48,9 +48,7 @@ class Database:
         if await self.get_chat(chat_id) is None:
             LOGGER.info("Added chat: %s", chat_id)
             await self.chat_db.update_one(
-                {"_id": chat_id},
-                {"$setOnInsert": {}},
-                upsert=True
+                {"_id": chat_id}, {"$setOnInsert": {}}, upsert=True
             )
 
     async def _update_chat_field(self, chat_id: int, key: str, value) -> None:
@@ -94,12 +92,10 @@ class Database:
             LOGGER.warning("Error getting chat_id by channel_id: %s", e)
             return None
 
-
     async def clear_all_assistants(self) -> int:
         # Clear assistants from all chats in the database
         result = await self.chat_db.update_many(
-            {"assistant": {"$exists": True}},
-            {"$unset": {"assistant": ""}}
+            {"assistant": {"$exists": True}}, {"$unset": {"assistant": ""}}
         )
 
         # Clear assistants from all cached chats
@@ -163,9 +159,7 @@ class Database:
 
     async def add_user(self, user_id: int) -> None:
         await self.users_db.update_one(
-            {"_id": user_id},
-            {"$setOnInsert": {}},
-            upsert=True
+            {"_id": user_id}, {"$setOnInsert": {}}, upsert=True
         )
 
     async def remove_user(self, user_id: int) -> None:
@@ -196,9 +190,7 @@ class Database:
 
     async def set_logger_status(self, bot_id: int, status: bool) -> None:
         await self.bot_db.update_one(
-            {"_id": bot_id},
-            {"$set": {"logger": status}},
-            upsert=True
+            {"_id": bot_id}, {"$set": {"logger": status}}, upsert=True
         )
 
         # Update cache
@@ -220,9 +212,7 @@ class Database:
 
     async def set_auto_end(self, bot_id: int, status: bool) -> None:
         await self.bot_db.update_one(
-            {"_id": bot_id},
-            {"$set": {"auto_end": status}},
-            upsert=True
+            {"_id": bot_id}, {"$set": {"auto_end": status}}, upsert=True
         )
         # Update cache
         cached = self.bot_cache.get(bot_id, {})

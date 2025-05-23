@@ -68,8 +68,8 @@ class YouTubeUtils:
     def _extract_video_id(url: str) -> Optional[str]:
         """Extract video ID from various YouTube URL formats."""
         for pattern in (
-                YouTubeUtils.YOUTUBE_VIDEO_PATTERN,
-                YouTubeUtils.YOUTUBE_SHORTS_PATTERN,
+            YouTubeUtils.YOUTUBE_VIDEO_PATTERN,
+            YouTubeUtils.YOUTUBE_SHORTS_PATTERN,
         ):
             if match := pattern.match(url):
                 return match.group(1)
@@ -193,6 +193,7 @@ class YouTubeUtils:
         except Exception as e:
             LOGGER.warning("Error accessing cookie directory: %s", e)
             return None
+
     @staticmethod
     async def fetch_oembed_data(url: str) -> Optional[dict[str, Any]]:
         client = HttpxClient()
@@ -233,17 +234,23 @@ class YouTubeUtils:
             "--no-warnings",
             "--quiet",
             "--geo-bypass",
-            "--retries", "2",
+            "--retries",
+            "2",
             "--continue",
             "--no-part",
-            "-o", output_template,
+            "-o",
+            output_template,
         ]
 
         if video:
-            cmd.extend([
-                "-f", "(bestvideo[height<=?720][width<=?1280][ext=mp4])+(bestaudio[ext=m4a])",
-                "--merge-output-format", "mp4",
-            ])
+            cmd.extend(
+                [
+                    "-f",
+                    "(bestvideo[height<=?720][width<=?1280][ext=mp4])+(bestaudio[ext=m4a])",
+                    "--merge-output-format",
+                    "mp4",
+                ]
+            )
         else:
             cmd.extend(["-f", "bestaudio[ext=m4a]/bestaudio/best"])
 
@@ -334,7 +341,11 @@ class YouTubeData(MusicService):
             return None
 
         try:
-            url = (self.query if self.query.startswith(("http://", "https://")) else f"https://youtube.com/watch?v={self.query}")
+            url = (
+                self.query
+                if self.query.startswith(("http://", "https://"))
+                else f"https://youtube.com/watch?v={self.query}"
+            )
             data = await self._fetch_data(url)
             if not data or not data.get("results"):
                 return None
@@ -344,7 +355,9 @@ class YouTubeData(MusicService):
             LOGGER.error(f"Error fetching track {self.query}: {e!r}")
             return None
 
-    async def download_track(self, track: TrackInfo, video: bool = False) -> Union[Path, str, None]:
+    async def download_track(
+        self, track: TrackInfo, video: bool = False
+    ) -> Union[Path, str, None]:
         """
         Download a YouTube track.
 
@@ -413,7 +426,6 @@ class YouTubeData(MusicService):
         except Exception as e:
             LOGGER.error(f"Error searching video: {e!r}")
             return None
-
 
     @staticmethod
     async def _get_playlist_data(url: str) -> Optional[Dict[str, Any]]:

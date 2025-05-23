@@ -28,7 +28,7 @@ class ApiData(MusicService):
             re.IGNORECASE,
         ),
         "soundcloud": re.compile(
-            r"^(https?://)?(soundcloud\.com/[a-zA-Z0-9\-_]+/[a-zA-Z0-9\-_]+)(\?.*)?$",
+            r"^(https?://)?(www\.)?soundcloud\.com/[a-zA-Z0-9_-]+(/(sets)?/[a-zA-Z0-9_-]+)?(\?.*)?$",
             re.IGNORECASE,
         ),
     }

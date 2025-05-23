@@ -10,10 +10,8 @@ from pytdbot import Client, types
 
 from src import __version__, StartTime
 from src.config import SUPPORT_GROUP
-from src.helpers import call
-from src.helpers import chat_cache
-from src.modules.utils import Filter, sec_to_min, SupportButton, user_status_cache, check_user_status, \
-    chat_invite_cache
+from src.helpers import call, chat_invite_cache, user_status_cache, chat_cache
+from src.modules.utils import Filter, sec_to_min, SupportButton
 from src.modules.utils.admins import load_admin_cache
 from src.modules.utils.buttons import add_me_markup, HelpMenu, BackHelpMenu
 from src.modules.utils.play_helpers import (
@@ -113,6 +111,7 @@ If you have any questions or concerns about our privacy policy, feel free to con
 
 rate_limit_cache = TTLCache(maxsize=100, ttl=180)
 
+
 @Client.on_message(filters=Filter.command(["reload"]))
 async def reload_cmd(c: Client, message: types.Message) -> None:
     """Handle the /reload command to reload the bot."""
@@ -155,8 +154,7 @@ async def reload_cmd(c: Client, message: types.Message) -> None:
         chat_cache.clear_chat(chat_id)
 
     load_admins, _ = await load_admin_cache(c, chat_id, True)
-
-    ub_stats = await check_user_status(c, chat_id, ub.me.id)
+    ub_stats = await call.check_user_status(chat_id)
     if isinstance(ub_stats, types.Error):
         ub_stats = ub_stats.message
 

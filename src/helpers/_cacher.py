@@ -3,9 +3,26 @@
 #  Part of the TgMusicBot project. All rights reserved where applicable.
 
 from collections import deque
-from typing import Any, Optional
+from typing import Any, Optional, TypeAlias, Union
+
+from cachetools import TTLCache
+from pytdbot import types
 
 from ._dataclass import CachedTrack
+
+chat_invite_cache = TTLCache(maxsize=1000, ttl=1000)
+
+ChatMemberStatus: TypeAlias = Union[
+    types.ChatMemberStatusCreator,
+    types.ChatMemberStatusAdministrator,
+    types.ChatMemberStatusMember,
+    types.ChatMemberStatusRestricted,
+    types.ChatMemberStatusLeft,
+    types.ChatMemberStatusBanned,
+]
+
+ChatMemberStatusResult: TypeAlias = Union[ChatMemberStatus, types.Error]
+user_status_cache: TTLCache[str, ChatMemberStatus] = TTLCache(maxsize=5000, ttl=1000)
 
 
 class ChatCacher:

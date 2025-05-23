@@ -8,13 +8,15 @@ from pytdbot import types
 from src import config
 
 
-def control_buttons(mode: Literal["play", "pause", "resume"], is_channel: bool) -> types.ReplyMarkupInlineKeyboard:
+def control_buttons(
+    mode: Literal["play", "pause", "resume"], is_channel: bool
+) -> types.ReplyMarkupInlineKeyboard:
     prefix = "cplay" if is_channel else "play"
 
     def btn(text: str, name: str) -> types.InlineKeyboardButton:
         return types.InlineKeyboardButton(
             text=text,
-            type=types.InlineKeyboardButtonTypeCallback(f"{prefix}_{name}".encode())
+            type=types.InlineKeyboardButtonTypeCallback(f"{prefix}_{name}".encode()),
         )
 
     skip_btn = btn("‣‣I", "skip")
@@ -30,6 +32,7 @@ def control_buttons(mode: Literal["play", "pause", "resume"], is_channel: bool) 
     }
 
     return types.ReplyMarkupInlineKeyboard(layouts.get(mode, [[close_btn]]))
+
 
 CLOSE_BTN = types.InlineKeyboardButton(
     text="ᴄʟᴏsᴇ", type=types.InlineKeyboardButtonTypeCallback(b"play_close")
