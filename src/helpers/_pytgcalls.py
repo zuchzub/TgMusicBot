@@ -55,7 +55,6 @@ class Call:
         self.client_counter: int = 1
         self.available_clients: list[str] = []
         self.bot: Optional[Client] = None
-        self._client_assignment_lock = asyncio.Lock()
 
     async def add_bot(self, client: Client) -> types.Ok:
         """Register the main bot client.
@@ -79,15 +78,14 @@ class Call:
         if chat_id == 1:
             return random.choice(self.available_clients)
 
-        async with self._client_assignment_lock:
-            assistant = await db.get_assistant(chat_id)
-            if assistant and assistant in self.available_clients:
-                return assistant
+        assistant = await db.get_assistant(chat_id)
+        if assistant and assistant in self.available_clients:
+            return assistant
 
-            new_client = random.choice(self.available_clients)
-            await db.set_assistant(chat_id, assistant=new_client)
-            LOGGER.info("Set assistant for %s to %s", chat_id, new_client)
-            return new_client
+        new_client = random.choice(self.available_clients)
+        await db.set_assistant(chat_id, assistant=new_client)
+        LOGGER.info("Set assistant for %s to %s", chat_id, new_client)
+        return new_client
 
     async def _group_assistant(self, chat_id: int) -> Union[PyTgCalls, types.Error]:
         client_name = await self._get_client_name(chat_id)
