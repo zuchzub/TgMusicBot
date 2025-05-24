@@ -3,6 +3,8 @@
 #  Part of the TgMusicBot project. All rights reserved where applicable.
 
 import asyncio
+import time
+from datetime import datetime
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
@@ -22,7 +24,6 @@ class InactiveCallManager:
         self.scheduler = AsyncIOScheduler(
             timezone="Asia/Kolkata", event_loop=self.bot.loop
         )
-        self._lock = asyncio.Lock()
 
     async def _end_inactive_calls(self, chat_id: int, semaphore: asyncio.Semaphore):
         async with semaphore:
@@ -63,26 +64,38 @@ class InactiveCallManager:
             await call.end(chat_id)
 
     async def end_inactive_calls(self):
-        if self._lock.locked():
-            self.bot.logger.warning(
-                "end_inactive_calls is already running, skipping..."
-            )
-            return
+        start_time = datetime.now()
+        start_monotonic = time.monotonic()
+        self.bot.logger.info(f"🔄 Started end_inactive_calls at {start_time.strftime('%Y-%m-%d %H:%M:%S')}")
 
-        async with self._lock:
+        try:
             if not await db.get_auto_end(self.bot.me.id):
+                self.bot.logger.debug("Auto end is disabled, skipping...")
                 return
 
             active_chats = chat_cache.get_active_chats()
             if not active_chats:
+                self.bot.logger.debug("No active chats found.")
                 return
 
             self.bot.logger.debug(f"Checking {len(active_chats)} active chats...")
-            semaphore = asyncio.Semaphore(4)
+            semaphore = asyncio.Semaphore(5)
             tasks = [
                 self._end_inactive_calls(chat_id, semaphore) for chat_id in active_chats
             ]
             await asyncio.gather(*tasks)
+
+        except Exception as e:
+            self.bot.logger.error(f"❗ Exception in end_inactive_calls: {e}", exc_info=True)
+
+        finally:
+            end_time = datetime.now()
+            duration = time.monotonic() - start_monotonic
+            self.bot.logger.info(
+                f"✅ Finished end_inactive_calls at {end_time.strftime('%Y-%m-%d %H:%M:%S')} "
+                f"(Duration: {duration:.2f}s)"
+            )
+
 
     async def leave_all(self):
         if not AUTO_LEAVE:
@@ -138,7 +151,12 @@ class InactiveCallManager:
             self.bot.logger.info(f"[{client_name}] Leaving all chats completed.")
 
     async def start_scheduler(self):
-        self.scheduler.add_job(self.end_inactive_calls, CronTrigger(minute="*/1"))
+        self.scheduler.add_job(
+            self.end_inactive_calls,
+            CronTrigger(minute="*/1"),
+            coalesce=True,
+            max_instances=1
+        )
         self.scheduler.add_job(self.leave_all, CronTrigger(hour=0, minute=0))
         self.scheduler.start()
         self.bot.logger.info("Scheduler started.")
