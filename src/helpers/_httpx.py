@@ -4,6 +4,7 @@
 
 import asyncio
 import re
+import time
 import uuid
 from dataclasses import dataclass
 from pathlib import Path
@@ -26,8 +27,8 @@ class DownloadResult:
 
 class HttpxClient:
     DEFAULT_TIMEOUT = 60
-    DEFAULT_DOWNLOAD_TIMEOUT = 60
-    CHUNK_SIZE = 8192  # 8KB chunks for streaming downloads
+    DEFAULT_DOWNLOAD_TIMEOUT = 180
+    CHUNK_SIZE = 8192
     MAX_RETRIES = 2
     BACKOFF_FACTOR = 1.0
 
@@ -41,7 +42,12 @@ class HttpxClient:
         self._download_timeout = download_timeout
         self._max_redirects = max_redirects
         self._session = httpx.AsyncClient(
-            timeout=timeout,
+            timeout=httpx.Timeout(
+                connect=self._timeout,
+                read=self._timeout,
+                write=self._timeout,
+                pool=self._timeout
+            ),
             follow_redirects=max_redirects > 0,
             max_redirects=max_redirects,
         )
@@ -72,17 +78,25 @@ class HttpxClient:
         headers = self._get_headers(url, kwargs.pop("headers", {}))
 
         try:
+            # Dynamic timeout override for known slow hosts
+            if "sslip.io" in url:
+                timeout = httpx.Timeout(connect=30.0, read=180.0, write=30.0, pool=60.0)
+            else:
+                timeout = httpx.Timeout(connect=30.0, read=self._download_timeout)
+
+            start = time.monotonic()
+
             async with self._session.stream(
-                "GET", url, timeout=self._download_timeout, headers=headers
+                "GET", url, timeout=timeout, headers=headers
             ) as response:
                 response.raise_for_status()
+
+                # Determine filename
                 if file_path is None:
                     cd = response.headers.get("Content-Disposition", "")
                     match = re.search(r'filename="?([^"]+)"?', cd)
                     filename = (
-                        unquote(match[1])
-                        if match
-                        else (Path(url).name or uuid.uuid4().hex)
+                        unquote(match[1]) if match else (Path(url).name or uuid.uuid4().hex)
                     )
                     path = Path(config.DOWNLOADS_DIR) / filename
                 else:
@@ -96,8 +110,9 @@ class HttpxClient:
                     async for chunk in response.aiter_bytes(self.CHUNK_SIZE):
                         await f.write(chunk)
 
-                LOGGER.debug("Successfully downloaded file to %s", path)
-                return DownloadResult(success=True, file_path=path)
+            duration = time.monotonic() - start
+            LOGGER.debug("Downloaded file to %s in %.2fs", path, duration)
+            return DownloadResult(success=True, file_path=path)
 
         except Exception as e:
             error_msg = self._handle_http_error(e, url)
@@ -119,34 +134,34 @@ class HttpxClient:
 
         for attempt in range(max_retries):
             try:
+                start = time.monotonic()
                 response = await self._session.get(url, headers=headers, **kwargs)
                 response.raise_for_status()
+                duration = time.monotonic() - start
+                LOGGER.debug("Request to %s succeeded in %.2fs", url, duration)
                 return response.json()
 
             except httpx.TooManyRedirects as e:
                 error_msg = f"Redirect loop for {url}: {repr(e)}"
+                LOGGER.warning(error_msg)
                 if attempt == max_retries - 1:
                     LOGGER.error(error_msg)
                     return None
-                LOGGER.warning(error_msg)
 
             except httpx.HTTPStatusError as e:
-                try:
-                    body = e.response.text
-                except Exception:
-                    body = "Could not decode response body"
+                body = e.response.text if e.response else "No response"
                 error_msg = f"HTTP error {e.response.status_code} for {url}. Body: {body}"
+                LOGGER.warning(error_msg)
                 if attempt == max_retries - 1:
                     LOGGER.error(error_msg)
                     return None
-                LOGGER.warning(error_msg)
 
             except httpx.RequestError as e:
                 error_msg = f"Request failed for {url}: {repr(e)}"
+                LOGGER.warning(error_msg)
                 if attempt == max_retries - 1:
                     LOGGER.error(error_msg)
                     return None
-                LOGGER.warning(error_msg)
 
             except ValueError as e:
                 LOGGER.error("Invalid JSON response from %s: %s", url, repr(e))
@@ -156,7 +171,7 @@ class HttpxClient:
                 LOGGER.error("Unexpected error for %s: %s", url, repr(e))
                 return None
 
-            await asyncio.sleep(backoff_factor * (2**attempt))
+            await asyncio.sleep(backoff_factor * (2 ** attempt))
 
         LOGGER.error("All retries failed for URL: %s", url)
         return None
@@ -167,6 +182,8 @@ class HttpxClient:
             return f"Too many redirects for {url}: {repr(e)}"
         elif isinstance(e, httpx.HTTPStatusError):
             return f"HTTP error {e.response.status_code} for {url}. Body: {e.response.text}"
+        elif isinstance(e, httpx.ReadTimeout):
+            return f"Read timeout for {url}: {repr(e)}"
         elif isinstance(e, httpx.RequestError):
             return f"Request failed for {url}: {repr(e)}"
         return f"Unexpected error for {url}: {repr(e)}"
