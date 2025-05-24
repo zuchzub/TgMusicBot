@@ -95,7 +95,8 @@ async def chat_member(client: Client, update: types.UpdateChatMember) -> None:
         return None
 
     await db.add_chat(chat_id)
-    user_id = update.new_chat_member.member_id.user_id
+    new_member = update.new_chat_member.member_id
+    user_id = new_member.user_id if isinstance(new_member, types.MessageSenderUser) else new_member.chat_id
     old_status = update.old_chat_member.status["@type"]
     new_status = update.new_chat_member.status["@type"]
 

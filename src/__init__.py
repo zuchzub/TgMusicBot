@@ -40,8 +40,8 @@ class Telegram(Client):
         await start_clients()
         await call.add_bot(self)
         await call.register_decorators()
-        await self.call_manager.start_scheduler()
         await super().start()
+        await self.call_manager.start_scheduler()
         self.logger.info(f"Bot started in {datetime.now() - StartTime} seconds.")
         self.logger.info(f"Version: {__version__}")
 

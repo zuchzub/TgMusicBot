@@ -3,15 +3,24 @@
 #  Part of the TgMusicBot project. All rights reserved where applicable.
 
 import logging
+from logging.handlers import RotatingFileHandler
+
+LOG_FORMAT = (
+    "[%(asctime)s - %(levelname)s] - %(name)s - "
+    "%(filename)s:%(lineno)d - %(message)s"
+)
+
+stream_handler = logging.StreamHandler()
+file_handler = RotatingFileHandler("bot.log", maxBytes=3 * 1024 * 1024, backupCount=2, encoding="utf-8")
+formatter = logging.Formatter(LOG_FORMAT, datefmt="%d-%b-%y %H:%M:%S")
+stream_handler.setFormatter(formatter)
+file_handler.setFormatter(formatter)
 
 logging.basicConfig(
     level=logging.INFO,
-    format="[%(asctime)s - %(levelname)s] - %(name)s - %(filename)s:%(lineno)d - %(message)s",
-    datefmt="%d-%b-%y %H:%M:%S",
-    handlers=[logging.StreamHandler(), logging.FileHandler("bot.log")],
+    handlers=[stream_handler, file_handler],
 )
 
-# Reduce logging verbosity for third-party libraries
 logging.getLogger("httpx").setLevel(logging.WARNING)
 logging.getLogger("pyrogram").setLevel(logging.WARNING)
 logging.getLogger("apscheduler").setLevel(logging.WARNING)

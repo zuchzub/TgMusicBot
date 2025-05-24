@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Any, Optional, Dict, Union
 
 from py_yt import Playlist, VideosSearch
+from pytdbot import types
 
 from src.helpers import MusicTrack, PlatformTracks, TrackInfo
 from src.logger import LOGGER
@@ -222,8 +223,29 @@ class YouTubeUtils:
         """
         Download audio using the API.
         """
-        dl = await HttpxClient().download_file(f"{API_URL}/yt?id={video_id}")
-        return dl.file_path if dl.success else None
+        from src import client
+        if public_url := await HttpxClient().make_request(f"{API_URL}/yt?id={video_id}"):
+            dl_url = public_url.get("results")
+            if not dl_url:
+                LOGGER.error("Response from API is empty")
+                return None
+
+            info = await client.getMessageLinkInfo(dl_url)
+            if isinstance(info, types.Error) or info.message is None:
+                LOGGER.error(f"❌ Could not resolve message from link: {dl_url}; {info}")
+                return None
+
+            msg = await client.getMessage(info.chat_id, info.message.id)
+            if isinstance(msg, types.Error):
+                LOGGER.error(f"❌ Failed to fetch message with ID {info.message.id}; {msg}")
+                return None
+
+            file = await msg.download()
+            if isinstance(file, types.Error):
+                LOGGER.error(f"❌ Failed to download message with ID {info.message.id}; {file}")
+                return None
+            return file.path
+        return None
 
     @staticmethod
     async def download_with_yt_dlp(video_id: str, video: bool) -> Optional[str]:

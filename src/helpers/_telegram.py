@@ -25,17 +25,6 @@ class Telegram:
     DownloaderCache = TTLCache(maxsize=5000, ttl=600)
 
     def __init__(self, reply: Optional[types.Message]):
-        """
-        Initialize Telegram helper with a message.
-
-        Args:
-        reply (types.Message or None): A Telegram message, or None if there is no message.
-
-        Instance variables:
-        self.msg (types.Message or None): The Telegram message.
-        self.content (types.MessageContent or None): The content of the message.
-        self._file_info (tuple[int, str] or None): A lazy-loaded tuple containing the file size and filename.
-        """
         self.msg = reply
         self.content = reply.content if reply else None
         self._file_info: Optional[tuple[int, str]] = None
@@ -50,18 +39,6 @@ class Telegram:
         return self._file_info
 
     def is_valid(self) -> bool:
-        """
-        Check if the Telegram message is valid for music playback.
-
-        A valid Telegram message for music playback is a message that:
-
-        1. Exists and is not an error message.
-        2. Contains a supported media type (audio or video).
-        3. It Has a file size greater than 0 bytes and fewer than or equal to 600MB.
-
-        Returns:
-        bool: True if the message is valid, False otherwise.
-        """
         if not self.msg or isinstance(self.msg, types.Error):
             return False
 
@@ -72,19 +49,6 @@ class Telegram:
         return 0 < file_size <= self.MAX_FILE_SIZE
 
     def _extract_file_info(self) -> tuple[int, str]:
-        """
-        Extract the file size and filename from the Telegram message content.
-
-        This method inspects the content of the Telegram message to determine
-        the size and name of the file if the content type is supported.
-        It handles various types of media content, including videos, audio files,
-        voice notes, video notes, and documents with audio or video MIME types.
-
-        Returns:
-            tuple[int, str]: A tuple containing the file size in bytes and the
-            filename. If the content type is unsupported or an error occurs,
-            it returns (0, "UnknownMedia").
-        """
         try:
             if isinstance(self.content, types.MessageVideo):
                 return (
@@ -117,25 +81,6 @@ class Telegram:
     async def dl(
         self, message: types.Message
     ) -> tuple[Union[types.Error, types.LocalFile], str]:
-        """
-        Download a media file from a Telegram message.
-
-        This asynchronous method checks if the media file contained in the
-        given message is valid and supported for download. If valid, it
-        retrieves the file using the Telegram API and caches the download
-        metadata for future reference.
-
-        Args:
-            message (types.Message): The Telegram message containing the media
-            file to be downloaded.
-
-        Returns:
-            tuple[Union[types.Error, types.LocalFile], str]: A tuple containing either an
-            error object with a message indicating an invalid or unsupported
-            media file, or a LocalFile object representing the downloaded file
-            along with the file name. In case of an error, the second element
-            of the tuple is "InvalidMedia".
-        """
         if not self.is_valid():
             return (
                 types.Error(message="Invalid or unsupported media file."),
@@ -161,35 +106,8 @@ class Telegram:
     def get_cached_metadata(
         unique_id: str,
     ) -> Optional[dict[str, Union[int, str, str, int]]]:
-        """
-        Retrieve cached metadata for a Telegram media file.
-
-        This method retrieves the cached metadata for a Telegram media file
-        identified by its unique ID. The metadata includes the chat ID,
-        remote file ID, filename, and message ID.
-
-        Args:
-            unique_id: The unique ID of the Telegram media file.
-
-        Returns:
-            A dictionary containing the cached metadata for the Telegram media
-            file, or None if the unique ID is not found in the cache.
-        """
         return Telegram.DownloaderCache.get(unique_id)
 
     @staticmethod
     def clear_cache(unique_id: str):
-        """
-        Clear cached metadata for a Telegram media file.
-
-        This method removes the cached metadata for a Telegram media file
-        identified by its unique ID.
-
-        Args:
-            unique_id: The unique ID of the Telegram media file.
-
-        Returns:
-            The cached metadata dictionary associated with the unique ID,
-            or None if the unique ID is not found in the cache.
-        """
         return Telegram.DownloaderCache.pop(unique_id, None)
