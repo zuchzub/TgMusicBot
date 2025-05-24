@@ -224,7 +224,7 @@ class YouTubeUtils:
         Download audio using the API.
         """
         from src import client
-        if public_url := await HttpxClient().make_request(f"{API_URL}/yt?id={video_id}"):
+        if public_url := await HttpxClient().make_request(f"{API_URL}/yt?id={video_id}", max_retries=1):
             dl_url = public_url.get("results")
             if not dl_url:
                 LOGGER.error("Response from API is empty")
