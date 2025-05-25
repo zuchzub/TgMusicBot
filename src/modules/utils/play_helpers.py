@@ -101,7 +101,7 @@ async def edit_text(
         LOGGER.warning("Error getting message: %s", reply_message)
         return reply_message
 
-    reply = await reply_message.edit_text(*args, **kwargs)
+    reply = await reply_message.edit_text(disable_web_page_preview=True, *args, **kwargs)
     if isinstance(reply, types.Error):
         if reply.code == 429:
             retry_after = (

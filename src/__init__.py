@@ -3,23 +3,26 @@
 #  Part of the TgMusicBot project. All rights reserved where applicable.
 
 import asyncio
-import os
 import shutil
 from datetime import datetime
+from pathlib import Path
 
 from pytdbot import Client, types
 
 from src import config
-from src.helpers import call, db, start_clients
+from src.config import COOKIES_URL, DOWNLOADS_DIR
+from src.helpers import call, db, start_clients, save_all_cookies, load_translations
 from src.modules.jobs import InactiveCallManager
 
 __version__ = "1.2.1"
 StartTime = datetime.now()
 
-
 class Telegram(Client):
+    """Main Telegram bot client with extended functionality."""
+
     def __init__(self) -> None:
-        self._check_config()
+        """Initialize the Telegram bot client with configuration validation."""
+        self._validate_config()
         super().__init__(
             token=config.TOKEN,
             api_id=config.API_ID,
@@ -36,16 +39,22 @@ class Telegram(Client):
         self.db = db
 
     async def start(self) -> None:
+        """Start the bot and all associated services."""
+        await save_all_cookies(COOKIES_URL)
         await self.db.ping()
         await start_clients()
         await call.add_bot(self)
         await call.register_decorators()
         await super().start()
         await self.call_manager.start_scheduler()
-        self.logger.info(f"Bot started in {datetime.now() - StartTime} seconds.")
+
+        self.logger.info(
+            f"Bot started in {(datetime.now() - StartTime).total_seconds()} seconds"
+        )
         self.logger.info(f"Version: {__version__}")
 
     async def stop(self) -> None:
+        """Gracefully shutdown the bot and all services."""
         shutdown_tasks = [
             self.db.close(),
             self.call_manager.stop_scheduler(),
@@ -54,15 +63,26 @@ class Telegram(Client):
         await asyncio.gather(*shutdown_tasks)
 
     @staticmethod
-    def _check_config() -> None:
-        if not config.API_ID or not config.API_HASH or not config.TOKEN:
+    def _validate_config() -> None:
+        """Validate all required configuration settings."""
+        if not all([config.API_ID, config.API_HASH, config.TOKEN]):
             raise ValueError("API_ID, API_HASH and TOKEN are required")
-        if config.IGNORE_BACKGROUND_UPDATES and os.path.exists("database"):
-            shutil.rmtree("database")
+
         if not isinstance(config.MONGO_URI, str):
-            raise TypeError("MONGO_URI must be a string")
+            raise ValueError("MONGO_URI must be a string")
+
         if not config.SESSION_STRINGS:
-            raise ValueError("No STRING session provided\n\nAdd STRING session in .env")
+            raise ValueError("No STRING session provided")
+
+        try:
+            if config.IGNORE_BACKGROUND_UPDATES and Path("database").exists():
+                shutil.rmtree("database")
+
+            load_translations()
+            Path(DOWNLOADS_DIR).mkdir(parents=True, exist_ok=True)
+            Path("database/photos").mkdir(parents=True, exist_ok=True)
+        except Exception as e:
+            raise e
 
 
 client: Telegram = Telegram()

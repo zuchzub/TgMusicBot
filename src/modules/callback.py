@@ -7,7 +7,7 @@ from pytdbot import Client, types
 from src import db
 from src.helpers import get_string, chat_cache, call, MusicServiceWrapper, ChannelPlay
 from src.modules.utils import Filter, is_channel_cmd, control_buttons
-from src.modules.utils.admins import is_admin
+from src.modules.utils.admins import is_admin, load_admin_cache
 from .play import _get_platform_url, play_music
 from .progress_handler import _handle_play_c_data
 from .utils.play_helpers import edit_text
@@ -31,6 +31,7 @@ async def callback_query(c: Client, message: types.UpdateNewCallbackQuery) -> No
         c.logger.warning(user.message)
         return None
 
+    await load_admin_cache(c, message.chat_id)
     data = data[1:] if channel_play else data
     user_name = user.first_name
 

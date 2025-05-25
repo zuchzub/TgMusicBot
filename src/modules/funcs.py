@@ -527,10 +527,10 @@ async def skip_song(c: Client, msg: types.Message) -> None:
         )
         return None
 
-    reply = await msg.reply_text(
-        f"⏭️ {get_string('song_skipped', lang)}\n│ \n└ {get_string('requested_by', lang)}: {await msg.mention()} 🥀"
-    )
-    if isinstance(reply, types.Error):
-        c.logger.warning(f"Error sending reply: {reply}")
+    # reply = await msg.reply_text(
+    #     f"⏭️ {get_string('song_skipped', lang)}\n│ \n└ {get_string('requested_by', lang)}: {await msg.mention()} 🥀"
+    # )
+    # if isinstance(reply, types.Error):
+    #     c.logger.warning(f"Error sending reply: {reply}")
 
     return None

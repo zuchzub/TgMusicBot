@@ -162,11 +162,11 @@ async def _handle_single_track(
         chat_cache.add_song(chat_id, song)
         text = (
             f"<b>➻ {get_string('added_to_queue_at', lang)} #{len(queue)}:</b>\n\n"
-            f"‣ <b>{get_string('title', lang)}:</b> {song.name}\n"
+            f"‣ <b>{get_string('title', lang)}:</b> <a href='{song.url}'>{song.name}</a>\n"
             f"‣ <b>{get_string('duration', lang)}:</b> {sec_to_min(song.duration)}\n"
             f"‣ <b>{get_string('requested_by', lang)}:</b> {song.user}"
         )
-        thumb = await gen_thumb(song) if await db.get_thumb_status(chat_id) else ""
+        thumb = "" # await gen_thumb(song) if await db.get_thumb_status(chat_id) else ""
         await _update_msg_with_thumb(
             c,
             msg,
@@ -190,7 +190,7 @@ async def _handle_single_track(
     thumb = await gen_thumb(song) if await db.get_thumb_status(chat_id) else ""
     text = (
         f"🎵 <b>{get_string('now_playing', lang)}:</b>\n\n"
-        f"‣ <b>{get_string('title', lang)}:</b> {song.name}\n"
+        f"‣ <b>{get_string('title', lang)}:</b> <a href='{song.url}'>{song.name}</a>\n"
         f"‣ <b>{get_string('duration', lang)}:</b> {sec_to_min(song.duration)}\n"
         f"‣ <b>{get_string('requested_by', lang)}:</b> {song.user}"
     )

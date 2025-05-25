@@ -324,7 +324,7 @@ class Call:
             # Prepare a playback message
             text = (
                 f"<b>Now Playing:</b>\n\n"
-                f"‣ <b>Title:</b> {song.name}\n"
+                f"‣ <b>Title:</b> <a href='{song.url}'>{song.name}</a>\n"
                 f"‣ <b>Duration:</b> {sec_to_min(duration)}\n"
                 f"‣ <b>Requested by:</b> {song.user}"
             )
