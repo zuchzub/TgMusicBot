@@ -143,24 +143,24 @@ async def _handle_join(client: Client, chat_id: int, user_id: int) -> None:
     """Handle user/bot joining the chat."""
     if user_id == client.options["my_id"]:
         await handle_bot_join(client, chat_id)
-    LOGGER.info("User %s joined the chat %s.", user_id, chat_id)
+    LOGGER.debug("User %s joined the chat %s.", user_id, chat_id)
 
 
 async def _handle_leave_or_kick(chat_id: int, user_id: int) -> None:
     """Handle user leaving or being kicked from chat."""
-    LOGGER.info("User %s left or was kicked from %s.", user_id, chat_id)
+    LOGGER.debug("User %s left or was kicked from %s.", user_id, chat_id)
     await _update_user_status_cache(chat_id, user_id, types.ChatMemberStatusLeft())
 
 
 async def _handle_ban(chat_id: int, user_id: int) -> None:
     """Handle user being banned from chat."""
-    LOGGER.info("User %s was banned in %s.", user_id, chat_id)
+    LOGGER.debug("User %s was banned in %s.", user_id, chat_id)
     await _update_user_status_cache(chat_id, user_id, types.ChatMemberStatusBanned())
 
 
 async def _handle_unban(chat_id: int, user_id: int) -> None:
     """Handle user being unbanned from chat."""
-    LOGGER.info("User %s was unbanned in %s.", user_id, chat_id)
+    LOGGER.debug("User %s was unbanned in %s.", user_id, chat_id)
     await _update_user_status_cache(chat_id, user_id, types.ChatMemberStatusLeft())
 
 
@@ -184,7 +184,7 @@ async def _handle_promotion_demotion(
         LOGGER.info("Bot promoted in %s. Reloading admin cache.", chat_id)
     else:
         action = "promoted" if is_promoted else "demoted"
-        LOGGER.info("User %s was %s in %s.", user_id, action, chat_id)
+        LOGGER.debug("User %s was %s in %s.", user_id, action, chat_id)
 
     await load_admin_cache(client, chat_id, True)
     await asyncio.sleep(1)
