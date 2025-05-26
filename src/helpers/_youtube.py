@@ -15,6 +15,7 @@ from pytdbot import types
 from src.helpers import MusicTrack, PlatformTracks, TrackInfo
 from src.logger import LOGGER
 from ._downloader import MusicService
+from ._telegram import Telegram
 from ._httpx import HttpxClient
 from ..config import API_URL, API_KEY, DOWNLOADS_DIR, PROXY
 
@@ -219,7 +220,7 @@ class YouTubeUtils:
         return None
 
     @staticmethod
-    async def download_with_api(video_id: str) -> Optional[Path]:
+    async def download_with_api(video_id: str, reply: Union[None, types.Message]) -> Optional[Path]:
         """
         Download audio using the API.
         """
@@ -229,6 +230,10 @@ class YouTubeUtils:
             if not dl_url:
                 LOGGER.error("Response from API is empty")
                 return None
+
+            if not re.fullmatch(r"https:\/\/t\.me\/([a-zA-Z0-9_]{5,})\/(\d+)", dl_url):
+                dl = await HttpxClient().download_file(f"{API_URL}/stream?uuid={dl_url}")
+                return dl.file_path if dl.success else None
 
             info = await client.getMessageLinkInfo(dl_url)
             if isinstance(info, types.Error) or info.message is None:
@@ -240,10 +245,11 @@ class YouTubeUtils:
                 LOGGER.error(f"❌ Failed to fetch message with ID {info.message.id}; {msg}")
                 return None
 
-            file = await msg.download()
+            file, _ = await Telegram(msg).download_msg(reply)
             if isinstance(file, types.Error):
                 LOGGER.error(f"❌ Failed to download message with ID {info.message.id}; {file}")
                 return None
+
             return file.path
         return None
 
@@ -377,25 +383,13 @@ class YouTubeData(MusicService):
             LOGGER.error(f"Error fetching track {self.query}: {e!r}")
             return None
 
-    async def download_track(
-        self, track: TrackInfo, video: bool = False
-    ) -> Union[Path, str, None]:
-        """
-        Download a YouTube track.
-
-        Args:
-            track: TrackInfo object containing track details
-            video: Whether to download video (True) or audio only (False)
-
-        Returns:
-            str: Path to downloaded file or None if failed
-        """
+    async def download_track(self, track: TrackInfo, video: bool = False, msg: Union[None, types.Message]= None) -> Union[Path, str, None]:
         if not track:
             return None
 
         try:
             if not video and API_URL and API_KEY:
-                if file_path := await YouTubeUtils.download_with_api(track.tc):
+                if file_path := await YouTubeUtils.download_with_api(track.tc, msg):
                     return file_path
 
             return await YouTubeUtils.download_with_yt_dlp(track.tc, video)

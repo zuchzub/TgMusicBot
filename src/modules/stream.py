@@ -95,7 +95,7 @@ async def stream_cmd(_: Client, msg: types.Message) -> None:
 
     reply_message = await msg.reply_text("📥 Downloading file...")
 
-    file_path, file_name = await telegram.dl(reply_message)
+    file_path, file_name = await telegram.download_msg(reply_message)
     if isinstance(file_path, types.Error):
         await edit_text(
             reply_message,

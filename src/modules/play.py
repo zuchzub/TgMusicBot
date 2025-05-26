@@ -96,7 +96,7 @@ async def _update_msg_with_thumb(
     Update a message with thumbnail if available.
     """
     if not thumb:
-        return await edit_text(msg, text=text, reply_markup=button)
+        return await edit_text(msg, text=text, reply_markup=button, disable_web_page_preview=True)
 
     parsed_text = await c.parseTextEntities(text, types.TextParseModeHTML())
     if isinstance(parsed_text, types.Error):
@@ -149,7 +149,7 @@ async def _handle_single_track(
     )
 
     if not song.file_path:
-        if file_path := await call.song_download(song):
+        if file_path := await call.song_download(song, msg):
             song.file_path = file_path
         else:
             return await edit_text(
@@ -338,7 +338,7 @@ async def _handle_telegram_file(
     is_video = isinstance(content, types.MessageVideo) or docs_vid
 
     # Download the file
-    file_path, file_name = await telegram.dl(reply_message)
+    file_path, file_name = await telegram.download_msg(reply_message)
     if isinstance(file_path, types.Error):
         return await edit_text(
             reply_message,

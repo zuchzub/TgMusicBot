@@ -4,10 +4,12 @@
 
 import asyncio
 import re
-from pathlib import Path
-from typing import Any, Optional
-
 import yt_dlp
+
+from pathlib import Path
+from typing import Any, Optional, Union
+
+from pytdbot import types
 
 from src import config
 from src.logger import LOGGER
@@ -213,19 +215,7 @@ class JiosaavnData(MusicService):
             LOGGER.error("Unexpected error getting playlist %s: %s", url, str(e))
         return None
 
-    async def download_track(
-        self, track: TrackInfo, video: bool = False
-    ) -> Optional[Path]:
-        """
-        Download a track to local storage.
-
-        Args:
-            track: TrackInfo object containing download details
-            video: Whether to download video or audio
-
-        Returns:
-            Optional[Path]: Path to downloaded file or None if failed
-        """
+    async def download_track(self, track: TrackInfo, video: bool = False, msg: Union[None, types.Message]= None) -> Optional[Path]:
         if not track or not track.cdnurl:
             return None
 

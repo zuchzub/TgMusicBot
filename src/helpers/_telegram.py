@@ -24,9 +24,9 @@ class Telegram:
     )
     DownloaderCache = TTLCache(maxsize=5000, ttl=600)
 
-    def __init__(self, reply: Optional[types.Message]):
-        self.msg = reply
-        self.content = reply.content if reply else None
+    def __init__(self, dl_msg: Optional[types.Message]):
+        self.msg = dl_msg
+        self.content = dl_msg.content if dl_msg else None
         self._file_info: Optional[tuple[int, str]] = None
 
     @property
@@ -78,9 +78,7 @@ class Telegram:
         LOGGER.info("Unsupported content type: %s", type(self.content).__name__)
         return 0, "UnknownMedia"
 
-    async def dl(
-        self, message: types.Message
-    ) -> tuple[Union[types.Error, types.LocalFile], str]:
+    async def download_msg(self, message: types.Message) -> tuple[Union[types.Error, types.LocalFile], str]:
         if not self.is_valid():
             return (
                 types.Error(message="Invalid or unsupported media file."),
