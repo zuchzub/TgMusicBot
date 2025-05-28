@@ -8,22 +8,14 @@ from datetime import datetime
 from cachetools import TTLCache
 from pytdbot import Client, types
 
-from src import __version__, StartTime
+from src import __version__, StartTime, db
 from src.config import SUPPORT_GROUP
-from src.helpers import call, chat_invite_cache, user_status_cache, chat_cache
+from src.helpers import call, chat_invite_cache, user_status_cache, chat_cache, get_string
 from src.modules.utils import Filter, sec_to_min, SupportButton
 from src.modules.utils.admins import load_admin_cache
 from src.modules.utils.buttons import add_me_markup, HelpMenu, BackHelpMenu
 from src.modules.utils.play_helpers import (
     extract_argument,
-)
-from src.modules.utils.strings import (
-    PmStartText,
-    StartText,
-    UserCommands,
-    ChatOwnerCommands,
-    BotDevsCommands,
-    AdminCommands,
 )
 
 
@@ -33,9 +25,10 @@ async def start_cmd(c: Client, message: types.Message):
     Handle the /start and /help command to welcome users.
     """
     chat_id = message.chat_id
+    lang = await db.get_lang(chat_id)
     bot_name = c.me.first_name
     if chat_id < 0:
-        text = StartText.format(await message.mention(), bot_name, SUPPORT_GROUP)
+        text = get_string("StartText", lang).format(await message.mention(), bot_name, SUPPORT_GROUP)
         reply = await message.reply_text(
             text=text,
             disable_web_page_preview=True,
@@ -45,7 +38,7 @@ async def start_cmd(c: Client, message: types.Message):
             c.logger.warning(f"Error sending start message: {reply.message}")
         return None
 
-    text = PmStartText.format(await message.mention(), bot_name, __version__)
+    text = get_string("PmStartText", lang).format(await message.mention(), bot_name, __version__)
     bot_username = c.me.usernames.editable_username
     reply = await message.reply_text(text, reply_markup=add_me_markup(bot_username))
     if isinstance(reply, types.Error):
@@ -221,6 +214,8 @@ async def song_cmd(c: Client, message: types.Message):
 async def callback_query_help(c: Client, message: types.UpdateNewCallbackQuery) -> None:
     """Handle the help_* callback query."""
     data = message.payload.data.decode()
+    chat_id = message.chat_id
+    lang = await db.get_lang(chat_id)
     if data == "help_all":
         user = await c.getUser(message.sender_user_id)
         if isinstance(user, types.Error):
@@ -228,29 +223,29 @@ async def callback_query_help(c: Client, message: types.UpdateNewCallbackQuery) 
             await message.answer(text="Something went wrong.", show_alert=True)
             return None
         await message.answer(text="Help Menu")
-        text = PmStartText.format(user.first_name, c.me.first_name, __version__)
+        text = get_string("PmStartText", lang).format(user.first_name, c.me.first_name, __version__)
         await message.edit_message_text(text=text, reply_markup=HelpMenu)
         return None
 
     actions = {
         "help_user": {
             "answer": "User Help Menu",
-            "text": UserCommands,
+            "text": get_string("UserCommands", lang),
             "markup": BackHelpMenu,
         },
         "help_admin": {
             "answer": "Admin Help Menu",
-            "text": AdminCommands,
+            "text": get_string("AdminCommands", lang),
             "markup": BackHelpMenu,
         },
         "help_owner": {
             "answer": "Owner Help Menu",
-            "text": ChatOwnerCommands,
+            "text": get_string("ChatOwnerCommands", lang),
             "markup": BackHelpMenu,
         },
         "help_devs": {
             "answer": "Developer Help Menu",
-            "text": BotDevsCommands,
+            "text": get_string("BotDevsCommands", lang),
             "markup": BackHelpMenu,
         },
     }
