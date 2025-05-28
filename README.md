@@ -341,12 +341,25 @@ tgmusic
 </details>
 
 <details>
-  <summary><strong>Deploy on Heroku (<small>Click to expand</small>)</strong></summary>
-  <p align="center">
-    <a href="https://heroku.com/deploy?template=https://github.com/AshokShau/TgMusicBot">
-      <img src="https://img.shields.io/badge/Deploy%20On%20Heroku-black?style=for-the-badge&logo=heroku" width="220" height="38.45" alt="Deploy">
-    </a>
-  </p>
+  <summary><strong>Deploy on Heroku, Railway<small>(Click to expand)</small></strong></summary>
+
+  <br/>
+
+  <table align="center">
+    <tr>
+      <td align="center">
+        <a href="https://heroku.com/deploy?template=https://github.com/AshokShau/TgMusicBot">
+          <img src="https://img.shields.io/badge/Deploy%20on%20Heroku-430098?style=for-the-badge&logo=heroku&logoColor=white" width="220" height="38.45" alt="Deploy on Heroku">
+        </a>
+      </td>
+      <td align="center">
+        <a href="https://railway.com/template/-APViE?referralCode=ItGdhZ">
+          <img src="https://img.shields.io/badge/Deploy%20on%20Railway-000000?style=for-the-badge&logo=railway&logoColor=white" width="220" height="38.45" alt="Deploy on Railway">
+        </a>
+      </td>
+    </tr>
+  </table>
+
 </details>
 
 ---
