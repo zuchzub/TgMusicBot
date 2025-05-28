@@ -26,6 +26,7 @@ LANG_NAMES = {
     "ru": "Russian",
     "id": "Indonesia",
     "kur": "Kurdish",
+    "fa": "Persian",
 }
 
 langs = {}
