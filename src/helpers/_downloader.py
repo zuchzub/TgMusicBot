@@ -3,9 +3,7 @@
 #  Part of the TgMusicBot project. All rights reserved where applicable.
 
 from abc import ABC, abstractmethod
-from typing import Optional, Union
-
-from pytdbot import types
+from typing import Optional
 
 from src import config
 from ._dataclass import PlatformTracks, TrackInfo
@@ -66,14 +64,15 @@ class MusicService(ABC):
         pass
 
     @abstractmethod
-    async def download_track(self, track_info: TrackInfo, video: bool = False, msg: Union[None, types.Message] = None) -> Optional[str]:
+    async def download_track(
+        self, track_info: TrackInfo, video: bool = False
+    ) -> Optional[str]:
         """
         Download a track from the music service.
 
         Args:
             track_info: Track information containing the track ID or URL to download.
             video: Whether to download video or audio (default: False)
-            msg: Optional message to update with progress (default: None)
 
         Returns:
             Optional[str]: Path to the downloaded file if successful, or None if download fails.
@@ -142,5 +141,7 @@ class MusicServiceWrapper(MusicService):
     async def get_track(self) -> Optional[TrackInfo]:
         return await self.service.get_track()
 
-    async def download_track(self, track_info: TrackInfo, video: bool = False, msg: Union[None, types.Message]= None) -> Optional[str]:
+    async def download_track(
+        self, track_info: TrackInfo, video: bool = False
+    ) -> Optional[str]:
         return await self.service.download_track(track_info)

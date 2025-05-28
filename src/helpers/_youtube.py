@@ -15,8 +15,7 @@ from pytdbot import types
 from src.helpers import MusicTrack, PlatformTracks, TrackInfo
 from src.logger import LOGGER
 from ._downloader import MusicService
-from ._telegram import Telegram
-from ._httpx import HttpxClient
+from ._aiohttp import AioHttpClient
 from ..config import API_URL, API_KEY, DOWNLOADS_DIR, PROXY
 
 
@@ -198,9 +197,9 @@ class YouTubeUtils:
 
     @staticmethod
     async def fetch_oembed_data(url: str) -> Optional[dict[str, Any]]:
-        client = HttpxClient()
         oembed_url = f"https://www.youtube.com/oembed?url={url}&format=json"
-        data = await client.make_request(oembed_url, max_retries=1)
+        async with AioHttpClient() as client:
+            data = await client.make_request(oembed_url, max_retries=1)
         if data:
             video_id = url.split("v=")[1]
             return {
@@ -220,44 +219,71 @@ class YouTubeUtils:
         return None
 
     @staticmethod
-    async def download_with_api(video_id: str, reply: Union[None, types.Message]) -> Optional[Path]:
+    async def download_with_api(video_id: str) -> Union[None, Path]:
         """
         Download audio using the API.
         """
         from src import client
-        if public_url := await HttpxClient().make_request(f"{API_URL}/yt?id={video_id}", max_retries=1):
-            dl_url = public_url.get("results")
-            if not dl_url:
-                LOGGER.error("Response from API is empty")
-                return None
 
-            if not re.fullmatch(r"https:\/\/t\.me\/([a-zA-Z0-9_]{5,})\/(\d+)", dl_url):
-                dl = await HttpxClient().download_file(f"{API_URL}/stream?uuid={dl_url}")
-                return dl.file_path if dl.success else None
+        async with AioHttpClient() as c:
+            if public_url := await c.make_request(
+                f"{API_URL}/yt?id={video_id}",
+            ):
+                dl_url = public_url.get("results")
+                if not dl_url:
+                    LOGGER.error("Response from API is empty")
+                    return None
 
-            info = await client.getMessageLinkInfo(dl_url)
-            if isinstance(info, types.Error) or info.message is None:
-                LOGGER.error(f"❌ Could not resolve message from link: {dl_url}; {info}")
-                return None
+                if not re.fullmatch(
+                    r"https:\/\/t\.me\/([a-zA-Z0-9_]{5,})\/(\d+)", dl_url
+                ):
+                    async with AioHttpClient() as client:
+                        dl = await client.download_file(
+                            f"{API_URL}/stream?uuid={dl_url}"
+                        )
+                        return dl.file_path if dl.success else None
 
-            msg = await client.getMessage(info.chat_id, info.message.id)
-            if isinstance(msg, types.Error):
-                LOGGER.error(f"❌ Failed to fetch message with ID {info.message.id}; {msg}")
-                return None
+                info = await client.getMessageLinkInfo(dl_url)
+                if isinstance(info, types.Error) or info.message is None:
+                    LOGGER.error(
+                        f"❌ Could not resolve message from link: {dl_url}; {info}"
+                    )
+                    return None
 
-            file, _ = await Telegram(msg).download_msg(reply)
-            if isinstance(file, types.Error):
-                LOGGER.error(f"❌ Failed to download message with ID {info.message.id}; {file}")
-                return None
+                msg = await client.getMessage(info.chat_id, info.message.id)
+                if isinstance(msg, types.Error):
+                    LOGGER.error(
+                        f"❌ Failed to fetch message with ID {info.message.id}; {msg}"
+                    )
+                    return None
 
-            return file.path
+                file = await msg.download()
+                if isinstance(file, types.Error):
+                    LOGGER.error(
+                        f"❌ Failed to download message with ID {info.message.id}; {file}"
+                    )
+                    return None
+                return Path(file.path)
         return None
 
     @staticmethod
     async def download_with_yt_dlp(video_id: str, video: bool) -> Optional[str]:
-        """Download using yt-dlp with appropriate parameters."""
+        """Download media using yt-dlp with optimized parameters.
+
+        Args:
+            video_id: YouTube video ID
+            video: Whether to download video (True) or audio only (False)
+
+        Returns:
+            Path to downloaded file if successful, None otherwise
+        """
         output_template = f"{DOWNLOADS_DIR}/%(id)s.%(ext)s"
-        cmd = [
+        format_selector = (
+            "bestvideo[ext=mp4][height<=1080]+bestaudio[ext=m4a]/best[ext=mp4][height<=1080]"
+            if video
+            else "bestaudio[ext=m4a]/bestaudio[ext=mp4]/bestaudio/best"
+        )
+        ytdlp_params = [
             "yt-dlp",
             "--no-warnings",
             "--quiet",
@@ -266,33 +292,39 @@ class YouTubeUtils:
             "2",
             "--continue",
             "--no-part",
+            "--concurrent-fragments",
+            "3",
+            "--socket-timeout",
+            "10",
             "-o",
             output_template,
+            "--no-write-thumbnail",
+            "--no-write-info-json",
+            "--no-embed-metadata",
+            "--no-embed-chapters",
+            "--no-embed-subs",
+            "--throttled-rate",
+            "100K",
+            "--retry-sleep",
+            "1",
+            *["-f", format_selector],
         ]
 
-        if video:
-            cmd.extend(
-                [
-                    "-f",
-                    "(bestvideo[height<=?720][width<=?1280][ext=mp4])+(bestaudio[ext=m4a])",
-                    "--merge-output-format",
-                    "mp4",
-                ]
-            )
-        else:
-            cmd.extend(["-f", "bestaudio[ext=m4a]/bestaudio/best"])
-
+        # Proxy or cookies
         if PROXY:
-            cmd.extend(["--proxy", PROXY])
-        elif cookie_file := await YouTubeUtils.get_cookie_file():
-            cmd.extend(["--cookies", cookie_file])
+            ytdlp_params.extend(["--proxy", PROXY])
+        else:
+            cookie_file = await YouTubeUtils.get_cookie_file()
+            if cookie_file:
+                ytdlp_params.extend(["--cookies", cookie_file])
 
         video_url = f"https://www.youtube.com/watch?v={video_id}"
-        cmd.extend([video_url, "--print", "after_move:filepath"])
+        ytdlp_params.extend([video_url, "--print", "after_move:filepath"])
 
         try:
+            LOGGER.debug("Starting yt-dlp download for video ID: %s", video_id)
             proc = await asyncio.create_subprocess_exec(
-                *cmd,
+                *ytdlp_params,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE,
             )
@@ -301,16 +333,31 @@ class YouTubeUtils:
 
             if proc.returncode != 0:
                 error_msg = stderr.decode().strip()
-                LOGGER.error("Failed to download: %s", error_msg)
+                LOGGER.error(
+                    "yt-dlp failed for %s (code %d): %s",
+                    video_id,
+                    proc.returncode,
+                    error_msg,
+                )
                 return None
 
-            if downloaded_path := stdout.decode().strip():
-                LOGGER.info("Downloaded: %s", downloaded_path)
-                return downloaded_path
-            return None
+            downloaded_path = stdout.decode().strip()
+            if not downloaded_path:
+                LOGGER.error(
+                    "Download completed but no file path returned for %s", video_id
+                )
+                return None
 
+            LOGGER.info("Successfully downloaded %s to %s", video_id, downloaded_path)
+            return downloaded_path
+
+        except asyncio.TimeoutError:
+            LOGGER.error("Download timed out for video ID: %s", video_id)
+            return None
         except Exception as e:
-            LOGGER.error("Unexpected error while downloading: %r", e)
+            LOGGER.error(
+                "Unexpected error downloading %s: %r", video_id, e, exc_info=True
+            )
             return None
 
 
@@ -324,7 +371,6 @@ class YouTubeData(MusicService):
         Args:
             query: The search query or YouTube URL to process
         """
-        self.client = HttpxClient()
         self.query = YouTubeUtils.clean_query(query) if query else None
 
     def is_valid(self, url: Optional[str]) -> bool:
@@ -371,7 +417,7 @@ class YouTubeData(MusicService):
         try:
             url = (
                 self.query
-                if self.query.startswith(("http://", "https://"))
+                if re.match("^https?://", self.query)
                 else f"https://youtube.com/watch?v={self.query}"
             )
             data = await self._fetch_data(url)
@@ -383,13 +429,15 @@ class YouTubeData(MusicService):
             LOGGER.error(f"Error fetching track {self.query}: {e!r}")
             return None
 
-    async def download_track(self, track: TrackInfo, video: bool = False, msg: Union[None, types.Message]= None) -> Union[Path, str, None]:
+    async def download_track(
+        self, track: TrackInfo, video: bool = False
+    ) -> Union[Path, str, None]:
         if not track:
             return None
 
         try:
             if not video and API_URL and API_KEY:
-                if file_path := await YouTubeUtils.download_with_api(track.tc, msg):
+                if file_path := await YouTubeUtils.download_with_api(track.tc):
                     return file_path
 
             return await YouTubeUtils.download_with_yt_dlp(track.tc, video)

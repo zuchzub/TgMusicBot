@@ -19,6 +19,7 @@ from src.helpers import chat_cache
 
 _concurrency_limiter = asyncio.Semaphore(10)
 
+
 class InactiveCallManager:
     def __init__(self, bot: Client):
         self.bot = bot
@@ -35,7 +36,8 @@ class InactiveCallManager:
                 )
                 return
 
-            if len(vc_users) > 1: return
+            if len(vc_users) > 1:
+                return
             played_time = await call.played_time(chat_id)
             if isinstance(played_time, types.Error):
                 self.bot.logger.warning(
@@ -43,7 +45,8 @@ class InactiveCallManager:
                 )
                 return
 
-            if played_time < 15: return
+            if played_time < 15:
+                return
             _chat_id = await db.get_chat_id_by_channel(chat_id) or chat_id
             reply = await self.bot.sendTextMessage(
                 _chat_id, "⚠️ No active listeners detected. ⏹️ Leaving voice chat..."
@@ -53,8 +56,10 @@ class InactiveCallManager:
             await call.end(chat_id)
 
     async def end_inactive_calls(self):
-        if self.bot is None or self.bot.me is None: return
-        if not await db.get_auto_end(self.bot.me.id): return
+        if self.bot is None or self.bot.me is None:
+            return
+        if not await db.get_auto_end(self.bot.me.id):
+            return
 
         active_chats = chat_cache.get_active_chats()
         if not active_chats:
@@ -84,7 +89,8 @@ class InactiveCallManager:
             )
 
     async def leave_all(self):
-        if not AUTO_LEAVE: return
+        if not AUTO_LEAVE:
+            return
 
         for client_name, call_instance in call.calls.items():
             ub: PyroClient = call_instance.mtproto_client

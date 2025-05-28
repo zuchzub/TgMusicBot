@@ -4,18 +4,16 @@
 
 import asyncio
 import re
-import yt_dlp
-
 from pathlib import Path
-from typing import Any, Optional, Union
+from typing import Any, Optional
 
-from pytdbot import types
+import yt_dlp
 
 from src import config
 from src.logger import LOGGER
 from ._dataclass import MusicTrack, PlatformTracks, TrackInfo
 from ._downloader import MusicService
-from ._httpx import DownloadResult, HttpxClient
+from ._aiohttp import DownloadResult, AioHttpClient
 
 
 class JiosaavnData(MusicService):
@@ -56,7 +54,6 @@ class JiosaavnData(MusicService):
             query: Search query or URL to process
         """
         self.query = query
-        self.client = HttpxClient(max_redirects=1)
         self._ydl_opts = {
             "quiet": True,
             "no_warnings": True,
@@ -117,7 +114,8 @@ class JiosaavnData(MusicService):
 
         try:
             url = self.API_SEARCH_ENDPOINT.format(query=self.query)
-            response = await self.client.make_request(url)
+            async with AioHttpClient() as client:
+                response = await client.make_request(url)
             data = self._parse_search_response(response)
         except Exception as e:
             LOGGER.error("Search failed for '%s': %s", self.query, str(e))
@@ -215,15 +213,18 @@ class JiosaavnData(MusicService):
             LOGGER.error("Unexpected error getting playlist %s: %s", url, str(e))
         return None
 
-    async def download_track(self, track: TrackInfo, video: bool = False, msg: Union[None, types.Message]= None) -> Optional[Path]:
+    async def download_track(
+        self, track: TrackInfo, video: bool = False
+    ) -> Optional[Path]:
         if not track or not track.cdnurl:
             return None
 
         download_path = Path(config.DOWNLOADS_DIR) / f"{track.tc}.m4a"
-        dl: DownloadResult = await self.client.download_file(
-            track.cdnurl, download_path
-        )
-        return dl.file_path if dl.success else None
+        async with AioHttpClient() as client:
+            dl: DownloadResult = await client.download_file(
+                track.cdnurl, download_path, max_redirects=1
+            )
+            return dl.file_path if dl.success else None
 
     @staticmethod
     def format_jiosaavn_url(name_and_id: str) -> str:

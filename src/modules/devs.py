@@ -141,7 +141,7 @@ async def exec_eval(c: Client, m: types.Message) -> None:
 <b>ᴏᴜᴛ:</b>
 <pre language="python">{escape(out)}</pre>"""
 
-    if len(result) > 4096:
+    if len(result) > 2000:
         filename = f"database/{uuid.uuid4().hex}.txt"
         with open(filename, "w", encoding="utf-8") as file:
             file.write(out)

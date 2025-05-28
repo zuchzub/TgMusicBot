@@ -5,7 +5,6 @@
 import asyncio
 import os
 import shutil
-import subprocess as subp
 import sys
 import uuid
 from os import execvp
@@ -46,28 +45,35 @@ async def update(c: Client, message: types.Message) -> None:
     )
 
     if command == "update":
-        # Ensure .git exists
         if not os.path.exists(".git"):
             await msg.edit_text(
                 "⚠️ This instance does not support updates (no .git directory)."
             )
             return
 
-        # Secure way to resolve git_path
         git_path = shutil.which("git") or "/usr/bin/git"
         if not os.path.isfile(git_path):
             await msg.edit_text("❌ Git not found on system.")
             return
 
         try:
-            result = subp.run(
-                [git_path, "pull"],
-                stdout=subp.PIPE,
-                stderr=subp.STDOUT,
-                text=True,
-                check=True,
+            proc = await asyncio.create_subprocess_exec(
+                git_path,
+                "pull",
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.STDOUT,
             )
-            output = result.stdout
+            stdout, _ = await proc.communicate()
+            output = stdout.decode().strip()
+
+            if proc.returncode != 0:
+                if "Permission denied" in output or "Authentication failed" in output:
+                    await msg.edit_text(
+                        "❌ Update failed: Private repo access denied. Please check your credentials or use SSH."
+                    )
+                else:
+                    await msg.edit_text(f"⚠️ Git pull failed:\n<pre>{output}</pre>")
+                return
 
             if "Already up to date." in output:
                 await msg.edit_text("✅ Bot is already up to date.")
@@ -90,16 +96,12 @@ async def update(c: Client, message: types.Message) -> None:
                 await msg.edit_text(
                     f"✅ Bot updated successfully. Restarting...\n<b>Update Output:</b>\n<pre>{output}</pre>"
                 )
-        except subp.CalledProcessError as e:
-            LOGGER.error("Update failed: %s", e)
-            await msg.edit_text(f"⚠️ Update failed:\n<pre>{e.output}</pre>")
-            return
+
         except Exception as e:
             LOGGER.error("Unexpected update error: %s", e)
             await msg.edit_text(f"⚠️ Update error: {e}")
             return
 
-    # Inform active chats
     if active_vc := chat_cache.get_active_chats():
         for chat_id in active_vc:
             await call.end(chat_id)
@@ -115,7 +117,6 @@ async def update(c: Client, message: types.Message) -> None:
 
     await msg.edit_text("♻️ Restarting the bot...")
 
-    # Restart logic
     if is_docker():
         await msg.edit_text(
             "🚢 Detected Docker — exiting process to let Docker restart it."

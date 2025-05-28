@@ -104,7 +104,7 @@ tgmusicbot v1.2.1
 ├── aiofiles v24.1.0
 ├── apscheduler v3.11.0
 │   └── tzlocal v5.3.1
-├── cachetools v5.5.2
+├── cachetools v6.0.0
 ├── kurigram v2.2.3
 │   ├── pyaes v1.6.1
 │   └── pysocks v1.7.1

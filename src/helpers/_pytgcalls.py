@@ -304,7 +304,7 @@ class Call:
                 return
 
             # Download song if isn't downloaded
-            file_path = song.file_path or await self.song_download(song, reply)
+            file_path = song.file_path or await self.song_download(song)
             if not file_path:
                 await reply.edit_text(
                     "⚠️ Failed to download the song.\n" "Skipping to next track..."
@@ -374,7 +374,7 @@ class Call:
             )
 
     @staticmethod
-    async def song_download(song: CachedTrack, msg: Union[types.Message, None]) -> Optional[Path]:
+    async def song_download(song: CachedTrack) -> Optional[Path]:
         platform_handlers = {
             "youtube": YouTubeData(song.track_id),
             "jiosaavn": JiosaavnData(song.url),
@@ -392,7 +392,7 @@ class Call:
 
         try:
             track = await handler.get_track()
-            return await handler.download_track(track, song.is_video, msg) if track else None
+            return await handler.download_track(track, song.is_video) if track else None
         except Exception as e:
             LOGGER.error(
                 "Download failed for %s: %s", song.track_id, str(e), exc_info=True
@@ -465,7 +465,11 @@ class Call:
 
             try:
                 await client.leave_call(chat_id)
-            except (exceptions.NotInCallError, errors.GroupCallInvalid):
+            except (
+                exceptions.NotInCallError,
+                errors.GroupCallInvalid,
+                exceptions.NoActiveGroupCall,
+            ):
                 pass  # Already not in call
 
             return types.Ok()

@@ -11,7 +11,9 @@ LOG_FORMAT = (
 )
 
 stream_handler = logging.StreamHandler()
-file_handler = RotatingFileHandler("bot.log", maxBytes=3 * 1024 * 1024, backupCount=2, encoding="utf-8")
+file_handler = RotatingFileHandler(
+    "bot.log", maxBytes=3 * 1024 * 1024, backupCount=2, encoding="utf-8"
+)
 formatter = logging.Formatter(LOG_FORMAT, datefmt="%d-%b-%y %H:%M:%S")
 stream_handler.setFormatter(formatter)
 file_handler.setFormatter(formatter)

@@ -78,7 +78,9 @@ class Telegram:
         LOGGER.info("Unsupported content type: %s", type(self.content).__name__)
         return 0, "UnknownMedia"
 
-    async def download_msg(self, message: types.Message) -> tuple[Union[types.Error, types.LocalFile], str]:
+    async def download_msg(
+        self, message: types.Message
+    ) -> tuple[Union[types.Error, types.LocalFile], str]:
         if not self.is_valid():
             return (
                 types.Error(message="Invalid or unsupported media file."),

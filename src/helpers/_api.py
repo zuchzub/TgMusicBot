@@ -6,14 +6,12 @@ import re
 from pathlib import Path
 from typing import Optional, Union
 
-from pytdbot import types
-
 from src import config
 from src.logger import LOGGER
 from ._dataclass import MusicTrack, PlatformTracks, TrackInfo
 from ._dl_helper import SpotifyDownload
 from ._downloader import MusicService
-from ._httpx import HttpxClient
+from ._aiohttp import AioHttpClient
 
 
 class ApiData(MusicService):
@@ -43,7 +41,6 @@ class ApiData(MusicService):
             query: URL or search query to process
         """
         self.query = self._sanitize_query(query) if query else None
-        self.client = HttpxClient()
         self.api_url = config.API_URL.rstrip("/") if config.API_URL else None
         self.api_key = config.API_KEY
 
@@ -85,7 +82,8 @@ class ApiData(MusicService):
             return None
 
         url = f"{self.api_url}/{endpoint.lstrip('/')}"
-        return await self.client.make_request(url, params=params)
+        async with AioHttpClient() as client:
+            return await client.make_request(url, params=params)
 
     async def get_recommendations(self, limit: int = 4) -> Optional[PlatformTracks]:
         """
@@ -143,7 +141,9 @@ class ApiData(MusicService):
         data = await self._make_api_request("get_track", {"id": self.query})
         return TrackInfo(**data) if data else None
 
-    async def download_track(self, track: TrackInfo, video: bool = False, msg: Union[None, types.Message]= None) -> Optional[Union[str, Path]]:
+    async def download_track(
+        self, track: TrackInfo, video: bool = False
+    ) -> Optional[Union[str, Path]]:
         if not track:
             return None
 
@@ -156,14 +156,12 @@ class ApiData(MusicService):
                 return None
 
             download_path = Path(config.DOWNLOADS_DIR) / f"{track.tc}.mp3"
-            result = await self.client.download_file(track.cdnurl, download_path)
-
-            if not result.success:
-                LOGGER.error("Download failed for track %s", track.tc)
-                return None
-
-            return result.file_path
-
+            async with AioHttpClient() as client:
+                result = await client.download_file(track.cdnurl, download_path)
+                if not result.success:
+                    LOGGER.error("Download failed for track %s", track.tc)
+                    return None
+                return result.file_path
         except Exception as e:
             LOGGER.error(
                 "Error downloading track %s: %s",
