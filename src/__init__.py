@@ -79,7 +79,7 @@ class Telegram(Client):
         try:
             if config.IGNORE_BACKGROUND_UPDATES and Path("database").exists():
                 shutil.rmtree("database")
-            Path(DOWNLOADS_DIR).mkdir(parents=True, exist_ok=True)
+            DOWNLOADS_DIR.mkdir(parents=True, exist_ok=True)
             Path("database/photos").mkdir(parents=True, exist_ok=True)
         except Exception as e:
             raise e

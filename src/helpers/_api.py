@@ -11,7 +11,7 @@ from src.logger import LOGGER
 from ._dataclass import MusicTrack, PlatformTracks, TrackInfo
 from ._dl_helper import SpotifyDownload
 from ._downloader import MusicService
-from ._aiohttp import AioHttpClient
+from ._httpx import HttpxClient
 
 
 class ApiData(MusicService):
@@ -43,6 +43,7 @@ class ApiData(MusicService):
         self.query = self._sanitize_query(query) if query else None
         self.api_url = config.API_URL.rstrip("/") if config.API_URL else None
         self.api_key = config.API_KEY
+        self.client = HttpxClient()
 
     @staticmethod
     def _sanitize_query(query: str) -> str:
@@ -82,8 +83,7 @@ class ApiData(MusicService):
             return None
 
         url = f"{self.api_url}/{endpoint.lstrip('/')}"
-        async with AioHttpClient() as client:
-            return await client.make_request(url, params=params)
+        return await self.client.make_request(url, params=params)
 
     async def get_recommendations(self, limit: int = 4) -> Optional[PlatformTracks]:
         """
@@ -155,13 +155,12 @@ class ApiData(MusicService):
                 LOGGER.error("No download URL available for track %s", track.tc)
                 return None
 
-            download_path = Path(config.DOWNLOADS_DIR) / f"{track.tc}.mp3"
-            async with AioHttpClient() as client:
-                result = await client.download_file(track.cdnurl, download_path)
-                if not result.success:
-                    LOGGER.error("Download failed for track %s", track.tc)
-                    return None
-                return result.file_path
+            download_path = config.DOWNLOADS_DIR / f"{track.tc}.mp3"
+            result = await self.client.download_file(track.cdnurl, download_path)
+            if not result.success:
+                LOGGER.error("Download failed for track %s", track.tc)
+                return None
+            return result.file_path
         except Exception as e:
             LOGGER.error(
                 "Error downloading track %s: %s",

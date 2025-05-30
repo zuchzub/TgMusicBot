@@ -13,7 +13,7 @@ from src import config
 from src.logger import LOGGER
 from ._dataclass import MusicTrack, PlatformTracks, TrackInfo
 from ._downloader import MusicService
-from ._aiohttp import DownloadResult, AioHttpClient
+from ._httpx import DownloadResult, HttpxClient
 
 
 class JiosaavnData(MusicService):
@@ -114,8 +114,7 @@ class JiosaavnData(MusicService):
 
         try:
             url = self.API_SEARCH_ENDPOINT.format(query=self.query)
-            async with AioHttpClient() as client:
-                response = await client.make_request(url)
+            response = await HttpxClient().make_request(url)
             data = self._parse_search_response(response)
         except Exception as e:
             LOGGER.error("Search failed for '%s': %s", self.query, str(e))
@@ -219,12 +218,11 @@ class JiosaavnData(MusicService):
         if not track or not track.cdnurl:
             return None
 
-        download_path = Path(config.DOWNLOADS_DIR) / f"{track.tc}.m4a"
-        async with AioHttpClient() as client:
-            dl: DownloadResult = await client.download_file(
-                track.cdnurl, download_path, max_redirects=1
-            )
-            return dl.file_path if dl.success else None
+        download_path = config.DOWNLOADS_DIR / f"{track.tc}.m4a"
+        dl: DownloadResult = await HttpxClient(max_redirects=1).download_file(
+            track.cdnurl, download_path
+        )
+        return dl.file_path if dl.success else None
 
     @staticmethod
     def format_jiosaavn_url(name_and_id: str) -> str:

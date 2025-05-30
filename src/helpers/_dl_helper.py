@@ -13,7 +13,7 @@ from Crypto.Util import Counter
 
 from src import config
 from src.logger import LOGGER
-from ._aiohttp import AioHttpClient
+from ._httpx import HttpxClient
 from ._dataclass import TrackInfo
 
 
@@ -140,8 +140,7 @@ class SpotifyDownload:
             return None
 
         try:
-            async with AioHttpClient() as client:
-                await client.download_file(self.track.cdnurl, self.encrypted_file)
+            await HttpxClient().download_file(self.track.cdnurl, self.encrypted_file)
             await self.decrypt_audio()
             await rebuild_ogg(self.decrypted_file)
             await self.fix_audio()

@@ -189,7 +189,7 @@ async def _handle_single_track(
 
     _call = await call.play_media(chat_id, song.file_path, video=is_video)
     if isinstance(_call, types.Error):
-        return await edit_text(msg, text=f"⚠️ {str(_call)}")
+        return await edit_text(msg, text=f"⚠️ {_call.message}")
 
     thumb = await gen_thumb(song) if await db.get_thumb_status(chat_id) else ""
     text = (

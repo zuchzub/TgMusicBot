@@ -105,14 +105,14 @@ tgmusicbot v1.2.1
 ├── apscheduler v3.11.0
 │   └── tzlocal v5.3.1
 ├── cachetools v6.0.0
-├── kurigram v2.2.3
+├── kurigram v2.2.4
 │   ├── pyaes v1.6.1
 │   └── pysocks v1.7.1
 ├── meval v2.5
-├── ntgcalls v2.0.0rc7
+├── ntgcalls v2.0.0
 ├── pillow v11.2.1
 ├── psutil v7.0.0
-├── py-tgcalls v2.2.0rc3
+├── py-tgcalls v2.2.0
 │   ├── aiohttp v3.11.18
 │   │   ├── aiohappyeyeballs v2.6.1
 │   │   ├── aiosignal v1.3.2
@@ -127,7 +127,7 @@ tgmusicbot v1.2.1
 │   │       └── propcache v0.3.1
 │   ├── deprecation v2.1.0
 │   │   └── packaging v25.0
-│   └── ntgcalls v2.0.0rc7
+│   └── ntgcalls v2.0.0
 ├── py-yt-search v0.3
 │   ├── httpx v0.28.1
 │   │   ├── anyio v4.9.0
