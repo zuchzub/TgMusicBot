@@ -132,6 +132,8 @@ async def _handle_status_changes(
     ):
         await _handle_leave_or_kick(chat_id, user_id)
     elif new_status == "chatMemberStatusBanned":
+        if user_id == client.me.id:
+            await call.end(chat_id)
         await _handle_ban(chat_id, user_id)
     elif (
         old_status == "chatMemberStatusBanned" and new_status == "chatMemberStatusLeft"
