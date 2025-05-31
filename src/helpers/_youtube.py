@@ -263,92 +263,99 @@ class YouTubeUtils:
         return None
 
     @staticmethod
-    async def download_with_yt_dlp(video_id: str, video: bool) -> Optional[str]:
-        """Download media using yt-dlp with optimized parameters.
+    def _build_ytdlp_params(video_id: str, video: bool, cookie_file: Optional[str]) -> list[str]:
+        """Construct yt-dlp parameters based on video/audio requirements."""
+        output_template = str(DOWNLOADS_DIR / "%(id)s.%(ext)s")
 
-        Args:
-            video_id: YouTube video ID
-            video: Whether to download video (True) or audio only (False)
-
-        Returns:
-            Path to downloaded file if successful, None otherwise
-        """
-        output_template = f"{str(DOWNLOADS_DIR)}/%(id)s.%(ext)s"
         format_selector = (
             "bestvideo[ext=mp4][height<=1080]+bestaudio[ext=m4a]/best[ext=mp4][height<=1080]"
-            if video
-            else "bestaudio[ext=m4a]/bestaudio[ext=mp4]/bestaudio/best"
+            if video else
+            "bestaudio[ext=m4a]/bestaudio[ext=mp4]/bestaudio[ext=webm]/bestaudio/best"
         )
+
         ytdlp_params = [
             "yt-dlp",
             "--no-warnings",
             "--quiet",
             "--geo-bypass",
-            "--retries",
-            "2",
+            "--retries", "2",
             "--continue",
             "--no-part",
-            "--concurrent-fragments",
-            "3",
-            "--socket-timeout",
-            "10",
-            "-o",
-            output_template,
+            "--concurrent-fragments", "3",
+            "--socket-timeout", "10",
+            "--throttled-rate", "100K",
+            "--retry-sleep", "1",
             "--no-write-thumbnail",
             "--no-write-info-json",
             "--no-embed-metadata",
             "--no-embed-chapters",
             "--no-embed-subs",
-            "--throttled-rate",
-            "100K",
-            "--retry-sleep",
-            "1",
-            *["-f", format_selector],
+            "-o", output_template,
+            "-f", format_selector,
         ]
 
-        # Proxy or cookies
+        if video:
+            ytdlp_params += ["--merge-output-format", "mp4"]
+
         if PROXY:
-            ytdlp_params.extend(["--proxy", PROXY])
-        else:
-            cookie_file = await YouTubeUtils.get_cookie_file()
-            if cookie_file:
-                ytdlp_params.extend(["--cookies", cookie_file])
+            ytdlp_params += ["--proxy", PROXY]
+        elif cookie_file:
+            ytdlp_params += ["--cookies", cookie_file]
 
         video_url = f"https://www.youtube.com/watch?v={video_id}"
-        ytdlp_params.extend([video_url, "--print", "after_move:filepath"])
+        ytdlp_params += [video_url, "--print", "after_move:filepath"]
+
+        return ytdlp_params
+
+    @staticmethod
+    async def download_with_yt_dlp(video_id: str, video: bool) -> Optional[str]:
+        """Download YouTube media using yt-dlp.
+
+        Args:
+            video_id (str): YouTube video ID.
+            video (bool): True to download video; False for audio only.
+
+        Returns:
+            Optional[str]: File path of the downloaded media, or None on failure.
+        """
+        cookie_file = await YouTubeUtils.get_cookie_file()
+        ytdlp_params =YouTubeUtils._build_ytdlp_params(video_id, video, cookie_file)
 
         try:
             LOGGER.debug("Starting yt-dlp download for video ID: %s", video_id)
+
             proc = await asyncio.create_subprocess_exec(
                 *ytdlp_params,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE,
             )
 
-            stdout, stderr = await proc.communicate()
+            stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=600)
 
             if proc.returncode != 0:
-                error_msg = stderr.decode().strip()
                 LOGGER.error(
                     "yt-dlp failed for %s (code %d): %s",
                     video_id,
                     proc.returncode,
-                    error_msg,
+                    stderr.decode().strip(),
                 )
                 return None
 
-            downloaded_path = stdout.decode().strip()
-            if not downloaded_path:
-                LOGGER.error(
-                    "Download completed but no file path returned for %s", video_id
-                )
+            downloaded_path_str = stdout.decode().strip()
+            if not downloaded_path_str:
+                LOGGER.error("yt-dlp finished but no output path returned for %s", video_id)
+                return None
+
+            downloaded_path = Path(downloaded_path_str)
+            if not downloaded_path.exists():
+                LOGGER.error("yt-dlp reported path but file not found: %s", downloaded_path)
                 return None
 
             LOGGER.info("Successfully downloaded %s to %s", video_id, downloaded_path)
-            return downloaded_path
+            return str(downloaded_path)
 
         except asyncio.TimeoutError:
-            LOGGER.error("Download timed out for video ID: %s", video_id)
+            LOGGER.error("yt-dlp timed out for video ID: %s", video_id)
             return None
         except Exception as e:
             LOGGER.error(
