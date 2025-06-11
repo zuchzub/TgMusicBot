@@ -1,7 +1,6 @@
-# [TgMusicBot](https://github.com/AshokShau/TgMusicBot) - Telegram Music Bot
+# 🎵 TgMusicBot – Telegram Music Bot [![Stars](https://img.shields.io/github/stars/AshokShau/TgMusicBot?style=social)](https://github.com/AshokShau/TgMusicBot/stargazers)
 
-Telegram Group Calls Streaming bot with some useful features, written in Python with Py-Tgcalls.
-Supporting platforms like YouTube, Spotify, Apple Music, Soundcloud, JioSaavn and more.
+**A high-performance Telegram Voice Chat Bot** for streaming music from YouTube, Spotify, JioSaavn, and more. Built with Python, Py-Tgcalls, and PyTdBot.
 
 <p align="center">
   <!-- GitHub Stars -->
@@ -54,127 +53,32 @@ Supporting platforms like YouTube, Spotify, Apple Music, Soundcloud, JioSaavn an
    <img src="https://raw.githubusercontent.com/AshokShau/TgMusicBot/master/.github/images/thumb.png" alt="thumbnail" width="320" height="320">
 </p>
 
-### [@FallenBeatzBot](https://t.me/FallenBeatzBot) - Try it now!
+### 🔥 Live Bot: [@FallenBeatzBot](https://t.me/FallenBeatzBot)
 
 ---
 
-### 🚫 Tired of IP Bans from YouTube?
+## ✨ Key Features
 
-Say goodbye to restrictions with our **Premium Music API** – your ultimate solution for seamless, high-quality
-downloads.
-
-- **Easy Integration** – Just set `API_URL` & `API_KEY` variables in your bot configuration.
-- **High-Quality Downloads** – Get music from **Spotify, SoundCloud**, and **YouTube** in top quality.
-
-📩 **[Contact me on Telegram](https://t.me/AshokShau) to get access or use [@FallenApiBot](https://t.me/FallenApiBot)**
-
----
-
-### Want to use cookies?
-
-> 📘 Check out this [guide](https://github.com/AshokShau/TgMusicBot/blob/master/cookies/README.md) for instructions on
-> downloading and using them.
+| Feature | Description |
+|---------|-------------|
+| **🎧 Multi-Platform Support** | YouTube, Spotify, Apple Music, SoundCloud, JioSaavn |
+| **📜 Playlist Management** | Queue system with auto-play |
+| **🎛️ Advanced Controls** | Volume, loop, seek, skip, pause/resume |
+| **🌐 Multi-Language** | English, Hindi, Spanish, Arabic support |
+| **⚡ Low Latency** | Optimized with PyTgCalls |
+| **🐳 Docker Ready** | One-click deployment |
+| **🔒 Anti-Ban** | Cookie & API-based authentication |
 
 ---
 
-## **Features**
+## 🚀 Quick Deploy
 
-- **Multi-Platform Support** - Play music
-  from [Spotify](https://open.spotify.com), [YT-Music](https://music.youtube.com), [YouTube](https://www.youtube.com), [JioSaavn](https://jiosaavn.com), [Apple Music](https://music.apple.com), [SoundCloud](https://soundcloud.com)
-  and Telegram files.
-- **Playlists & Queue** - Seamless music playback with queue management.
-- **Full Playback Controls** - Skip, Pause, Resume, End, Mute, Unmute, Volume, Loop, Seek.
-- **Group Voice Chats** - Supports Telegram **group voice chats** (requires admin permissions).
-- **Optimized Performance** - Fully **async**, efficient, and lightweight.
-- **Easy Deployment** - Pre-configured **Docker** setup.
-- **Multi-Language Support** - Available in English, Hindi, Spanish, Arabic, and more. Easily extendable with your own translations.
-- **Open-Source & Free** - Built from scratch using **[PyTdBot](https://github.com/pytdbot/client)** & **[PyTgCalls](https://github.com/pytgcalls/pytgcalls)**.
-  > 💡 Prefer using Pyrogram instead of PyTdBot? Check out
-  the [Pyro-Branch](https://github.com/AshokShau/TgMusicBot/tree/pyro).
+[![Deploy on Heroku](https://img.shields.io/badge/Deploy%20on%20Heroku-430098?style=for-the-badge&logo=heroku)](https://heroku.com/deploy?template=https://github.com/AshokShau/TgMusicBot)
 
 ---
 
-## **Installation**
+## 📦 Installation Methods
 
-<details> 
-<summary>Dependency Tree: Click to expand</summary>
-
-```
-tgmusicbot v1.2.1
-├── aiofiles v24.1.0
-├── apscheduler v3.11.0
-│   └── tzlocal v5.3.1
-├── cachetools v6.0.0
-├── kurigram v2.2.4
-│   ├── pyaes v1.6.1
-│   └── pysocks v1.7.1
-├── meval v2.5
-├── ntgcalls v2.0.0
-├── pillow v11.2.1
-├── psutil v7.0.0
-├── py-tgcalls v2.2.0
-│   ├── aiohttp v3.11.18
-│   │   ├── aiohappyeyeballs v2.6.1
-│   │   ├── aiosignal v1.3.2
-│   │   │   └── frozenlist v1.6.0
-│   │   ├── attrs v25.3.0
-│   │   ├── frozenlist v1.6.0
-│   │   ├── multidict v6.4.3
-│   │   ├── propcache v0.3.1
-│   │   └── yarl v1.20.0
-│   │       ├── idna v3.10
-│   │       ├── multidict v6.4.3
-│   │       └── propcache v0.3.1
-│   ├── deprecation v2.1.0
-│   │   └── packaging v25.0
-│   └── ntgcalls v2.0.0
-├── py-yt-search v0.3
-│   ├── httpx v0.28.1
-│   │   ├── anyio v4.9.0
-│   │   │   ├── idna v3.10
-│   │   │   └── sniffio v1.3.1
-│   │   ├── certifi v2025.4.26
-│   │   ├── httpcore v1.0.9
-│   │   │   ├── certifi v2025.4.26
-│   │   │   └── h11 v0.16.0
-│   │   └── idna v3.10
-│   └── python-dotenv v1.1.0
-├── pycryptodome v3.23.0
-├── pydantic v2.11.5
-│   ├── annotated-types v0.7.0
-│   ├── pydantic-core v2.33.2
-│   │   └── typing-extensions v4.13.2
-│   ├── typing-extensions v4.13.2
-│   └── typing-inspection v0.4.0
-│       └── typing-extensions v4.13.2
-├── pymongo v4.13.0
-│   └── dnspython v2.7.0
-├── pytdbot v0.9.3
-│   ├── aio-pika v9.5.5
-│   │   ├── aiormq v6.8.1
-│   │   │   ├── pamqp v3.3.0
-│   │   │   └── yarl v1.20.0 (*)
-│   │   ├── exceptiongroup v1.2.2
-│   │   └── yarl v1.20.0 (*)
-│   └── deepdiff v8.4.2
-│       └── orderly-set v5.4.0
-├── pytgcrypto v1.2.11
-├── python-dotenv v1.1.0
-├── pytz v2025.2
-├── tdjson v1.8.49
-├── ujson v5.10.0
-├── yt-dlp v2025.5.22
-├── black v25.1.0 (extra: dev)
-│   ├── click v8.1.8
-│   ├── mypy-extensions v1.1.0
-│   ├── packaging v25.0
-│   ├── pathspec v0.12.1
-│   └── platformdirs v4.3.7
-├── ruff v0.11.7 (extra: dev)
-└── setuptools v78.1.1 (extra: dev)
-```
-
-</details>
 
 <details>
 
@@ -340,125 +244,82 @@ tgmusic
 
 </details>
 
+---
+
+## ⚙️ Configuration Guide
+
 <details>
-  <summary><strong>Deploy on Heroku, Railway<small>(Click to expand)</small></strong></summary>
+<summary><b>🔑 Required Variables (Click to expand)</b></summary>
 
-  <br/>
-
-  <table align="center">
-    <tr>
-      <td align="center">
-        <a href="https://heroku.com/deploy?template=https://github.com/AshokShau/TgMusicBot">
-          <img src="https://img.shields.io/badge/Deploy%20on%20Heroku-430098?style=for-the-badge&logo=heroku&logoColor=white" width="220" height="38.45" alt="Deploy on Heroku">
-        </a>
-      </td>
-      <td align="center">
-        <a href="https://railway.com/template/-APViE?referralCode=ItGdhZ">
-          <img src="https://img.shields.io/badge/Deploy%20on%20Railway-000000?style=for-the-badge&logo=railway&logoColor=white" width="220" height="38.45" alt="Deploy on Railway">
-        </a>
-      </td>
-    </tr>
-  </table>
+| Variable | Description | How to Get |
+|----------|-------------|------------|
+| `API_ID` | Telegram App ID | [my.telegram.org](https://my.telegram.org/apps) |
+| `API_HASH` | Telegram App Hash | [my.telegram.org](https://my.telegram.org/apps) |
+| `TOKEN` | Bot Token | [@BotFather](https://t.me/BotFather) |
+| `STRING1-10` | Pyrogram Sessions | [@StringFatherBot](https://t.me/StringFatherBot) |
+| `MONGO_URI` | MongoDB Connection | [MongoDB Atlas](https://cloud.mongodb.com) |
 
 </details>
 
 ---
 
-## **Configuration**
+## 🍪 Avoiding Bans
 
-<details>
-<summary><strong>📌 Environment Variables (<small>Click to expand</small>)</strong></summary>
+### Option 1: Premium API
+```env
+API_URL=https://tgmusic.fallenapi.fun
+API_KEY=your-secret-key
+```
+📌 Get keys: [Contact @AshokShau](https://t.me/AshokShau) or [@FallenApiBot](https://t.me/FallenApiBot)
 
-### 🔑 Required Variables
-
-- **API_ID** – Get from [my.telegram.org](https://my.telegram.org/apps)
-- **API_HASH** – Get from [my.telegram.org](https://my.telegram.org/apps)
-- **TOKEN** – Get from [@BotFather](https://t.me/BotFather)
-
-### 🔗 String Sessions
-
-- **STRING1** - Pyrogram String Session, STRING2 ... STRING10
-
-> Get from [@StringFatherBot](https://t.me/StringFatherBot)
-
-### 🛠️ Additional Configuration
-
-- **OWNER_ID** – Your Telegram User ID
-- **MONGO_URI** – Get from [MongoDB Cloud](https://cloud.mongodb.com)
-- **API_URL** – Get from [@FallenApiBot](https://t.me/FallenApiBot) (API for unlimited downloads)
-- **API_KEY** – Required for API_URL
-- **DOWNLOADS_DIR** – Directory for downloads and TDLib database
-- **SUPPORT_GROUP** – Support Group Link
-- **SUPPORT_CHANNEL** – Support Channel Link
-- **IGNORE_BACKGROUND_UPDATES** – Ignore background updates
-- **LOGGER_ID** – Log Group ID
-- **AUTO_LEAVE** – Leave all chats for all userbot clients.
-- **MIN_MEMBER_COUNT** – Minimum number of members required for the bot to stay in a group.
-
-### 🎵 Music Download Options
-
-- **PROXY** – Optional; Proxy URL for yt-dlp
-- **DEFAULT_SERVICE** – Default search platform (Options: `youtube`, `spotify`, `jiosaavn`)
-- **DOWNLOADS_DIR** – Directory for downloads and TDLib database
-
-### 🍪 Cookies
-
-- **COOKIES_URL** – URLs for downloading cookies (More
-  info [here](https://github.com/AshokShau/TgMusicBot/blob/master/cookies/README.md))
-
-</details>
+### Option 2: Cookies
+[![Cookie Guide](https://img.shields.io/badge/Guide-Read%20Here-blue?style=flat-square)](https://github.com/AshokShau/TgMusicBot/blob/master/cookies/README.md)
 
 ---
 
-## **🎮 Usage**
+## 🤖 Bot Commands
 
-1. **Add [@FallenBeatzBot](https://t.me/FallenBeatzBot) to a group** and grant **admin permissions**.
-2. Use `/start` to **initialize** the bot.
-3. Use `/help` to view the **list of available commands**.
-
----
-
-## **Contributing**
-
-Contributions are welcome! If you'd like to contribute:
-
-1. **Fork** the [repository](https://github.com/AshokShau/TgMusicBot).
-2. **Make meaningful changes** – improve features, fix bugs, or optimize performance.
-3. **Submit a pull request** with a clear explanation of your changes.
-
-🔹 _Avoid submitting minor PRs for small typos or README tweaks unless they significantly improve clarity._
+| Command | Description |
+|---------|-------------|
+| `/play [query]` | Play music from supported platforms |
+| `/skip` | Skip current track |
+| `/pause` / `/resume` | Control playback |
+| `/volume [1-200]` | Adjust volume |
+| `/queue` | Show upcoming tracks |
+| `/loop` | Enable/disable loop |
 
 ---
 
-## **License**
+## 🤝 Contributing
 
-This project is licensed under the **AGPL-3.0 License**. See the [LICENSE](/LICENSE) file for details.
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
----
-
-## **Credits**
-
-- [AshokShau](https://github.com/AshokShau) - Creator & Maintainer
-- Thanks to **all contributors & bug hunters** for improving the project!
-- Special thanks to **[PyTgCalls](https://github.com/pytgcalls)** for their outstanding work.
+**Note:** Minor typo fixes will be closed. Focus on meaningful contributions.
 
 ---
 
-## **💖 Support the Project**
+## 📜 License
 
-Love **TgMusicBot**? Help keep it running!
-
-💰 **Donate via Crypto, PayPal, or UPI** – [Contact me on Telegram](https://t.me/AshokShau) for details.
-
-Every contribution helps! ❤️
+AGPL-3.0 © [AshokShau](https://github.com/AshokShau).  
+[![License](https://img.shields.io/github/license/AshokShau/TgMusicBot?color=blue)](LICENSE)
 
 ---
 
-## **🔗 Links**
+## 💖 Support
 
-> **Follow** me on [GitHub](https://github.com/AshokShau) for updates.  
-> **Star** the repository on [GitHub](https://github.com/AshokShau/TgMusicBot) to support the project.
+Help keep this project alive!  
+[![Telegram](https://img.shields.io/badge/Chat-Support%20Group-blue?logo=telegram)](https://t.me/GuardxSupport)  
+[![Donate](https://img.shields.io/badge/Donate-Crypto/PayPal-ff69b4)](https://t.me/AshokShau)
 
-📢 **Join our Telegram community:**  
-[![Telegram Group](https://img.shields.io/badge/Telegram%20Group-Join%20Now-blue?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/GuardxSupport)  
-[![Telegram Channel](https://img.shields.io/badge/Telegram%20Channel-Join%20Now-blue?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/FallenProjects)
+---
+
+## 🔗 Connect
+
+[![GitHub](https://img.shields.io/badge/Follow-GitHub-black?logo=github)](https://github.com/AshokShau)  
+[![Channel](https://img.shields.io/badge/Updates-Channel-blue?logo=telegram)](https://t.me/FallenProjects)
+
+---

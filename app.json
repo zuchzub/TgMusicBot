@@ -95,7 +95,7 @@
         },
         "API_URL": {
             "description": "API URL for the bot",
-            "value": "",
+            "value": "https://tgmusic.fallenapi.fun",
             "required": false
         },
         "API_KEY": {

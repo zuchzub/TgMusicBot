@@ -263,14 +263,16 @@ class YouTubeUtils:
         return None
 
     @staticmethod
-    def _build_ytdlp_params(video_id: str, video: bool, cookie_file: Optional[str]) -> list[str]:
+    def _build_ytdlp_params(
+        video_id: str, video: bool, cookie_file: Optional[str]
+    ) -> list[str]:
         """Construct yt-dlp parameters based on video/audio requirements."""
         output_template = str(DOWNLOADS_DIR / "%(id)s.%(ext)s")
 
         format_selector = (
             "bestvideo[ext=mp4][height<=1080]+bestaudio[ext=m4a]/best[ext=mp4][height<=1080]"
-            if video else
-            "bestaudio[ext=m4a]/bestaudio[ext=mp4]/bestaudio[ext=webm]/bestaudio/best"
+            if video
+            else "bestaudio[ext=m4a]/bestaudio[ext=mp4]/bestaudio[ext=webm]/bestaudio/best"
         )
 
         ytdlp_params = [
@@ -278,20 +280,27 @@ class YouTubeUtils:
             "--no-warnings",
             "--quiet",
             "--geo-bypass",
-            "--retries", "2",
+            "--retries",
+            "2",
             "--continue",
             "--no-part",
-            "--concurrent-fragments", "3",
-            "--socket-timeout", "10",
-            "--throttled-rate", "100K",
-            "--retry-sleep", "1",
+            "--concurrent-fragments",
+            "3",
+            "--socket-timeout",
+            "10",
+            "--throttled-rate",
+            "100K",
+            "--retry-sleep",
+            "1",
             "--no-write-thumbnail",
             "--no-write-info-json",
             "--no-embed-metadata",
             "--no-embed-chapters",
             "--no-embed-subs",
-            "-o", output_template,
-            "-f", format_selector,
+            "-o",
+            output_template,
+            "-f",
+            format_selector,
         ]
 
         if video:
@@ -319,7 +328,7 @@ class YouTubeUtils:
             Optional[str]: File path of the downloaded media, or None on failure.
         """
         cookie_file = await YouTubeUtils.get_cookie_file()
-        ytdlp_params =YouTubeUtils._build_ytdlp_params(video_id, video, cookie_file)
+        ytdlp_params = YouTubeUtils._build_ytdlp_params(video_id, video, cookie_file)
 
         try:
             LOGGER.debug("Starting yt-dlp download for video ID: %s", video_id)
@@ -343,12 +352,16 @@ class YouTubeUtils:
 
             downloaded_path_str = stdout.decode().strip()
             if not downloaded_path_str:
-                LOGGER.error("yt-dlp finished but no output path returned for %s", video_id)
+                LOGGER.error(
+                    "yt-dlp finished but no output path returned for %s", video_id
+                )
                 return None
 
             downloaded_path = Path(downloaded_path_str)
             if not downloaded_path.exists():
-                LOGGER.error("yt-dlp reported path but file not found: %s", downloaded_path)
+                LOGGER.error(
+                    "yt-dlp reported path but file not found: %s", downloaded_path
+                )
                 return None
 
             LOGGER.info("Successfully downloaded %s to %s", video_id, downloaded_path)
