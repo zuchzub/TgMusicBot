@@ -158,50 +158,23 @@ jobs:
           uv sync --upgrade
           echo "Lockfile updated via uv sync"
 
-      - name: Generate detailed commit message
+      - name: Generate commit message
         id: commit-message
         run: |
-          # Load updated packages from file
           UPDATED_PKGS=$(cat updated_packages.json)
-          ACTUAL_COUNT=$(echo "$UPDATED_PKGS" | jq -r 'length')
-          
-          # Generate markdown table (only if there are updates)
-          if [ "$ACTUAL_COUNT" -gt 0 ]; then
-              TABLE=$(echo "$UPDATED_PKGS" | jq -r '.[] | "| \(.name) | \(.old) | \(.new) |"')
-              DETAILS=$(echo "$UPDATED_PKGS" | jq -r '.[] | "- \(.name): \(.old) → \(.new)"')
-              DIFF=$(cat pyproject.diff || echo "No detailed diff available")
+          COUNT=$(echo "$UPDATED_PKGS" | jq -r 'length')
+
+          if [ "$COUNT" -gt 0 ]; then
+            echo "commit_title=chore(deps): update $COUNT packages" >> $GITHUB_OUTPUT
+
+            CHANGES=$(echo "$UPDATED_PKGS" | jq -r '.[] | "- \(.name) \(.old) → \(.new)"')
+            echo "commit_body<<EOF" >> $GITHUB_OUTPUT
+            echo "$CHANGES" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
           else
-              TABLE=""
-              DETAILS="No packages were updated"
-              DIFF=""
+            echo "commit_title=chore(deps): no updates found" >> $GITHUB_OUTPUT
+            echo "commit_body=Checked for outdated dependencies, nothing needed updating." >> $GITHUB_OUTPUT
           fi
-          
-          echo "commit_title=chore(deps): update ${ACTUAL_COUNT} packages" >> $GITHUB_OUTPUT
-          echo "commit_body<<EOF" >> $GITHUB_OUTPUT
-          echo "### 🔄 Batch Dependency Updates" >> $GITHUB_OUTPUT
-          echo "" >> $GITHUB_OUTPUT
-          
-          if [ "$ACTUAL_COUNT" -gt 0 ]; then
-              echo "The following packages were updated:" >> $GITHUB_OUTPUT
-              echo "" >> $GITHUB_OUTPUT
-              echo "| Package | Old Version | New Version |" >> $GITHUB_OUTPUT
-              echo "|---------|-------------|-------------|" >> $GITHUB_OUTPUT
-              echo "$TABLE" >> $GITHUB_OUTPUT
-              echo "" >> $GITHUB_OUTPUT
-              echo "**Detailed changes:**" >> $GITHUB_OUTPUT
-              echo "\`\`\`diff" >> $GITHUB_OUTPUT
-              echo "$DIFF" >> $GITHUB_OUTPUT
-              echo "\`\`\`" >> $GITHUB_OUTPUT
-          else
-              echo "No packages required updating." >> $GITHUB_OUTPUT
-          fi
-          
-          echo "" >> $GITHUB_OUTPUT
-          echo "**Update Process:**" >> $GITHUB_OUTPUT
-          echo "- Checked for outdated dependencies" >> $GITHUB_OUTPUT
-          echo "- Updated version constraints in pyproject.toml" >> $GITHUB_OUTPUT
-          echo "- Synced lockfile with \`uv sync --upgrade\`" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Commit and push changes
         run: |
