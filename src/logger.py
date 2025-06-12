@@ -10,12 +10,17 @@ LOG_FORMAT = (
     "%(filename)s:%(lineno)d - %(message)s"
 )
 
-stream_handler = logging.StreamHandler()
-file_handler = RotatingFileHandler(
-    "bot.log", maxBytes=3 * 1024 * 1024, backupCount=2, encoding="utf-8"
-)
 formatter = logging.Formatter(LOG_FORMAT, datefmt="%d-%b-%y %H:%M:%S")
+
+stream_handler = logging.StreamHandler()
 stream_handler.setFormatter(formatter)
+
+file_handler = RotatingFileHandler(
+    "bot.log",
+    maxBytes=3 * 1024 * 1024,  # 3 MB
+    backupCount=2,
+    encoding="utf-8",
+)
 file_handler.setFormatter(formatter)
 
 logging.basicConfig(
@@ -23,13 +28,14 @@ logging.basicConfig(
     handlers=[stream_handler, file_handler],
 )
 
-logging.getLogger("httpx").setLevel(logging.WARNING)
-logging.getLogger("pyrogram").setLevel(logging.WARNING)
-logging.getLogger("apscheduler").setLevel(logging.WARNING)
+for lib in ("httpx", "pyrogram", "apscheduler"):
+    logging.getLogger(lib).setLevel(logging.WARNING)
 
-# logging.getLogger('pytgcalls').setLevel(logging.DEBUG)
-# logging.getLogger('ffmpeg').setLevel(logging.DEBUG)
-# logging.getLogger('ntgcalls').setLevel(logging.DEBUG)
-# logging.getLogger('webrtc').setLevel(logging.DEBUG)
+# Uncomment below lines for advanced debugging
+# logging.getLogger("pytgcalls").setLevel(logging.DEBUG)
+# logging.getLogger("ffmpeg").setLevel(logging.DEBUG)
+# logging.getLogger("ntgcalls").setLevel(logging.DEBUG)
+# logging.getLogger("webrtc").setLevel(logging.DEBUG)
+# logging.getLogger("pyrogram").setLevel(logging.DEBUG)
 
-LOGGER = logging.getLogger("Bot")
+LOGGER = logging.getLogger("TgMusicBot")

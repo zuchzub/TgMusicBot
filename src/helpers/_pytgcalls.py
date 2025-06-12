@@ -147,6 +147,7 @@ class Call:
 
             await calls.start()
             LOGGER.info("Client %s started successfully", client_name)
+            asyncio.create_task(calls.play(config.LOGGER_ID, "https://docs.evostream.com/sample_content/assets/sintel1m720p.mp4"))
         except Exception as e:
             LOGGER.error("Error starting client %s: %s", client_name, e)
             raise RuntimeError(f"Failed to start client {client_name}: {str(e)}") from e
