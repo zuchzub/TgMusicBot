@@ -63,7 +63,7 @@ dev = [
 ]
 
 [project.scripts]
-tgmusic = "src.__main__:main"
+tgmusic = "TgMusic.__main__:main"
 
 [project.urls]
 Homepage = "https://github.com/AshokShau/tgmusicbot"
@@ -75,5 +75,5 @@ package = true
 
 [tool.setuptools]
 packages = [
-    "src",
+    "TgMusic",
 ]

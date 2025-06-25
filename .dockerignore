@@ -1,5 +1,4 @@
 **
 !*.py
-!src/
+!TgMusic/
 !pyproject.toml
-!cookies

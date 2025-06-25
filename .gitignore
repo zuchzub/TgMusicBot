@@ -2,6 +2,6 @@ __pycache__/
 /.idea
 /database
 .env
-/cookies
+/TgMusic/cookies
 /tgmusicbot.egg-info
 *.log

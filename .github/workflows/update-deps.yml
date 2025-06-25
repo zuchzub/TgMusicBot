@@ -142,43 +142,66 @@ jobs:
           else:
               print("No version constraints needed updating")
           EOF
+          
+          # Create a flag file if updates were made
+          if [ -f "updated_packages.json" ]; then
+            echo "updates_made=true" >> $GITHUB_OUTPUT
+          else
+            echo "updates_made=false" >> $GITHUB_OUTPUT
+          fi
 
       - name: Get clean diff of changes
         id: get-diff
         run: |
           # Get clean diff without metadata headers
-          git diff -U0 pyproject.toml | grep '^[+-][^+-]' > pyproject.diff
+          git diff -U0 pyproject.toml | grep '^[+-][^+-]' > pyproject.diff || true
           echo "diff<<EOF" >> $GITHUB_OUTPUT
           cat pyproject.diff >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Sync lockfile
+        if: steps.update-deps.outputs.updates_made == 'true'
         run: |
           source .venv/bin/activate
           uv sync --upgrade
           echo "Lockfile updated via uv sync"
 
       - name: Generate commit message
+        if: steps.update-deps.outputs.updates_made == 'true'
         id: commit-message
         run: |
           UPDATED_PKGS=$(cat updated_packages.json)
           COUNT=$(echo "$UPDATED_PKGS" | jq -r 'length')
 
-          if [ "$COUNT" -gt 0 ]; then
-            echo "commit_title=chore(deps): update $COUNT packages" >> $GITHUB_OUTPUT
+          echo "commit_title=chore(deps): update $COUNT packages" >> $GITHUB_OUTPUT
 
-            CHANGES=$(echo "$UPDATED_PKGS" | jq -r '.[] | "- \(.name) \(.old) → \(.new)"')
-            echo "commit_body<<EOF" >> $GITHUB_OUTPUT
-            echo "$CHANGES" >> $GITHUB_OUTPUT
-            echo "EOF" >> $GITHUB_OUTPUT
-          else
-            echo "commit_title=chore(deps): no updates found" >> $GITHUB_OUTPUT
-            echo "commit_body=Checked for outdated dependencies, nothing needed updating." >> $GITHUB_OUTPUT
-          fi
+          CHANGES=$(echo "$UPDATED_PKGS" | jq -r '.[] | "- \(.name) \(.old) → \(.new)"')
+          echo "commit_body<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGES" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
 
-      - name: Commit and push changes
+      - name: Create Pull Request
+        if: steps.update-deps.outputs.updates_made == 'true'
+        uses: peter-evans/create-pull-request@v5
+        with:
+          title: "${{ steps.commit-message.outputs.commit_title }}"
+          body: |
+            Automated dependency updates:
+            
+            ${{ steps.commit-message.outputs.commit_body }}
+            
+            Diff:
+            ```diff
+            ${{ steps.get-diff.outputs.diff }}
+            ```
+          branch: "${{ env.BRANCH_NAME }}"
+          commit-message: "${{ steps.commit-message.outputs.commit_title }}"
+          committer: "AshokShau <114943948+AshokShau@users.noreply.github.com>"
+          author: "AshokShau <114943948+AshokShau@users.noreply.github.com>"
+          labels: dependencies, automated
+
+      - name: No updates found
+        if: steps.update-deps.outputs.updates_made == 'false'
         run: |
-          git checkout -b "${BRANCH_NAME}"
-          git add pyproject.toml uv.lock
-          git commit -m "${{ steps.commit-message.outputs.commit_title }}" -m "${{ steps.commit-message.outputs.commit_body }}"
-          git push origin "${BRANCH_NAME}"
+          echo "No dependency updates available at this time."
+          exit 0
