@@ -142,10 +142,9 @@ jobs:
         if: steps.update-deps.outputs.updates_made == 'true'
         id: commit-message
         run: |
-          echo '${{ steps.update-deps.outputs.updated_packages }}' > updated.json
-          COUNT=$(jq length updated.json)
+          COUNT=$(echo '${{ steps.update-deps.outputs.updated_packages }}' | jq length)
           echo "commit_title=chore(deps): update $COUNT packages" >> $GITHUB_OUTPUT
-          CHANGES=$(jq -r '.[] | "- \(.name) \(.old) → \(.new)"' updated.json)
+          CHANGES=$(echo '${{ steps.update-deps.outputs.updated_packages }}' | jq -r '.[] | "- \(.name) \(.old) → \(.new)"')
           echo "commit_body<<EOF" >> $GITHUB_OUTPUT
           echo "$CHANGES" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
@@ -168,9 +167,9 @@ jobs:
           commit-message: "${{ steps.commit-message.outputs.commit_title }}"
           committer: "AshokShau <114943948+AshokShau@users.noreply.github.com>"
           author: "AshokShau <114943948+AshokShau@users.noreply.github.com>"
-          labels: dependencies, automated
 
       - name: No updates found
         if: steps.update-deps.outputs.updates_made == 'false'
         run: |
           echo "No dependency updates available at this time."
+          
