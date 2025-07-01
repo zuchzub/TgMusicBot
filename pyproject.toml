@@ -49,7 +49,7 @@ dependencies = [
     "pytz~=2025.2",
     "tdjson~=1.8.50",
     "ujson~=5.10.0",
-    "yt-dlp~=2025.6.25",
+    "yt-dlp~=2025.6.30",
 ]
 
 [project.license]
