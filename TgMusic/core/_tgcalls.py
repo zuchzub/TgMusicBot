@@ -319,7 +319,7 @@ class Calls:
             )
 
             thumbnail = (
-                await gen_thumb(song) if await db.get_thumb_status(chat_id) else ""
+                await gen_thumb(song) if await db.get_thumbnail_status(chat_id) else ""
             )
             # Parse text entities
             parse = await self.bot.parseTextEntities(text, types.TextParseModeHTML())
