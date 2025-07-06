@@ -54,7 +54,7 @@ class BotConfig:
         self.IGNORE_BACKGROUND_UPDATES: bool = self._get_env_bool(
             "IGNORE_BACKGROUND_UPDATES", True
         )
-        self.AUTO_LEAVE: bool = self._get_env_bool("AUTO_LEAVE", True)
+        self.AUTO_LEAVE: bool = self._get_env_bool("AUTO_LEAVE", False)
 
         # Cookies
         self.COOKIES_URL: list[str] = self._process_cookie_urls(
@@ -138,11 +138,12 @@ class BotConfig:
 
     def _validate_config(self) -> None:
         """Validate all required environment configuration values."""
-        if missing := [
+        missing = [
             name
             for name in ("API_ID", "API_HASH", "TOKEN", "MONGO_URI", "LOGGER_ID")
             if not getattr(self, name)
-        ]:
+        ]
+        if missing:
             raise ValueError(f"Missing required config: {', '.join(missing)}")
 
         if not isinstance(self.MONGO_URI, str):
@@ -163,4 +164,4 @@ class BotConfig:
             raise RuntimeError(f"Failed to create required directories: {e}") from e
 
 
-config = BotConfig()
+config: BotConfig = BotConfig()

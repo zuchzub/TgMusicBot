@@ -38,12 +38,11 @@ class Bot(Client):
     def _initialize_services(self) -> None:
         """Initialize all service dependencies."""
         from TgMusic.modules.jobs import InactiveCallManager
-
-        self.call_manager = InactiveCallManager(self)
         self.config = config
         self.db = db
         self.call = call
         self.tg = tg
+        self.call_manager = InactiveCallManager(self)
         self._start_time = StartTime
         self._version = __version__
 
@@ -101,4 +100,4 @@ class Bot(Client):
         return (datetime.now() - self._start_time).total_seconds()
 
 
-client = Bot()
+client: Client = Bot()

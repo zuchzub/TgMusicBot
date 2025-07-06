@@ -153,7 +153,7 @@ async def _handle_single_track(
             f"▫ <b>Requested by:</b> {song.user}"
         )
 
-        thumb = await gen_thumb(song) if await db.get_thumb_status(chat_id) else ""
+        thumb = await gen_thumb(song) if await db.get_thumbnail_status(chat_id) else ""
         return await _update_msg_with_thumb(
             c,
             msg,
@@ -171,7 +171,7 @@ async def _handle_single_track(
         return await edit_text(msg, text=f"⚠️ Playback error: {play_result.message}")
 
     # Prepare now playing message
-    thumb = await gen_thumb(song) if await db.get_thumb_status(chat_id) else ""
+    thumb = await gen_thumb(song) if await db.get_thumbnail_status(chat_id) else ""
     now_playing = (
         f"🎵 <b>Now Playing:</b>\n\n"
         f"▫ <b>Track:</b> <a href='{song.url}'>{song.name}</a>\n"

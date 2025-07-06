@@ -131,10 +131,10 @@ class Database:
         chat = await self.get_chat(chat_id)
         return chat.get("buttons", True) if chat else True
 
-    async def set_thumb_status(self, chat_id: int, status: bool) -> None:
+    async def set_thumbnail_status(self, chat_id: int, status: bool) -> None:
         await self._update_chat_field(chat_id, "thumb", status)
 
-    async def get_thumb_status(self, chat_id: int) -> bool:
+    async def get_thumbnail_status(self, chat_id: int) -> bool:
         chat = await self.get_chat(chat_id)
         return chat.get("thumb", True) if chat else True
 
@@ -209,4 +209,4 @@ class Database:
         LOGGER.info("Database connection closed.")
 
 
-db = Database()
+db: Database = Database()
