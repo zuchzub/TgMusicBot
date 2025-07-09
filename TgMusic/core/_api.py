@@ -29,15 +29,19 @@ class ApiData(MusicService):
     # Platform URL validation patterns
     URL_PATTERNS = {
         "apple_music": re.compile(
-            r"^(https?://)?([a-z0-9-]+\.)*music\.apple\.com/([a-z]{2}/)?(album|playlist|song)/[a-zA-Z0-9\-_]+/[0-9]+(\?.*)?$",
+            r"^(https?://)?([a-z0-9-]+\.)*music\.apple\.com/"
+            r"([a-z]{2}/)?"
+            r"(album|playlist|song)/[a-zA-Z0-9\-._]+/(pl\.[a-zA-Z0-9]+|\d+)(\?.*)?$",
             re.IGNORECASE,
         ),
         "spotify": re.compile(
-            r"^(https?://)?([a-z0-9-]+\.)*spotify\.com/(track|playlist|album|artist)/[a-zA-Z0-9]+(\?.*)?$",
+            r"^(https?://)?([a-z0-9-]+\.)*spotify\.com/"
+            r"(track|playlist|album|artist)/[a-zA-Z0-9]+(\?.*)?$",
             re.IGNORECASE,
         ),
         "soundcloud": re.compile(
-            r"^(https?://)?([a-z0-9-]+\.)*soundcloud\.com/[a-zA-Z0-9_-]+(/(sets)?/[a-zA-Z0-9_-]+)?(\?.*)?$",
+            r"^(https?://)?([a-z0-9-]+\.)*soundcloud\.com/"
+            r"[a-zA-Z0-9_-]+(/(sets)?/[a-zA-Z0-9_-]+)?(\?.*)?$",
             re.IGNORECASE,
         ),
     }

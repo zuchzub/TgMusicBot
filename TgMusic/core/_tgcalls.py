@@ -30,7 +30,6 @@ from TgMusic.modules.utils import (
     get_audio_duration,
     sec_to_min,
 )
-
 from ._cacher import (
     chat_cache,
     ChatMemberStatusResult,
@@ -38,13 +37,11 @@ from ._cacher import (
     chat_invite_cache,
 )
 from ._database import db
-from .buttons import control_buttons
-from ._api import ApiData
-from ._jiosaavn import JiosaavnData
-from ._youtube import YouTubeData
 from ._dataclass import CachedTrack
-from .utils import send_logger
+from ._downloader import DownloaderWrapper
+from .buttons import control_buttons
 from .thumbnails import gen_thumb
+from .utils import send_logger
 
 
 class Calls:
@@ -364,26 +361,26 @@ class Calls:
 
     @staticmethod
     async def song_download(song: CachedTrack) -> Union[Path, types.Error]:
-        platform_handlers = {
-            "youtube": YouTubeData(song.track_id),
-            "jiosaavn": JiosaavnData(song.url),
-            "spotify": ApiData(song.track_id),
-            "apple_music": ApiData(song.url),
-            "soundcloud": ApiData(song.url),
-        }
+        """Download a song from various platforms.
 
-        handler = platform_handlers.get(song.platform.lower())
-        if not handler:
-            LOGGER.warning(
-                "Unsupported platform: %s for track: %s", song.platform, song.track_id
-            )
-            return types.Error(
-                code=400,
-                message=f"Unsupported platform: {song.platform} for track: {song.track_id}",
-            )
+        Args:
+            song: CachedTrack object containing song data
 
-        track = await handler.get_track()
-        return await handler.download_track(track, song.is_video) if track else None
+        Returns:
+            Path to the downloaded file or types.Error if download fails
+        """
+        song_url = song.url
+        wrapper = DownloaderWrapper(song_url)
+        if wrapper.is_valid(song_url):
+            track_info = await wrapper.get_track()
+            if isinstance(track_info, types.Error):
+                return track_info
+
+            return await wrapper.download_track(track_info, song.is_video)
+        return types.Error(
+            code=400,
+            message=f"Invalid URL: {song_url}",
+        )
 
     async def _handle_no_songs(self, chat_id: int) -> None:
         """Handle an empty queue scenario.
