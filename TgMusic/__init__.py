@@ -78,13 +78,13 @@ class Bot(Client):
         await self.call.add_bot(self)
         await self.call.register_decorators()
         await super().start()
-        await self.call_manager.start_scheduler()
+        await self.call_manager.start()
 
     async def stop(self, graceful: bool = True) -> None:
         try:
             shutdown_tasks = [
                 self.db.close(),
-                self.call_manager.stop_scheduler(),
+                self.call_manager.stop(),
             ]
 
             if graceful:

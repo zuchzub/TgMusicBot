@@ -3,140 +3,116 @@
 
 import asyncio
 import time
-
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from apscheduler.triggers.cron import CronTrigger
-from pyrogram import Client as PyroClient
-from pyrogram import errors
+from datetime import datetime, timedelta
 from pytdbot import Client, types
-
-from TgMusic.core import chat_cache, config, call, db
+from TgMusic.core import chat_cache, call, db, config
+from pyrogram import errors
+from pyrogram.client import Client as PyroClient
 
 
 class InactiveCallManager:
     def __init__(self, bot: Client):
         self.bot = bot
-        self.scheduler = AsyncIOScheduler(
-            timezone="Asia/Kolkata",
-            job_defaults={
-                'misfire_grace_time': 120,
-                'max_instances': 1,
-                'coalesce': True
-            }
-        )
-        self._concurrency_limiter = asyncio.Semaphore(5)
-        self._active_tasks = set()
+        self._stop = asyncio.Event()
+        self._vc_task: asyncio.Task | None = None
+        self._leave_task: asyncio.Task | None = None
+        self._sleep_time = 40
 
-    async def _end_call(self, chat_id: int) -> bool:
-        try:
-            vc_users = await call.vc_users(chat_id)
-            if isinstance(vc_users, types.Error):
-                self.bot.logger.warning(
-                    f"Error getting vc users in {chat_id}: {vc_users.message}"
-                )
-                return False
-
-            if len(vc_users) > 1:
-                return False
-
-            played_time = await call.played_time(chat_id)
-            if isinstance(played_time, types.Error):
-                self.bot.logger.warning(
-                    f"Error getting played time in {chat_id}: {played_time.message}"
-                )
-                return False
-
-            if played_time < 15:
-                return False
-
-            reply = await self.bot.sendTextMessage(
-                chat_id, "⚠️ No active listeners detected. ⏹️ Leaving voice chat..."
-            )
-            if isinstance(reply, types.Error):
-                self.bot.logger.warning(f"Error sending message in {chat_id}: {reply}")
-
-            end_result = await call.end(chat_id)
-            if isinstance(end_result, types.Error):
-                self.bot.logger.warning(f"Error ending call in {chat_id}: {end_result}")
-                return False
-
-            return True
-        except Exception as e:
-            self.bot.logger.error(
-                f"Unexpected error in _safe_end_call for {chat_id}: {str(e)}",
-                exc_info=True
-            )
+    async def _end_call_if_inactive(self, chat_id: int) -> bool:
+        vc_users = await call.vc_users(chat_id)
+        if isinstance(vc_users, types.Error):
+            self.bot.logger.warning(f"[VC Users Error] {chat_id}: {vc_users.message}")
             return False
 
-    async def _process_chat_batch(self, chat_ids: list[int]):
-        """Process a batch of chats with proper concurrency control."""
-        tasks = []
-        for chat_id in chat_ids:
-            task = asyncio.create_task(self._end_call(chat_id))
-            self._active_tasks.add(task)
-            task.add_done_callback(lambda t: self._active_tasks.discard(t))
-            tasks.append(task)
+        if len(vc_users) > 1:
+            return False
 
-        await asyncio.gather(*tasks, return_exceptions=True)
+        played_time = await call.played_time(chat_id)
+        if isinstance(played_time, types.Error):
+            self.bot.logger.warning(f"[Played Time Error] {chat_id}: {played_time.message}")
+            return False
 
-    async def end_inactive_calls(self):
-        if not self.bot or not self.bot.me:
-            return
-        try:
-            if not await db.get_auto_end(self.bot.me.id):
-                return
+        if played_time < 15:
+            return False
 
-            active_chats = chat_cache.get_active_chats()
-            if not active_chats:
-                self.bot.logger.debug("No active chats to process")
-                return
+        await self.bot.sendTextMessage(chat_id, "⚠️ No active listeners. Leaving VC...")
+        await call.end(chat_id)
+        return True
 
-            self.bot.logger.info(f"Processing {len(active_chats)} active chats")
-            batch_size = 5
-            for i in range(0, len(active_chats), batch_size):
-                batch = active_chats[i:i + batch_size]
-                await self._process_chat_batch(batch)
-                await asyncio.sleep(0.5)
-        except Exception as e:
-            self.bot.logger.critical(
-                f"Critical error in end_inactive_calls: {str(e)}",
-                exc_info=True
-            )
+    async def _vc_loop(self):
+        while not self._stop.is_set():
+            try:
+                if self.bot.me is None:
+                    await asyncio.sleep(2)
+                    continue
+
+                if not await db.get_auto_end(self.bot.me.id):
+                    await asyncio.sleep(self._sleep_time)
+                    continue
+
+                active_chats = chat_cache.get_active_chats()
+                if not active_chats:
+                    await asyncio.sleep(self._sleep_time)
+                    continue
+
+                for chat_id in active_chats:
+                    await self._end_call_if_inactive(chat_id)
+                    await asyncio.sleep(0.1)
+
+            except Exception as e:
+                self.bot.logger.exception(f"[VC AutoEnd] Loop error: {e}")
+
+            await asyncio.sleep(self._sleep_time)
+
+    async def _leave_loop(self):
+        while not self._stop.is_set():
+            try:
+                now = datetime.now()
+                target = now.replace(hour=3, minute=0, second=0, microsecond=0)
+                if now >= target:
+                    target += timedelta(days=1)
+
+                wait = (target - now).total_seconds()
+                self.bot.logger.info(f"[AutoLeave] Waiting {wait:.2f} seconds for 3:00 AM")
+                await asyncio.wait([asyncio.create_task(self._stop.wait())], timeout=wait)
+
+                if self._stop.is_set():
+                    break
+
+                await self.leave_all()
+
+                # Fallback safety sleep (24h)
+                await asyncio.wait([asyncio.create_task(self._stop.wait())], timeout=86400)  # 24 hours
+            except Exception as e:
+                self.bot.logger.exception(f"[AutoLeave] Error: {e}")
+                await asyncio.sleep(3600)  # Wait 1h before retry
 
     async def _leave_chat(self, ub: PyroClient, chat_id: int):
         try:
             if chat_cache.is_active(chat_id):
                 return False
-
             await ub.leave_chat(chat_id)
-            self.bot.logger.debug(f"[{ub.name}] Successfully left chat {chat_id}")
+            self.bot.logger.debug(f"[{ub.name}] Left chat {chat_id}")
             return True
         except errors.FloodWait as e:
             wait_time = e.value
             if wait_time <= 100:
-                self.bot.logger.warning(
-                    f"[{ub.name}] FloodWait {wait_time}s for chat {chat_id}"
-                )
+                self.bot.logger.warning(f"[{ub.name}] FloodWait {wait_time}s for chat {chat_id}")
                 await asyncio.sleep(wait_time)
                 return await self._leave_chat(ub, chat_id)
             return False
         except errors.RPCError as e:
-            self.bot.logger.warning(
-                f"[{ub.name}] RPCError leaving chat {chat_id}: {e}"
-            )
+            self.bot.logger.warning(f"[{ub.name}] RPCError on {chat_id}: {e}")
             return False
         except Exception as e:
-            self.bot.logger.error(
-                f"[{ub.name}] Error leaving chat {chat_id}: {str(e)}",
-                exc_info=True
-            )
+            self.bot.logger.exception(f"[{ub.name}] Leave error on {chat_id}: {e}")
             return False
 
     async def leave_all(self):
         if not config.AUTO_LEAVE:
             return
 
-        self.bot.logger.info("Starting leave_all task")
+        self.bot.logger.info("[AutoLeave] Starting leave_all()")
         start_time = time.monotonic()
 
         try:
@@ -148,56 +124,40 @@ class InactiveCallManager:
                     async for dialog in ub.get_dialogs():
                         chat = getattr(dialog, "chat", None)
                         if chat and chat.id > 0:
-                            continue
+                            continue  # skip users/private chats
                         chats_to_leave.append(chat.id)
                 except Exception as e:
-                    self.bot.logger.error(
-                        f"[{client_name}] Error getting dialogs: {str(e)}",
-                        exc_info=True
-                    )
+                    self.bot.logger.exception(f"[{client_name}] Failed to get dialogs: {e}")
                     continue
 
-                self.bot.logger.info(
-                    f"[{client_name}] Processing {len(chats_to_leave)} chats"
-                )
+                self.bot.logger.info(f"[{client_name}] Found {len(chats_to_leave)} chats to leave")
                 for chat_id in chats_to_leave:
                     await self._leave_chat(ub, chat_id)
                     await asyncio.sleep(0.5)
 
         except Exception as e:
-            self.bot.logger.critical(
-                f"Critical error in leave_all: {str(e)}",
-                exc_info=True
-            )
+            self.bot.logger.critical(f"[leave_all] Fatal error: {e}", exc_info=True)
         finally:
             duration = time.monotonic() - start_time
-            self.bot.logger.info(f"Completed leave_all in {duration:.2f} seconds")
+            self.bot.logger.info(f"[leave_all] Completed in {duration:.2f}s")
 
-    async def start_scheduler(self):
-        self.scheduler.add_job(
-            self.end_inactive_calls,
-            CronTrigger(minute="*/1"),
-            id="end_inactive_calls",
-            replace_existing=True
-        )
+    async def start(self):
+        if not self._vc_task or self._vc_task.done():
+            self._stop.clear()
+            self._vc_task = asyncio.create_task(self._vc_loop())
+            self.bot.logger.info("VC inactivity auto-end loop started.")
 
-        self.scheduler.add_job(
-            self.leave_all,
-            CronTrigger(hour=3),
-            id="leave_all",
-            replace_existing=True
-        )
+        if not self._leave_task or self._leave_task.done():
+            self._leave_task = asyncio.create_task(self._leave_loop())
+            self.bot.logger.info("Auto-leave loop started (3:00 AM daily).")
 
-        self.scheduler.start()
-        self.bot.logger.info("Scheduler started successfully")
+    async def stop(self):
+        self._stop.set()
 
-    async def stop_scheduler(self):
-        if self.scheduler.running:
-            self.scheduler.shutdown(wait=False)
-            for task in self._active_tasks:
-                task.cancel()
-            await asyncio.gather(
-                *self._active_tasks,
-                return_exceptions=True
-            )
-            self.bot.logger.info("Scheduler stopped successfully")
+        if self._vc_task:
+            await self._vc_task
+
+        if self._leave_task:
+            await self._leave_task
+
+        self.bot.logger.info("All background loops stopped.")
