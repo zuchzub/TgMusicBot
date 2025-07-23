@@ -30,6 +30,7 @@ class BotConfig:
 
         self.SESSION_STRINGS: list[str] = self._get_session_strings()
         self.MONGO_URI: Optional[str] = os.getenv("MONGO_URI")
+        self.DB_NAME: str = os.getenv("DB_NAME", "MusicBot")
         self.API_URL: str = os.getenv("API_URL", "https://tgmusic.fallenapi.fun")
         self.API_KEY: Optional[str] = os.getenv("API_KEY")
 
@@ -144,7 +145,7 @@ class BotConfig:
         """Validate all required environment configuration values."""
         missing = [
             name
-            for name in ("API_ID", "API_HASH", "TOKEN", "MONGO_URI", "LOGGER_ID")
+            for name in ("API_ID", "API_HASH", "TOKEN", "MONGO_URI", "LOGGER_ID", "DB_NAME", "START_IMG")
             if not getattr(self, name)
         ]
         if missing:

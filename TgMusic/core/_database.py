@@ -15,7 +15,7 @@ from ._config import config
 class Database:
     def __init__(self):
         self.mongo_client = AsyncMongoClient(config.MONGO_URI)
-        _db = self.mongo_client["MusicBot"]
+        _db = self.mongo_client[config.DB_NAME]
         self.chat_db = _db["chats"]
         self.users_db = _db["users"]
         self.bot_db = _db["bot"]
