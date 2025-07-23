@@ -1087,13 +1087,13 @@ wheels = [
 
 [[package]]
 name = "pytdbot"
-version = "0.9.5"
+version = "0.9.6.dev1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aio-pika" },
     { name = "deepdiff" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/96/e5/b61d2356c3f2b76993ce75eb7de41dcb1ad9ab52ea20df52a6e3cea9e80a/pytdbot-0.9.5.tar.gz", hash = "sha256:6c66ddc873aa2ecfc7a4151479e9c81ae0f873b1dd566ea395628351331ead3c", size = 465384, upload-time = "2025-07-03T07:28:36.112Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/94/3b/502fc701d124e8614e99a2b4f3414b2eb2a9306e6324c496fb63181f1cf3/pytdbot-0.9.6.dev1.tar.gz", hash = "sha256:a13afe64079245101c6357f8236f5b192103863623092ae355f84bbeed3d34bb", size = 466864, upload-time = "2025-07-17T00:33:34.584Z" }
 
 [[package]]
 name = "pytgcrypto"
@@ -1301,7 +1301,7 @@ requires-dist = [
     { name = "pycryptodome", specifier = "~=3.23.0" },
     { name = "pydantic", specifier = "~=2.11.7" },
     { name = "pymongo", specifier = "~=4.13.2" },
-    { name = "pytdbot", specifier = "~=0.9.5" },
+    { name = "pytdbot", specifier = "~=0.9.6.dev1" },
     { name = "pytgcrypto", specifier = "~=1.2.11" },
     { name = "pytz", specifier = "~=2025.2" },
     { name = "ruff", marker = "extra == 'dev'" },

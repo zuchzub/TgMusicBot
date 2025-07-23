@@ -59,15 +59,15 @@
 
 ## ✨ Key Features
 
-| Feature | Description |
-|---------|-------------|
+| Feature                       | Description                                         |
+|-------------------------------|-----------------------------------------------------|
 | **🎧 Multi-Platform Support** | YouTube, Spotify, Apple Music, SoundCloud, JioSaavn |
-| **📜 Playlist Management** | Queue system with auto-play |
-| **🎛️ Advanced Controls** | Volume, loop, seek, skip, pause/resume |
-| **🌐 Multi-Language** | English, Hindi, Spanish, Arabic support |
-| **⚡ Low Latency** | Optimized with PyTgCalls |
-| **🐳 Docker Ready** | One-click deployment |
-| **🔒 Anti-Ban** | Cookie & API-based authentication |
+| **📜 Playlist Management**    | Queue system with auto-play                         |
+| **🎛️ Advanced Controls**     | Volume, loop, seek, skip, pause/resume              |
+| **🌐 Multi-Language**         | English, Hindi, Spanish, Arabic support             |
+| **⚡ Low Latency**             | Optimized with PyTgCalls                            |
+| **🐳 Docker Ready**           | One-click deployment                                |
+| **🔒 Anti-Ban**               | Cookie & API-based authentication                   |
 
 ---
 
@@ -269,6 +269,7 @@ tgmusic
 | `SUPPORT_GROUP`    | Telegram Group Link                                               | Default: https://t.me/GuardxSupport                                                                                                                                     |
 | `SUPPORT_CHANNEL`  | Telegram Channel Link                                             | Default: https://t.me/FallenProjects                                                                                                                                    |
 | `AUTO_LEAVE`       | Leave all chats for all userbot clients                           | Default: True                                                                                                                                                           |
+| `START_IMG`        | Start Image URL                                                   | Default: [IMG](https://i.pinimg.com/1200x/e8/89/d3/e889d394e0afddfb0eb1df0ab663df95.jpg)                                                                                |                                                      |
 | `DEVS`             | User ID of the bot owner                                          | [@GuardxRobot](https://t.me/GuardxRobot) and type `/id`: e.g. `5938660179, 5956803759`                                                                                  |
 
 </details>
@@ -291,14 +292,14 @@ API_KEY=your-secret-key
 
 ## 🤖 Bot Commands
 
-| Command | Description |
-|---------|-------------|
-| `/play [query]` | Play music from supported platforms |
-| `/skip` | Skip current track |
-| `/pause` / `/resume` | Control playback |
-| `/volume [1-200]` | Adjust volume |
-| `/queue` | Show upcoming tracks |
-| `/loop` | Enable/disable loop |
+| Command              | Description                         |
+|----------------------|-------------------------------------|
+| `/play [query]`      | Play music from supported platforms |
+| `/skip`              | Skip current track                  |
+| `/pause` / `/resume` | Control playback                    |
+| `/volume [1-200]`    | Adjust volume                       |
+| `/queue`             | Show upcoming tracks                |
+| `/loop`              | Enable/disable loop                 |
 
 ---
 

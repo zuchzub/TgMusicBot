@@ -12,6 +12,17 @@ from TgMusic.core import (
 )
 from TgMusic.core.buttons import add_me_markup, HelpMenu, BackHelpMenu
 
+startText = """
+ʜᴇʏ {};
+
+◎ ᴛʜɪꜱ ɪꜱ {}!
+➻ ᴀ ꜰᴀꜱᴛ & ᴘᴏᴡᴇʀꜰᴜʟ ᴛᴇʟᴇɢʀᴀᴍ ᴍᴜꜱɪᴄ ᴘʟᴀʏᴇʀ ʙᴏᴛ ᴡɪᴛʜ ꜱᴏᴍᴇ ᴀᴡᴇꜱᴏᴍᴇ ꜰᴇᴀᴛᴜʀᴇꜱ.
+
+ꜱᴜᴘᴘᴏʀᴛᴇᴅ ᴘʟᴀᴛꜰᴏʀᴍꜱ: ʏᴏᴜᴛᴜʙᴇ, ꜱᴘᴏᴛɪꜰʏ, ᴊɪᴏꜱᴀᴀᴠɴ, ᴀᴘᴘʟᴇ ᴍᴜꜱɪᴄ ᴀɴᴅ ꜱᴏᴜɴᴅᴄʟᴏᴜᴅ.
+
+---
+◎ ᴄʟɪᴄᴋ ᴏɴ ᴛʜᴇ ʜᴇʟᴘ ʙᴜᴛᴛᴏɴ ᴛᴏ ɢᴇᴛ ɪɴꜰᴏʀᴍᴀᴛɪᴏɴ ᴀʙᴏᴜᴛ ᴍʏ ᴍᴏᴅᴜʟᴇꜱ ᴀɴᴅ ᴄᴏᴍᴍᴀɴᴅꜱ.
+"""
 
 @Client.on_message(filters=Filter.command(["start", "help"]))
 async def start_cmd(c: Client, message: types.Message):
@@ -19,7 +30,7 @@ async def start_cmd(c: Client, message: types.Message):
     bot_name = c.me.first_name
     mention = await message.mention()
 
-    if chat_id < 0:  # Group chat
+    if chat_id < 0:  # Group
         welcome_text = (
             f"🎵 <b>Hello {mention}!</b>\n\n"
             f"<b>{bot_name}</b> is now active in this group.\n"
@@ -29,28 +40,22 @@ async def start_cmd(c: Client, message: types.Message):
             "• Powerful controls for seamless playback\n\n"
             f"💬 <a href='{config.SUPPORT_GROUP}'>Need help? Join our Support Chat</a>"
         )
-        await message.reply_text(
+        reply = await message.reply_text(
             text=welcome_text,
             disable_web_page_preview=True,
             reply_markup=SupportButton,
         )
 
     else:  # Private chat
-        welcome_text = (
-            f"✨ <b>Hey {mention}!</b>\n\n"
-            f"You’re chatting with <b>{bot_name}</b> — your advanced music assistant.\n"
-            f"<code>Version: v{__version__}</code>\n\n"
-            "🎧 <b>What I Offer:</b>\n"
-            "• Crystal-clear audio playback\n"
-            "• Instant song search across platforms\n"
-            "• Playlist support & 24/7 uptime\n\n"
-            "🔽 <i>Tap the button below to get started!</i>"
-        )
         bot_username = c.me.usernames.editable_username
-        await message.reply_text(
-            text=welcome_text,
+        reply = await message.reply_photo(
+            photo=config.START_IMG,
+            caption=startText.format(mention, bot_name),
             reply_markup=add_me_markup(bot_username),
         )
+
+    if isinstance(reply, types.Error):
+        c.logger.warning(reply.message)
 
 
 @Client.on_updateNewCallbackQuery(filters=Filter.regex(r"help_\w+"))
@@ -59,7 +64,6 @@ async def callback_query_help(c: Client, message: types.UpdateNewCallbackQuery) 
 
     if data == "help_all":
         user = await c.getUser(message.sender_user_id)
-
         await message.answer("📚 Opening Help Menu...")
         welcome_text = (
             f"👋 <b>Hello {user.first_name}!</b>\n\n"
@@ -71,7 +75,18 @@ async def callback_query_help(c: Client, message: types.UpdateNewCallbackQuery) 
             "• Private and group usage\n\n"
             "🔍 <i>Select a help category below to continue.</i>"
         )
-        await message.edit_message_text(text=welcome_text, reply_markup=HelpMenu)
+        edit = await message.edit_message_caption(welcome_text, reply_markup=HelpMenu)
+        if isinstance(edit, types.Error):
+            c.logger.error(f"Failed to edit message: {edit}")
+        return
+
+    if data == "help_back":
+        await message.answer("HOME ..")
+        user = await c.getUser(message.sender_user_id)
+        await message.edit_message_caption(
+            caption=startText.format(user.first_name, c.me.first_name),
+            reply_markup=add_me_markup(c.me.usernames.editable_username),
+        )
         return
 
     help_categories = {
@@ -143,9 +158,9 @@ async def callback_query_help(c: Client, message: types.UpdateNewCallbackQuery) 
             f"{category['content']}\n\n"
             "🔙 <i>Use the buttons below to go back.</i>"
         )
-        await message.edit_message_text(
-            text=formatted_text, reply_markup=category["markup"]
-        )
+        edit = await message.edit_message_caption(formatted_text, reply_markup=category["markup"])
+        if isinstance(edit, types.Error):
+            c.logger.error(f"Failed to edit message: {edit}")
         return
 
     await message.answer("⚠️ Unknown command category.")
