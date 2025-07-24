@@ -141,10 +141,6 @@ async def ping_cmd(client: Client, message: types.Message) -> None:
     """
     Handle the /ping command to check bot performance metrics.
     """
-    start_time = time.monotonic()
-    reply_msg = await message.reply_text("🏓 Pinging...")
-    latency = (time.monotonic() - start_time) * 1000  # ms
-
     response = await call.stats_call(message.chat_id if message.chat_id < 0 else 1)
     if isinstance(response, types.Error):
         call_ping = response.message
@@ -155,7 +151,9 @@ async def ping_cmd(client: Client, message: types.Message) -> None:
     cpu_info = f"{cpu_usage:.2f}%"
     uptime = datetime.now() - StartTime
     uptime_str = str(uptime).split(".")[0]
-
+    start_time = time.monotonic()
+    reply_msg = await message.reply_text("🏓 Pinging...")
+    latency = (time.monotonic() - start_time) * 1000  # ms
     response = (
         "📊 <b>System Performance Metrics</b>\n\n"
         f"⏱️ <b>Bot Latency:</b> <code>{latency:.2f} ms</code>\n"
@@ -167,16 +165,3 @@ async def ping_cmd(client: Client, message: types.Message) -> None:
     if isinstance(done, types.Error):
         client.logger.warning(f"Error sending message: {done}")
     return None
-
-
-@Client.on_message(filters=Filter.command("song"))
-async def song_cmd(c: Client, message: types.Message):
-    """Handle the /song command."""
-    args = extract_argument(message.text)
-    reply = await message.reply_text(
-        f"🎶 USE: <code>@FallenSongBot {args or 'song name'}</code>"
-    )
-    if isinstance(reply, types.Error):
-        c.logger.warning(f"Error sending message: {reply}")
-
-    return

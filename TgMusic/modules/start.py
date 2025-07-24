@@ -96,12 +96,10 @@ async def callback_query_help(c: Client, message: types.UpdateNewCallbackQuery) 
                 "<b>▶️ Playback:</b>\n"
                 "• <code>/play [song]</code> — Play audio in VC\n"
                 "• <code>/vplay [video]</code> — Play video in VC\n"
-                "• <code>/search</code> — Browse tracks before playing\n"
-                "• <code>/lyrics</code> — Get lyrics for a song\n\n"
                 "<b>🛠 Utilities:</b>\n"
                 "• <code>/start</code> — Intro message\n"
                 "• <code>/privacy</code> — Privacy policy\n"
-                "• <code>/lang</code> — Change language"
+                "• <code>/queue</code> — View track queue\n"
             ),
             "markup": BackHelpMenu,
         },
@@ -115,20 +113,19 @@ async def callback_query_help(c: Client, message: types.UpdateNewCallbackQuery) 
                 "• <code>/seek [sec]</code> — Jump to a position\n"
                 "• <code>/volume [1-200]</code> — Set playback volume\n\n"
                 "<b>📋 Queue Management:</b>\n"
-                "• <code>/queue</code> — View track queue\n"
                 "• <code>/remove [x]</code> — Remove track number x\n"
                 "• <code>/clear</code> — Clear the entire queue\n"
                 "• <code>/loop [0-10]</code> — Repeat queue x times"
+                "<b>👑 Permissions:</b>\n"
+                "• <code>/auth [reply]</code> — Grant admin access\n"
+                "• <code>/unauth [reply]</code> — Revoke admin access\n"
+                "• <code>/authlist</code> — View authorized users\n\n"
             ),
             "markup": BackHelpMenu,
         },
         "help_owner": {
             "title": "🔐 Owner Commands",
             "content": (
-                "<b>👑 Permissions:</b>\n"
-                "• <code>/auth [reply]</code> — Grant admin access\n"
-                "• <code>/unauth [reply]</code> — Revoke admin access\n"
-                "• <code>/authlist</code> — View authorized users\n\n"
                 "<b>⚙️ Settings:</b>\n"
                 "• <code>/buttons</code> — Toggle control buttons\n"
                 "• <code>/thumb</code> — Toggle thumbnail mode"
@@ -144,7 +141,7 @@ async def callback_query_help(c: Client, message: types.UpdateNewCallbackQuery) 
                 "• <code>/broadcast</code> — Send a message to all\n\n"
                 "<b>🧹 Maintenance:</b>\n"
                 "• <code>/activevc</code> — Show active voice chats\n"
-                "• <code>/clearallassistants</code> — Remove all assistants\n"
+                "• <code>/clearallassistants</code> — Remove all assistants data from DB\n"
                 "• <code>/autoend</code> — Enable auto-leave when VC is empty"
             ),
             "markup": BackHelpMenu,
