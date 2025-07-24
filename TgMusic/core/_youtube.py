@@ -310,7 +310,7 @@ class YouTubeUtils:
         return ytdlp_params
 
     @staticmethod
-    async def download_with_yt_dlp(video_id: str, video: bool) -> Optional[str]:
+    async def download_with_yt_dlp(video_id: str, video: bool) -> Optional[Path]:
         """Download YouTube media using yt-dlp.
 
         Args:
@@ -358,7 +358,7 @@ class YouTubeUtils:
                 return None
 
             LOGGER.info("Successfully downloaded %s to %s", video_id, downloaded_path)
-            return str(downloaded_path)
+            return downloaded_path
 
         except asyncio.TimeoutError:
             LOGGER.error("yt-dlp timed out for video ID: %s", video_id)
@@ -488,7 +488,7 @@ class YouTubeData(MusicService):
             return types.Error(code=400, message="Invalid track information provided")
 
         # Try API download first if configured
-        if not video and config.API_URL and config.API_KEY:
+        if config.API_URL and config.API_KEY:
             if api_result := await YouTubeUtils.download_with_api(track.tc, video):
                 return api_result
 
@@ -499,7 +499,7 @@ class YouTubeData(MusicService):
                 code=500, message="Failed to download track from YouTube"
             )
 
-        return Path(dl_path)
+        return dl_path
 
     async def _fetch_data(self, url: str) -> Optional[Dict[str, Any]]:
         """Internal method to fetch YouTube data.
