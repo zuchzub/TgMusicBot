@@ -114,7 +114,6 @@ async def _handle_single_track(
     chat_id = msg.chat_id
     song = CachedTrack(
         name=track.name,
-        artist=track.artist,
         track_id=track.id,
         loop=0,
         duration=track.duration,
@@ -209,7 +208,6 @@ async def _handle_multiple_tracks(
             chat_id,
             CachedTrack(
                 name=track.name,
-                artist=track.artist,
                 track_id=track.id,
                 loop=1 if not is_active and index == 0 else 0,
                 duration=track.duration,
@@ -292,9 +290,7 @@ async def _handle_telegram_file(
         tracks=[
             MusicTrack(
                 name=file_name,
-                artist="Ashok-Shau",
                 id=reply.remote_unique_file_id,
-                year=0,
                 cover="",
                 duration=duration,
                 url="",
@@ -414,7 +410,7 @@ async def handle_play_command(c: Client, msg: types.Message, is_video: bool = Fa
 
     # Handle URL playback
     if url:
-        if not wrapper.is_valid(url):
+        if not wrapper.is_valid():
             return await edit_text(
                 status_msg,
                 text=(
@@ -467,13 +463,13 @@ async def handle_play_command(c: Client, msg: types.Message, is_video: bool = Fa
     return await play_music(c, status_msg, video_info, requester, is_video=True)
 
 
-@Client.on_message(filters=Filter.command("play"))
+@Client.on_message(filters=Filter.command("play"), position=-5)
 async def play_audio(c: Client, msg: types.Message) -> None:
     """Audio playback command handler."""
     await handle_play_command(c, msg, False)
 
 
-@Client.on_message(filters=Filter.command("vplay"))
+@Client.on_message(filters=Filter.command("vplay"), position=-4)
 async def play_video(c: Client, msg: types.Message) -> None:
     """Video playback command handler."""
     await handle_play_command(c, msg, True)

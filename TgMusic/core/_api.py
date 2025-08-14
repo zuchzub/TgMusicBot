@@ -68,37 +68,20 @@ class ApiData(MusicService):
         """
         return query.strip().split("?")[0].split("#")[0]
 
-    def is_valid(self, url: Optional[str]) -> bool:
+    def is_valid(self) -> bool:
         """Validate if URL matches supported platform patterns.
-
-        Args:
-            url: The URL to validate
 
         Returns:
             bool: True if URL matches any platform pattern
         """
-        if not url or not self.api_url or not self.api_key:
+        if not all([self.query, self.api_key, self.api_url]):
             return False
-        return any(pattern.match(url) for pattern in self.URL_PATTERNS.values())
+
+        return any(pattern.match(self.query) for pattern in self.URL_PATTERNS.values())
 
     async def _make_api_request(
         self, endpoint: str, params: Optional[dict] = None
     ) -> Optional[dict]:
-        """Make authenticated API requests to the music service.
-
-        Args:
-            endpoint: API endpoint to call
-            params: Query parameters for the request
-
-        Returns:
-            dict: JSON response from API or None if failed
-        """
-        if not self.api_url or not self.api_key:
-            LOGGER.warning(
-                "API configuration incomplete - Get credentials from @FallenAPIBot"
-            )
-            return None
-
         request_url = f"{self.api_url}/{endpoint.lstrip('/')}"
         return await self.client.make_request(request_url, params=params)
 
@@ -109,7 +92,7 @@ class ApiData(MusicService):
             PlatformTracks: Contains track metadata
             types.Error: If URL is invalid or request fails
         """
-        if not self.query or not self.is_valid(self.query):
+        if not self.query or not self.is_valid():
             return types.Error(400, "Invalid or unsupported URL provided")
 
         response = await self._make_api_request("get_url", {"url": self.query})
@@ -128,7 +111,7 @@ class ApiData(MusicService):
             return types.Error(400, "No search query provided")
 
         # If query is a valid URL, get info directly
-        if self.is_valid(self.query):
+        if self.is_valid():
             return await self.get_info()
 
         response = await self._make_api_request("search_track", {"q": self.query})
