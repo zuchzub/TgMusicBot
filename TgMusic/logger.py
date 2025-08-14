@@ -17,7 +17,7 @@ stream_handler.setFormatter(formatter)
 
 file_handler = RotatingFileHandler(
     "bot.log",
-    maxBytes=3 * 1024 * 1024,  # 3 MB
+    maxBytes=10 * 1024 * 1024,  # 10 MB
     backupCount=2,
     encoding="utf-8",
 )
@@ -32,10 +32,10 @@ for lib in ("httpx", "pyrogram", "apscheduler"):
     logging.getLogger(lib).setLevel(logging.WARNING)
 
 # Uncomment below lines for advanced debugging
-# logging.getLogger("pytgcalls").setLevel(logging.DEBUG)
+logging.getLogger("pytgcalls").setLevel(logging.DEBUG)
 # logging.getLogger("ffmpeg").setLevel(logging.DEBUG)
-# logging.getLogger("ntgcalls").setLevel(logging.DEBUG)
+logging.getLogger("ntgcalls").setLevel(logging.DEBUG)
 # logging.getLogger("webrtc").setLevel(logging.DEBUG)
-# logging.getLogger("pyrogram").setLevel(logging.DEBUG)
+logging.getLogger("pyrogram").setLevel(logging.DEBUG)
 
 LOGGER = logging.getLogger("TgMusicBot")
