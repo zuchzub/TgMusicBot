@@ -25,7 +25,6 @@ class Bot(Client):
             api_id=config.API_ID,
             api_hash=config.API_HASH,
             default_parse_mode="html",
-            td_verbosity=2,
             td_log=types.LogStreamEmpty(),
             plugins=types.plugins.Plugins(folder="TgMusic/modules"),
             files_directory="",
@@ -48,6 +47,7 @@ class Bot(Client):
 
     async def start(self) -> None:
         """Start the bot and all associated services with proper error handling."""
+        self.logger.info("Starting bot...")
         try:
             await self._initialize_components()
             uptime = self._get_uptime()
@@ -81,6 +81,7 @@ class Bot(Client):
         await self.call_manager.start()
 
     async def stop(self, graceful: bool = True) -> None:
+        self.logger.info("Stopping bot...")
         try:
             shutdown_tasks = [
                 self.db.close(),

@@ -115,10 +115,10 @@ async def callback_query_help(c: Client, message: types.UpdateNewCallbackQuery) 
                 "<b>📋 Queue Management:</b>\n"
                 "• <code>/remove [x]</code> — Remove track number x\n"
                 "• <code>/clear</code> — Clear the entire queue\n"
-                "• <code>/loop [0-10]</code> — Repeat queue x times"
+                "• <code>/loop [0-10]</code> — Repeat queue x times\n\n"
                 "<b>👑 Permissions:</b>\n"
-                "• <code>/auth [reply]</code> — Grant admin access\n"
-                "• <code>/unauth [reply]</code> — Revoke admin access\n"
+                "• <code>/auth [reply]</code> — Grant approval to use commands \n"
+                "• <code>/unauth [reply]</code> — Revoke authorization\n"
                 "• <code>/authlist</code> — View authorized users\n\n"
             ),
             "markup": BackHelpMenu,

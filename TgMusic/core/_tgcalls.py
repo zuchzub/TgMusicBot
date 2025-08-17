@@ -183,6 +183,7 @@ class Calls:
 
         client = await self._group_assistant(chat_id)
         if isinstance(client, types.Error):
+            chat_cache.clear_chat(chat_id)
             return client
 
         # Validate media file exists if not URL
@@ -193,6 +194,7 @@ class Calls:
 
         join = await self._join_assistant(chat_id)
         if isinstance(join, types.Error):
+            chat_cache.clear_chat(chat_id)
             return join
 
         _stream = MediaStream(
