@@ -47,6 +47,7 @@ from .utils import send_logger
 class Calls:
     def __init__(self):
         self.calls: dict[str, PyTgCalls] = {}
+        self.pyrogram_clients: dict[str, PyroClient] = {}
         self.client_counter: int = 1
         self.available_clients: list[str] = []
         self.bot: Optional[Client] = None
@@ -130,13 +131,31 @@ class Calls:
             calls = PyTgCalls(user_bot, cache_duration=100)
             self.calls[client_name] = calls
             self.available_clients.append(client_name)
+            self.pyrogram_clients[client_name] = user_bot
             self.client_counter += 1
-
             await calls.start()
             LOGGER.info("Client %s started successfully", client_name)
         except Exception as e:
             LOGGER.error("Error starting client %s: %s", client_name, e)
             raise RuntimeError(f"Failed to start client {client_name}: {str(e)}") from e
+
+    async def stop_all_clients(self) -> None:
+        for name, client in self.pyrogram_clients.items():
+            try:
+                if client.is_connected:
+                    LOGGER.info("Stopping client %s", name)
+                    await client.stop()
+            except Exception as e:
+                LOGGER.error("Error stopping client %s: %s", name, e)
+
+    async def health_check(self) -> None:
+        for name, client in self.pyrogram_clients.items():
+            try:
+                await client.get_me()
+                await client.send_message("me", "Health check")
+            except Exception as e:
+                LOGGER.error("Error checking health of client %s: %s", name, e)
+                raise RuntimeError(f"Failed to check health of client {name}: {str(e)}") from e
 
     async def register_decorators(self) -> None:
         """Register pytgcalls event handlers."""

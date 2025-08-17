@@ -37,6 +37,5 @@ logging.getLogger("pytgcalls").setLevel(logging.DEBUG)
 logging.getLogger("ntgcalls").setLevel(logging.DEBUG)
 # logging.getLogger("webrtc").setLevel(logging.DEBUG)
 logging.getLogger("pyrogram").setLevel(logging.DEBUG)
-logging.getLogger("pytdbot").setLevel(logging.DEBUG)
 
 LOGGER = logging.getLogger("TgMusicBot")

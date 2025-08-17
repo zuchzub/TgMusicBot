@@ -4,6 +4,7 @@
 
 
 import asyncio
+import random
 from datetime import datetime
 
 from pytdbot import types, Client
@@ -80,12 +81,16 @@ class Bot(Client):
         await super().start()
         await self.call_manager.start()
 
+        self.logger.info("Bot started successfully")
+        self.loop.create_task(self.watch_dog())
+
     async def stop(self, graceful: bool = True) -> None:
         self.logger.info("Stopping bot...")
         try:
             shutdown_tasks = [
                 self.db.close(),
                 self.call_manager.stop(),
+                self.call.stop_all_clients(),
             ]
 
             if graceful:
@@ -99,6 +104,70 @@ class Bot(Client):
     def _get_uptime(self) -> float:
         """Calculate bot uptime in seconds."""
         return (datetime.now() - self._start_time).total_seconds()
+
+    async def watch_dog(self):
+        consecutive_failures = 0
+        max_backoff = 300
+        while True:
+            try:
+                if not self.is_running:
+                    self.logger.warning("Bot not running, attempting restart...")
+                    await self._restart()
+
+                try:
+                    await self.call.health_check()
+                    consecutive_failures = 0
+                    await asyncio.sleep(60)
+                    continue
+                except Exception as e:
+                    self.logger.error(f"Health check failed: {e}", exc_info=True)
+                    consecutive_failures += 1
+
+                backoff = min(5 * (2 ** consecutive_failures), max_backoff)
+                backoff = backoff * (0.5 + random.random())
+                
+                self.logger.warning(
+                    f"Health check failed {consecutive_failures} times. "
+                    f"Retrying in {backoff:.1f}s..."
+                )
+
+                if consecutive_failures >= 3:
+                    await self._restart()
+                
+                await asyncio.sleep(backoff)
+                
+            except asyncio.CancelledError:
+                self.logger.info("Watchdog stopped by cancellation")
+                raise
+            except Exception as e:
+                self.logger.critical(
+                    f"Critical error in watchdog: {e}", 
+                    exc_info=True
+                )
+                await asyncio.sleep(100)
+    
+    async def _restart(self):
+        import traceback
+        
+        try:
+            self.logger.info("Initiating safe restart...")
+            await self.stop(graceful=True)
+            await asyncio.sleep(2)
+            if hasattr(self, 'call') and hasattr(self.call, 'pyrogram_clients'):
+                for _client in self.call.pyrogram_clients.values():
+                    try:
+                        if _client.is_connected:
+                            await client.stop()
+                    except Exception as e:
+                        self.logger.error(f"Error stopping client: {e}")
+            await self.start()
+            self.logger.info("Restart completed successfully")
+            
+        except Exception as e:
+            self.logger.critical(
+                f"Failed to restart: {e}\n{traceback.format_exc()}"
+            )
+            raise
 
 
 client: Client = Bot()
