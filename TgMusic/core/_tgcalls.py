@@ -153,6 +153,11 @@ class Calls:
             try:
                 await client.get_me()
                 await client.send_message("me", "Health check")
+                LOGGER.debug("Client %s is healthy", name)
+            except (errors.Flood, errors.FloodWait):
+                LOGGER.warning("Flood error while checking health of client %s", name)
+            except errors.RPCError as e:
+                LOGGER.error("Error checking health of client %s: %s", name, e)
             except Exception as e:
                 LOGGER.error("Error checking health of client %s: %s", name, e)
                 raise RuntimeError(f"Failed to check health of client {name}: {str(e)}") from e
