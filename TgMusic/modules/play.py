@@ -356,7 +356,6 @@ async def _handle_text_search(
 async def handle_play_command(c: Client, msg: types.Message, is_video: bool = False):
     """Main handler for /play and /vplay commands."""
     chat_id = msg.chat_id
-
     # Validate chat type
     if chat_id > 0:
         return await msg.reply_text("❌ This command only works in groups/channels.")
@@ -368,18 +367,26 @@ async def handle_play_command(c: Client, msg: types.Message, is_video: bool = Fa
             "⚠️ Queue limit reached (10 tracks max). Use /end to clear queue."
         )
 
+
     # Verify bot admin status
     await load_admin_cache(c, chat_id)
     if not await is_admin(chat_id, c.me.id):
         return await msg.reply_text(
             "⚠️ I need admin privileges with 'Invite Users' permission "
-            "in private groups. Promote me and try again or use /reload."
+            "to play music. Promote me and try again or use /reload."
         )
 
-    # Get message context
     reply = await msg.getRepliedMessage() if msg.reply_to_message_id else None
     url = await get_url(msg, reply)
-    args = extract_argument(msg.text)
+
+    tg_pubic_url = url and re.fullmatch(r"https:\/\/t\.me\/([a-zA-Z0-9_]{5,})\/(\d+)", url)
+    if not reply and tg_pubic_url:
+        info = await c.getMessageLinkInfo(url)
+        if isinstance(info, types.Error) or not info.message:
+            await msg.reply_text(f"⚠️ Could not resolve message from link. {info.message}")
+            c.logger.warning(f"❌ Could not resolve message from link: {url}; {info}")
+            return None
+        reply = await c.getMessage(info.chat_id, info.message.id)
 
     # Send initial response
     status_msg = await msg.reply_text("🔍 Processing request...")
@@ -388,7 +395,7 @@ async def handle_play_command(c: Client, msg: types.Message, is_video: bool = Fa
         return None
 
     await del_msg(msg)  # Clean up command message
-
+    args = extract_argument(msg.text)
     # Initialize appropriate downloader
     wrapper = (YouTubeData if is_video else DownloaderWrapper)(url or args)
 

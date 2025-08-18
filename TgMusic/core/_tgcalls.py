@@ -817,7 +817,7 @@ class Calls:
         except errors.InviteHashExpired:
             return types.Error(
                 code=400,
-                message=f"Invite link has expired or my assistant ({user_id}) is banned from this group.",
+                message=f"Invite link has expired or my assistant (<code>{user_id}</code>) is banned from this group.",
             )
         except Exception as e:
             return types.Error(code=400, message=f"Failed to join {user_id}: {e}")
