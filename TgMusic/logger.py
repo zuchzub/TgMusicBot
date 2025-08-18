@@ -18,13 +18,13 @@ stream_handler.setFormatter(formatter)
 file_handler = RotatingFileHandler(
     "bot.log",
     maxBytes=20 * 1024 * 1024,
-    backupCount=0,
+    backupCount=1,
     encoding="utf-8",
 )
 file_handler.setFormatter(formatter)
 
 logging.basicConfig(
-    level=logging.DEBUG,  # root logger level
+    level=logging.INFO,  # root logger level
     handlers=[stream_handler, file_handler],
 )
 
@@ -33,9 +33,9 @@ for lib in ("httpx", "aiohttp", "pyrogram"):
     logging.getLogger(lib).setLevel(logging.WARNING)
 
 # selectively enable debug for these
-logging.getLogger("pyrogram").setLevel(logging.DEBUG)
-logging.getLogger("pytgcalls").setLevel(logging.DEBUG)
-logging.getLogger("ntgcalls").setLevel(logging.DEBUG)
+# logging.getLogger("pyrogram").setLevel(logging.DEBUG)
+# logging.getLogger("pytgcalls").setLevel(logging.DEBUG)
+# logging.getLogger("ntgcalls").setLevel(logging.DEBUG)
 # logging.getLogger("ffmpeg").setLevel(logging.DEBUG)
 # logging.getLogger("webrtc").setLevel(logging.DEBUG)
 
