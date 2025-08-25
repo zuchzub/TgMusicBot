@@ -37,12 +37,10 @@ class Bot(Client):
 
     def _initialize_services(self) -> None:
         """Initialize all service dependencies."""
-        from TgMusic.modules.jobs import InactiveCallManager
         self.config = config
         self.db = db
         self.call = call
         self.tg = tg
-        self.call_manager = InactiveCallManager(self)
         self._start_time = StartTime
         self._version = __version__
 
@@ -79,7 +77,6 @@ class Bot(Client):
         await self.call.add_bot(self)
         await self.call.register_decorators()
         await super().start()
-        await self.call_manager.start()
 
         self.logger.info("Bot started successfully")
         self.loop.create_task(self.watch_dog())
@@ -89,7 +86,6 @@ class Bot(Client):
         try:
             shutdown_tasks = [
                 self.db.close(),
-                self.call_manager.stop(),
                 self.call.stop_all_clients(),
             ]
 
