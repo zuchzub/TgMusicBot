@@ -39,7 +39,6 @@ async def callback_query(c: Client, message: types.UpdateNewCallbackQuery) -> No
             "play_stop",
             "play_pause",
             "play_resume",
-            "play_close",
         }
 
     def requires_active_chat(action: str) -> bool:
@@ -142,7 +141,6 @@ async def callback_query(c: Client, message: types.UpdateNewCallbackQuery) -> No
                 f"⚠️ Interface closure failed\n{delete_result.message}", show_alert=True
             )
             return None
-        await message.answer("✅ Interface closed successfully", show_alert=True)
         return None
 
     if data.startswith("play_c_"):
