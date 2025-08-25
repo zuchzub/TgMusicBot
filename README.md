@@ -1,3 +1,11 @@
+# Telegram Music Bot 
+
+This fork is different from the original repository 
+
+List of changes:
+
+- Increase file size up to 4GB
+
 # 🎵 TgMusicBot – Telegram Music Bot [![Stars](https://img.shields.io/github/stars/AshokShau/TgMusicBot?style=social)](https://github.com/AshokShau/TgMusicBot/stargazers)
 
 **A high-performance Telegram Voice Chat Bot** for streaming music from YouTube, Spotify, JioSaavn, and more. Built with Python, Py-Tgcalls, and PyTdBot.
