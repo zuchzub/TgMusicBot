@@ -9,7 +9,7 @@ from datetime import datetime
 
 from pytdbot import types, Client
 
-__version__ = "1.2.2"
+__version__ = "1.2.3"
 StartTime = datetime.now()
 
 
