@@ -4,15 +4,73 @@
 
 from pytdbot import Client, types
 
-from TgMusic.core import Filter, control_buttons, chat_cache, db, call
-from TgMusic.core.admins import is_admin, load_admin_cache
+from TgMusic.core import Filter, control_buttons, chat_cache, db, call, admins_only
 from .play import _get_platform_url, play_music
 from .progress_handler import _handle_play_c_data
 from .utils.play_helpers import edit_text
 from ..core import DownloaderWrapper
 
 
-@Client.on_updateNewCallbackQuery(filters=Filter.regex(r"(c)?play_\w+"))
+@Client.on_updateNewCallbackQuery(filters=Filter.regex(r"vcplay_\w+"))
+async def callback_query_vc_play(c: Client, message: types.UpdateNewCallbackQuery) -> None:
+    data = message.payload.data.decode()
+    chat_id = message.chat_id
+
+    if data == "vcplay_close":
+        delete_result = await c.deleteMessages(
+            chat_id, [message.message_id], revoke=True
+        )
+        if isinstance(delete_result, types.Error):
+            await message.answer(
+                f"⚠️ Interface closure failed\n{delete_result.message}", show_alert=True
+            )
+            return None
+        await message.answer("✅ Interface closed successfully", show_alert=True)
+        return None
+
+    user_id = message.sender_user_id
+    user = await c.getUser(user_id)
+    if isinstance(user, types.Error):
+        c.logger.warning(f"Failed to get user info: {user.message}")
+        return None
+
+    user_name = user.first_name
+    # Handle music playback requests
+    try:
+        _, platform, song_id = data.split("_", 2)
+    except ValueError:
+        c.logger.error(f"Malformed callback data received: {data}")
+        await message.answer("⚠️ Invalid request format", show_alert=True)
+        return None
+
+    await message.answer(f"🔍 Preparing playback for {user_name}", show_alert=True)
+    reply = await message.edit_message_text(
+        f"🔍 Searching...\nRequested by: {user_name}"
+    )
+    if isinstance(reply, types.Error):
+        c.logger.warning(f"Message edit failed: {reply.message}")
+        return None
+
+    url = _get_platform_url(platform, song_id)
+    if not url:
+        c.logger.error(f"Unsupported platform: {platform} | Data: {data}")
+        await edit_text(reply, text=f"⚠️ Unsupported platform: {platform}")
+        return None
+
+    song = await DownloaderWrapper(url).get_info()
+    if song:
+        if isinstance(song, types.Error):
+            await edit_text(reply, text=f"⚠️ Retrieval error\n{song.message}")
+            return None
+
+        return await play_music(c, reply, song, user_name)
+
+    await edit_text(reply, text="⚠️ Requested content not found")
+    return None
+
+
+@Client.on_updateNewCallbackQuery(filters=Filter.regex(r"play_\w+"))
+@admins_only(is_bot=True, is_auth=True)
 async def callback_query(c: Client, message: types.UpdateNewCallbackQuery) -> None:
     """Handle all playback control callback queries (skip, stop, pause, resume)."""
     data = message.payload.data.decode()
@@ -29,18 +87,7 @@ async def callback_query(c: Client, message: types.UpdateNewCallbackQuery) -> No
         c.logger.warning(f"Failed to get user info: {user.message}")
         return None
 
-    await load_admin_cache(c, message.chat_id)
     user_name = user.first_name
-
-    def requires_admin(action: str) -> bool:
-        """Check if action requires admin privileges."""
-        return action in {
-            "play_skip",
-            "play_stop",
-            "play_pause",
-            "play_resume",
-            "play_close",
-        }
 
     def requires_active_chat(action: str) -> bool:
         """Check if action requires an active playback session."""
@@ -49,7 +96,6 @@ async def callback_query(c: Client, message: types.UpdateNewCallbackQuery) -> No
             "play_stop",
             "play_pause",
             "play_resume",
-            "play_timer",
         }
 
     async def send_response(
@@ -72,13 +118,6 @@ async def callback_query(c: Client, message: types.UpdateNewCallbackQuery) -> No
             )
             if isinstance(_del_result, types.Error):
                 c.logger.warning(f"Message deletion failed: {_del_result.message}")
-
-    # Check admin permissions if required
-    if requires_admin(data) and not await is_admin(message.chat_id, user_id):
-        await message.answer(
-            "⛔ Administrator privileges required for this action.", show_alert=True
-        )
-        return None
 
     chat_id = message.chat_id
     if requires_active_chat(data) and not chat_cache.is_active(chat_id):
@@ -133,49 +172,6 @@ async def callback_query(c: Client, message: types.UpdateNewCallbackQuery) -> No
             reply_markup=markup,
         )
 
-    if data == "play_close":
-        delete_result = await c.deleteMessages(
-            chat_id, [message.message_id], revoke=True
-        )
-        if isinstance(delete_result, types.Error):
-            await message.answer(
-                f"⚠️ Interface closure failed\n{delete_result.message}", show_alert=True
-            )
-            return None
-        await message.answer("✅ Interface closed successfully", show_alert=True)
-        return None
-
     if data.startswith("play_c_"):
         return await _handle_play_c_data(data, message, chat_id, user_id, user_name, c)
-
-    # Handle music playback requests
-    try:
-        _, platform, song_id = data.split("_", 2)
-    except ValueError:
-        c.logger.error(f"Malformed callback data received: {data}")
-        return await send_response("⚠️ Invalid request format", alert=True)
-
-    await message.answer(f"🔍 Preparing playback for {user_name}", show_alert=True)
-    reply = await message.edit_message_text(
-        f"🔍 Searching...\nRequested by: {user_name}"
-    )
-    if isinstance(reply, types.Error):
-        c.logger.warning(f"Message edit failed: {reply.message}")
-        return None
-
-    url = _get_platform_url(platform, song_id)
-    if not url:
-        c.logger.error(f"Unsupported platform: {platform} | Data: {data}")
-        await edit_text(reply, text=f"⚠️ Unsupported platform: {platform}")
-        return None
-
-    song = await DownloaderWrapper(url).get_info()
-    if song:
-        if isinstance(song, types.Error):
-            await edit_text(reply, text=f"⚠️ Retrieval error\n{song.message}")
-            return None
-
-        return await play_music(c, reply, song, user_name)
-
-    await edit_text(reply, text="⚠️ Requested content not found")
     return None
