@@ -4,6 +4,7 @@ This fork is different from the original repository
 
 List of changes:
 
+- Disable health check on saved messages
 - Increase file size up to 4GB
 - Disable auto-leave when there are no active listeners
 
