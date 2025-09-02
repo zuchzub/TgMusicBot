@@ -6,7 +6,6 @@ List of changes:
 
 - Increase file size up to 4GB
 - Disable auto-leave when there are no active listeners
-- Easily dismiss bot messages
 
 # 🎵 TgMusicBot – Telegram Music Bot [![Stars](https://img.shields.io/github/stars/AshokShau/TgMusicBot?style=social)](https://github.com/AshokShau/TgMusicBot/stargazers)
 
