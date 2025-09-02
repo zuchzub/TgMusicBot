@@ -114,7 +114,7 @@ class ApiData(MusicService):
         if self.is_valid():
             return await self.get_info()
 
-        response = await self._make_api_request("search_track", {"q": self.query})
+        response = await self._make_api_request("search", {"query": self.query})
         return self._parse_tracks_response(response) or types.Error(
             404, "No results found for search query"
         )
@@ -129,7 +129,7 @@ class ApiData(MusicService):
         if not self.query:
             return types.Error(400, "No track identifier provided")
 
-        response = await self._make_api_request("get_track", {"id": self.query})
+        response = await self._make_api_request("track", {"url": self.query})
         return (
             TrackInfo(**response) if response else types.Error(404, "Track not found")
         )

@@ -9,7 +9,7 @@ from datetime import datetime
 
 from pytdbot import types, Client
 
-__version__ = "1.2.2"
+__version__ = "1.2.3"
 StartTime = datetime.now()
 
 
@@ -113,7 +113,7 @@ class Bot(Client):
                 try:
                     await self.call.health_check()
                     consecutive_failures = 0
-                    await asyncio.sleep(100)
+                    await asyncio.sleep(300)
                     continue
                 except Exception as e:
                     self.logger.error(f"Health check failed: {e}", exc_info=True)

@@ -13,8 +13,6 @@ from py_yt import Playlist, VideosSearch
 from pytdbot import types
 
 from TgMusic.logger import LOGGER
-
-
 from ._config import config
 from ._dataclass import MusicTrack, PlatformTracks, TrackInfo
 from ._downloader import MusicService
@@ -212,43 +210,46 @@ class YouTubeUtils:
         """
         Download audio using the API.
         """
-        from TgMusic import client
-
+        video_url = f"https://www.youtube.com/watch?v={video_id}"
         httpx = HttpxClient()
-        if public_url := await httpx.make_request(
-            f"{config.API_URL}/yt?id={video_id}&video={is_video}"
-        ):
-            dl_url = public_url.get("results")
-            if not dl_url:
-                LOGGER.error("Response from API is empty")
-                return None
+        get_track = await httpx.make_request(f"{config.API_URL}/track?url={video_url}&video={is_video}")
+        if not get_track:
+            LOGGER.error("Response from API is empty")
+            return None
 
-            if not re.fullmatch(r"https:\/\/t\.me\/([a-zA-Z0-9_]{5,})\/(\d+)", dl_url):
-                dl = await httpx.download_file(dl_url)
-                return dl.file_path if dl.success else None
+        track = TrackInfo(**get_track)
+        cdnurl = track.cdnurl
+        if not cdnurl:
+            LOGGER.error("CDN URL not found in response")
+            return None
 
-            info = await client.getMessageLinkInfo(dl_url)
-            if isinstance(info, types.Error) or info.message is None:
-                LOGGER.error(
-                    f"❌ Could not resolve message from link: {dl_url}; {info}"
-                )
-                return None
+        if not re.fullmatch(r"https:\/\/t\.me\/([a-zA-Z0-9_]{5,})\/(\d+)", cdnurl):
+            dl = await httpx.download_file(cdnurl)
+            return dl.file_path if dl.success else None
 
-            msg = await client.getMessage(info.chat_id, info.message.id)
-            if isinstance(msg, types.Error):
-                LOGGER.error(
-                    f"❌ Failed to fetch message with ID {info.message.id}; {msg}"
-                )
-                return None
+        from TgMusic import client
+        info = await client.getMessageLinkInfo(cdnurl)
+        if isinstance(info, types.Error) or info.message is None:
+            LOGGER.error(
+                f"❌ Could not resolve message from link: {cdnurl}; {info}"
+            )
+            return None
 
-            file = await msg.download()
-            if isinstance(file, types.Error):
-                LOGGER.error(
-                    f"❌ Failed to download message with ID {info.message.id}; {file}"
-                )
-                return None
-            return Path(file.path)
-        return None
+        msg = await client.getMessage(info.chat_id, info.message.id)
+        if isinstance(msg, types.Error):
+            LOGGER.error(
+                f"❌ Failed to fetch message with ID {info.message.id}; {msg}"
+            )
+            return None
+
+        file = await msg.download()
+        if isinstance(file, types.Error):
+            LOGGER.error(
+                f"❌ Failed to download message with ID {info.message.id}; {file}"
+            )
+            return None
+        return Path(file.path)
+
 
     @staticmethod
     def _build_ytdlp_params(

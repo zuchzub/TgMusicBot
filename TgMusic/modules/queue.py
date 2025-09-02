@@ -4,11 +4,12 @@
 
 from pytdbot import Client, types
 
-from TgMusic.core import Filter, chat_cache, call
+from TgMusic.core import Filter, chat_cache, call, admins_only
 from TgMusic.modules.utils import sec_to_min
 
 
 @Client.on_message(filters=Filter.command("queue"))
+@admins_only(is_bot=True)
 async def queue_info(_: Client, msg: types.Message) -> None:
     """Display the current playback queue with detailed information."""
     if msg.chat_id > 0:
@@ -16,7 +17,6 @@ async def queue_info(_: Client, msg: types.Message) -> None:
 
     chat_id = msg.chat_id
     _queue = chat_cache.get_queue(chat_id)
-
     if not _queue:
         await msg.reply_text("📭 The queue is currently empty.")
         return
@@ -48,10 +48,10 @@ async def queue_info(_: Client, msg: types.Message) -> None:
         text.extend(["", f"<b>⏭ Next Up ({len(_queue) - 1}):</b>"])
         text.extend(
             f"{i}. <code>{song.name[:45]}</code> | {sec_to_min(song.duration)} min"
-            for i, song in enumerate(_queue[1:11], 1)
+            for i, song in enumerate(_queue[1:15], 1)
         )
-        if len(_queue) > 11:
-            text.append(f"...and {len(_queue) - 11} more")
+        if len(_queue) > 15:
+            text.append(f"...and {len(_queue) - 15} more")
 
     text.append(f"\n<b>📊 Total:</b> {len(_queue)} track(s) in queue")
 
