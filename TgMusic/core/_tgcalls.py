@@ -295,9 +295,10 @@ class Calls:
 
         # Get next song from queue
         if next_song := chat_cache.get_upcoming_track(chat_id):
-            self.bot.loop.create_task(self._remove_song(chat_id))
+            self._remove_song(chat_id)
             await self._play_song(chat_id, next_song)
         else:
+            self._remove_song(chat_id)
             await self._handle_no_songs(chat_id)
 
     async def _play_song(self, chat_id: int, song: CachedTrack) -> None:
@@ -727,7 +728,7 @@ class Calls:
             return types.Error(code=500, message=f"Failed to get stats: {str(e)}")
 
     @staticmethod
-    async def _remove_song(chat_id: int) -> None:
+    def _remove_song(chat_id: int) -> None:
         """
         Remove song and its thumbnail files from the cache and filesystem.
         """
