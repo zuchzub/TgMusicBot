@@ -62,7 +62,7 @@ def build_song_selection_message(
     buttons = [
         [
             types.InlineKeyboardButton(
-                text=f"{track.name[:18]} - {track.artist}",
+                text=f"{track.name[:18]}",
                 type=types.InlineKeyboardButtonTypeCallback(
                     f"vcplay_{track.platform.lower()}_{track.id}".encode()
                 ),

@@ -117,8 +117,8 @@ async def update(c: Client, message: types.Message) -> None:
         )
         sys.exit(0)
     else:
-        tgmusic_path = shutil.which("tgmusic")
+        tgmusic_path = shutil.which("start")
         if not tgmusic_path:
-            await msg.edit_text("❌ Unable to find 'tgmusic' in PATH.")
+            await msg.edit_text("❌ Unable to find 'start' in PATH.")
             return
-        execvp("tgmusic", ["tgmusic"])
+        execvp("start", ["start"])

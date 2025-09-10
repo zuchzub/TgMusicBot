@@ -222,7 +222,7 @@
 1. **Start in tmux session** (keeps running after logout):
    ```sh
    tmux new -s musicbot
-   tgmusic
+   start
    ```
 
    **Tmux Cheatsheet**:
@@ -235,7 +235,7 @@ To restart the bot:
 ```sh
 tmux attach -t musicbot
 # Kill with Ctrl+C
-tgmusic
+start
 ```
 
 </details>

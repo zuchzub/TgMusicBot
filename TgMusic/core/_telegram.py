@@ -9,19 +9,21 @@ from pytdbot import types
 
 from TgMusic.logger import LOGGER
 
+from._config import config
+
 
 class Telegram:
     """
     Helper class to validate and process playable Telegram media messages.
     """
 
-    MAX_FILE_SIZE = 500 * 1024 * 1024  # 500MB
     UNSUPPORTED_TYPES = (
         types.MessageText,
         types.MessagePhoto,
         types.MessageSticker,
         types.MessageAnimation,
     )
+    MAX_FILE_SIZE = config.MAX_FILE_SIZE
     DownloaderCache = TTLCache(maxsize=5000, ttl=600)
 
     def __init__(self):

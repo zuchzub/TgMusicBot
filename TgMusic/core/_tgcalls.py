@@ -8,7 +8,8 @@ import re
 from pathlib import Path
 from typing import Optional, Union
 
-from ntgcalls import TelegramServerError, ConnectionNotFound
+import ntgcalls
+from ntgcalls import ConnectionNotFound
 from pyrogram import Client as PyroClient
 from pyrogram import errors
 from pytdbot import Client, types
@@ -127,6 +128,10 @@ class Calls:
                 api_id=api_id,
                 api_hash=api_hash,
                 session_string=session_string,
+                fetch_replies=False,
+                fetch_stories=False,
+                fetch_topics=False,
+                fetch_stickers=False,
             )
             calls = PyTgCalls(user_bot, cache_duration=100)
             self.calls[client_name] = calls
@@ -148,20 +153,6 @@ class Calls:
             except Exception as e:
                 LOGGER.error("Error stopping client %s: %s", name, e)
 
-    async def health_check(self) -> None:
-        for name, client in self.pyrogram_clients.items():
-            try:
-                await client.get_me()
-                await client.send_message("me", "Health check")
-                LOGGER.debug("Client %s is healthy", name)
-            except (errors.Flood, errors.FloodWait):
-                LOGGER.warning("Flood error while checking health of client %s", name)
-            except errors.RPCError as e:
-                LOGGER.error("Error checking health of client %s: %s", name, e)
-            except Exception as e:
-                LOGGER.error("Error checking health of client %s: %s", name, e)
-                raise RuntimeError(f"Failed to check health of client {name}: {str(e)}") from e
-
     async def register_decorators(self) -> None:
         """Register pytgcalls event handlers."""
         for _call in self.calls.values():
@@ -180,6 +171,12 @@ class Calls:
                             "Cleaning up chat %s after leaving", update.chat_id
                         )
                         chat_cache.clear_chat(update.chat_id)
+                    elif isinstance(update, ChatUpdate) and update.status.CLOSED_VOICE_CHAT:
+                        LOGGER.debug(
+                            "Cleaning up chat %s after leaving", update.chat_id
+                        )
+                        chat_cache.clear_chat(update.chat_id)
+                        await self.end(update.chat_id)
                 except Exception as e:
                     LOGGER.error("Error in general handler: %s", e, exc_info=True)
 
@@ -247,13 +244,19 @@ class Calls:
                 )
 
             return types.Ok()
-        except (exceptions.NoActiveGroupCall, ConnectionNotFound):
+        except (exceptions.NoActiveGroupCall, ntgcalls.ConnectionNotFound):
             return types.Error(
                 code=404,
                 message="No active voice chat found.\n\n"
                 "Please start a voice chat and try again.",
             )
-        except TelegramServerError:
+        except ntgcalls.ConnectionError as e:
+            LOGGER.error("Connection error during playback: %s", e)
+            return types.Error(
+                code=502,
+                message="Connection error detected. Please try again later.\nDid you just close the voice chat?",
+            )
+        except ntgcalls.TelegramServerError:
             LOGGER.warning("Telegram server error during playback")
             return types.Error(
                 code=502,
@@ -292,7 +295,7 @@ class Calls:
 
         # Get next song from queue
         if next_song := chat_cache.get_upcoming_track(chat_id):
-            chat_cache.remove_current_song(chat_id)
+            self.bot.loop.create_task(self._remove_song(chat_id))
             await self._play_song(chat_id, next_song)
         else:
             await self._handle_no_songs(chat_id)
@@ -722,6 +725,21 @@ class Calls:
                 "Stats check failed for chat %s: %s", chat_id, str(e), exc_info=True
             )
             return types.Error(code=500, message=f"Failed to get stats: {str(e)}")
+
+    @staticmethod
+    async def _remove_song(chat_id: int) -> None:
+        """
+        Remove song and its thumbnail files from the cache and filesystem.
+        """
+        if removed := chat_cache.remove_current_song(chat_id):
+            try:
+                if removed.file_path:
+                    file_path = Path(removed.file_path)
+                    file_path.unlink(True)
+                thumb_path = Path(f"database/photos/{removed.track_id}.png")
+                thumb_path.unlink(True)
+            except Exception as e:
+                pass
 
     async def check_user_status(
         self, chat_id: int

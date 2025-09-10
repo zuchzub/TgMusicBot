@@ -4,6 +4,7 @@
 
 import asyncio
 import time
+import random
 
 from pytdbot import Client, types
 
@@ -11,9 +12,9 @@ from TgMusic.core import Filter, db, admins_only
 from TgMusic.logger import LOGGER
 from TgMusic.modules.utils.play_helpers import extract_argument
 
-REQUEST_LIMIT = 30
-BATCH_SIZE = 400
-BATCH_DELAY = 2
+REQUEST_LIMIT = 8
+BATCH_SIZE = 100
+BATCH_DELAY = 5
 MAX_RETRIES = 2
 
 semaphore = asyncio.Semaphore(REQUEST_LIMIT)
@@ -28,7 +29,13 @@ async def get_broadcast_targets(target: str) -> tuple[list[int], list[int]]:
 
 async def send_message_with_retry(
     target_id: int, message: types.Message, is_copy: bool
-) -> int:
+) -> tuple[int, int]:
+    """
+    Try to send a message to one target with retries.
+    Returns (sent, global_wait) where:
+      - sent = 1 if success, 0 if failed
+      - global_wait = >0 if we need to pause the whole broadcast
+    """
     for attempt in range(1, MAX_RETRIES + 1):
         async with semaphore:
             result = await (
@@ -36,12 +43,23 @@ async def send_message_with_retry(
             )
 
             if isinstance(result, types.Error):
+                # FloodWait
                 if result.code == 429:
                     retry_after = (
                         int(result.message.split("retry after ")[1])
                         if "retry after" in result.message
                         else 1
                     )
+
+                    # Distinguish between per-user and global
+                    if retry_after > 15:  # heuristic: long wait = global
+                        LOGGER.warning(
+                            "[Global FloodWait] Sleeping %ss (triggered by %s)",
+                            retry_after,
+                            target_id,
+                        )
+                        return 0, retry_after  # tell caller to pause all
+
                     LOGGER.warning(
                         "[FloodWait] Retry %s/%s in %ss for %s",
                         attempt,
@@ -52,6 +70,7 @@ async def send_message_with_retry(
                     await asyncio.sleep(retry_after)
                     continue
 
+                # Remove dead/blocked users
                 if result.code == 400 and result.message in {
                     "Have no write access to the chat",
                     "USER_IS_BLOCKED",
@@ -62,18 +81,19 @@ async def send_message_with_retry(
                         if target_id < 0
                         else await db.remove_user(target_id)
                     )
-                    return 0
+                    return 0, 0
 
+                # Other error
                 LOGGER.warning(
                     "Message failed for %s: [%d] %s",
                     target_id,
                     result.code,
                     result.message,
                 )
-                return 0
+                return 0, 0
 
-            return 1
-    return 0
+            return 1, 0  # success
+    return 0, 0
 
 
 async def broadcast_to_targets(
@@ -85,14 +105,21 @@ async def broadcast_to_targets(
         results = await asyncio.gather(
             *[send_message_with_retry(tid, message, is_copy) for tid in _batch]
         )
-        _batch_sent = sum(results)
+        _batch_sent = sum(r[0] for r in results)
         _batch_failed = len(_batch) - _batch_sent
+
+        # Check for global FloodWait
+        max_wait = max((r[1] for r in results), default=0)
+        if max_wait > 0:
+            LOGGER.warning("Pausing whole broadcast for %ss due to global FloodWait", max_wait)
+            await asyncio.sleep(max_wait)
+
         LOGGER.info(
             "Batch %s sent: %s, failed: %s", index + 1, _batch_sent, _batch_failed
         )
         return _batch_sent, _batch_failed
 
-    batches = [targets[i : i + BATCH_SIZE] for i in range(0, len(targets), BATCH_SIZE)]
+    batches = [targets[i:i + BATCH_SIZE] for i in range(0, len(targets), BATCH_SIZE)]
     for idx, batch in enumerate(batches):
         LOGGER.info(
             "Sending batch %s/%s (targets: %s)", idx + 1, len(batches), len(batch)
@@ -100,7 +127,8 @@ async def broadcast_to_targets(
         batch_sent, batch_failed = await process_batch(batch, idx)
         sent += batch_sent
         failed += batch_failed
-        await asyncio.sleep(BATCH_DELAY)
+
+        await asyncio.sleep(BATCH_DELAY + random.uniform(0.5, 1.5))
 
     return sent, failed
 

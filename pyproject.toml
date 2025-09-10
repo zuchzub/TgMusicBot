@@ -33,7 +33,7 @@ classifiers = [
 dependencies = [
     "aiofiles~=24.1.0",
     "cachetools~=6.2.0",
-    "kurigram~=2.2.9",
+    "kurigram~=2.2.10",
     "meval~=2.5",
     "ntgcalls~=2.0.6",
     "pillow~=11.3.0",
@@ -42,12 +42,12 @@ dependencies = [
     "pycryptodome~=3.23.0",
     "pydantic~=2.11.7",
     "pymongo~=4.14.1",
-    "py-tgcalls~=2.2.6",
+    "py-tgcalls~=2.2.8",
     "pytgcrypto~=1.2.11",
-    "pytdbot~=0.9.6.dev1",
+    "pytdbot~=0.9.6",
     "tdjson~=1.8.52",
     "ujson~=5.11.0",
-    "yt-dlp~=2025.8.22",
+    "yt-dlp~=2025.9.5",
 ]
 
 [project.license]
@@ -61,7 +61,7 @@ dev = [
 ]
 
 [project.scripts]
-tgmusic = "TgMusic.__main__:main"
+start = "TgMusic.__main__:main"
 
 [project.urls]
 Homepage = "https://github.com/AshokShau/tgmusicbot"

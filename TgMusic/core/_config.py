@@ -42,6 +42,7 @@ class BotConfig:
         self.PROXY: Optional[str] = os.getenv("PROXY")
         self.DEFAULT_SERVICE: str = os.getenv("DEFAULT_SERVICE", "youtube").lower()
         self.MIN_MEMBER_COUNT: int = self._get_env_int("MIN_MEMBER_COUNT", 50)
+        self.MAX_FILE_SIZE: int = self._get_env_int("MAX_FILE_SIZE", 500 * 1024 * 1024)  # 500MB default
 
         self.DOWNLOADS_DIR: Path = Path(os.getenv("DOWNLOADS_DIR", "database/music"))
 
