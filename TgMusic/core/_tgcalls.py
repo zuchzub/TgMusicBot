@@ -265,6 +265,8 @@ class Calls:
         except exceptions.NoAudioSourceFound as e:
             LOGGER.error("Audio source not found in chat %s: %s", chat_id, str(e))
             return types.Error(code=404, message="Audio source not found.")
+        except FileNotFoundError:
+            return types.Error(code=404, message="File not found.")
         except errors.RPCError as e:
             LOGGER.error("Playback failed in chat %s: %s", chat_id, str(e))
             return types.Error(code=e.CODE or 500, message=f"Playback error: {str(e)}")
@@ -447,6 +449,7 @@ class Calls:
                 errors.GroupCallInvalid,
                 exceptions.NoActiveGroupCall,
                 ConnectionNotFound,
+                errors.GroupcallForbidden
             ):
                 pass  # Already not in call
 
@@ -736,11 +739,11 @@ class Calls:
             try:
                 if removed.file_path:
                     file_path = Path(removed.file_path)
-                    file_path.unlink(True)
+                    file_path.unlink(missing_ok=True)
                 thumb_path = Path(f"database/photos/{removed.track_id}.png")
-                thumb_path.unlink(True)
+                thumb_path.unlink(missing_ok=True)
             except Exception as e:
-                pass
+                LOGGER.warning(f"Failed to delete file(s): {e}")
 
     async def check_user_status(
         self, chat_id: int

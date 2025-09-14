@@ -268,9 +268,22 @@ async def _handle_telegram_file(
 ):
     """Process Telegram audio/video file attachments."""
     content = reply.content
-    is_video = isinstance(content, (types.MessageVideo, types.Video)) or (
-        isinstance(content, (types.MessageDocument, types.Document))
-        and getattr(content, "mime_type", "").startswith("video/")
+    mime_type = None
+    if isinstance(content, types.MessageDocument):
+        mime_type = content.document.mime_type
+    elif isinstance(content, types.MessageVideo):
+        mime_type = content.video.mime_type
+    elif isinstance(content, types.Document):
+        mime_type = content.mime_type
+
+
+    is_video = (
+            isinstance(content, (types.MessageVideo, types.Video))
+            or (
+                    isinstance(content, (types.MessageDocument, types.Document))
+                    and mime_type
+                    and mime_type.startswith("video/")
+            )
     )
 
     # Download the attached file
