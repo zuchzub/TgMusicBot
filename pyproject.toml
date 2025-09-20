@@ -1,6 +1,6 @@
 [project]
 name = "tgmusicbot"
-version = "1.2.3"
+version = "1.2.4"
 description = "Telegram Music Bot with full playback support using PyTdBot and PyTgCalls"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -31,23 +31,22 @@ classifiers = [
     "Framework :: AsyncIO",
 ]
 dependencies = [
-    "aiofiles~=24.1.0",
-    "cachetools~=6.2.0",
-    "kurigram~=2.2.10",
-    "meval~=2.5",
-    "ntgcalls~=2.0.6",
-    "pillow~=11.3.0",
-    "psutil~=7.0.0",
-    "py-yt-search~=0.3",
-    "pycryptodome~=3.23.0",
-    "pydantic~=2.11.9",
-    "pymongo~=4.15.1",
-    "py-tgcalls~=2.2.8",
-    "pytgcrypto~=1.2.11",
-    "pytdbot~=0.9.6",
-    "tdjson~=1.8.54",
-    "ujson~=5.11.0",
-    "yt-dlp~=2025.9.5",
+    "aiofiles>=24.1.0",
+    "cachetools>=6.2.0",
+    "kurigram>=2.2.12",
+    "meval>=2.5",
+    "ntgcalls>=2.0.6",
+    "pillow>=11.3.0",
+    "psutil>=7.1.0",
+    "py-tgcalls>=2.2.8",
+    "py-yt-search>=0.3",
+    "pycryptodome>=3.23.0",
+    "pydantic>=2.11.9",
+    "pymongo>=4.15.1",
+    "pytdbot[tdjson]>=0.9.6",
+    "pytgcrypto>=1.2.11",
+    "ujson>=5.11.0",
+    "yt-dlp>=2025.9.5",
 ]
 
 [project.license]
@@ -55,9 +54,7 @@ file = "LICENSE"
 
 [project.optional-dependencies]
 dev = [
-    "setuptools~=80.9.0",
     "black",
-    "ruff",
 ]
 
 [project.scripts]
@@ -70,6 +67,9 @@ Source = "https://github.com/AshokShau/tgmusicbot"
 
 [tool.uv]
 package = true
+
+[tool.uv.sources]
+pytdbot = { git = "https://github.com/pytdbot/client.git" }
 
 [tool.setuptools]
 packages = [
