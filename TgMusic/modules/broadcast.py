@@ -3,8 +3,8 @@
 #  Part of the TgMusicBot project. All rights reserved where applicable.
 
 import asyncio
-import time
 import random
+import time
 
 from pytdbot import Client, types
 

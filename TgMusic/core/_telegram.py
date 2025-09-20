@@ -8,8 +8,7 @@ from cachetools import TTLCache
 from pytdbot import types
 
 from TgMusic.logger import LOGGER
-
-from._config import config
+from ._config import config
 
 
 class Telegram:

@@ -5,7 +5,9 @@
 from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Optional, Union
+
 from pytdbot import types
+
 from ._config import config
 from ._dataclass import PlatformTracks, TrackInfo
 

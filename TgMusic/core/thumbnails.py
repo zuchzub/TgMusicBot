@@ -9,8 +9,8 @@ import httpx
 from PIL import Image, ImageDraw, ImageEnhance, ImageFilter, ImageFont, ImageOps
 from aiofiles.os import path as aiopath
 
-from ._dataclass import CachedTrack
 from TgMusic.logger import LOGGER
+from ._dataclass import CachedTrack
 
 FONTS = {
     "cfont": ImageFont.truetype("TgMusic/modules/utils/cfont.ttf", 15),

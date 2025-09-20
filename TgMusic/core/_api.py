@@ -7,13 +7,13 @@ from pathlib import Path
 from typing import Optional, Union
 
 from pytdbot import types
-from TgMusic.logger import LOGGER
 
+from TgMusic.logger import LOGGER
 from ._config import config
+from ._dataclass import PlatformTracks, MusicTrack, TrackInfo
 from ._downloader import MusicService
 from ._httpx import HttpxClient
 from ._spotify_dl_helper import SpotifyDownload
-from ._dataclass import PlatformTracks, MusicTrack, TrackInfo
 
 
 class ApiData(MusicService):

@@ -12,7 +12,6 @@ from TgMusic.core import (
 )
 from TgMusic.core.buttons import add_me_markup, HelpMenu, BackHelpMenu
 
-
 START_TEXT = """
 ʜᴇʏ {};
 

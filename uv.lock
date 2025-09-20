@@ -460,15 +460,6 @@ wheels = [
 ]
 
 [[package]]
-name = "meval"
-version = "2.5"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/a0/58/2bfffe5a6a1d3d7e9fe2888807a11d220f6cda11af0a41db1170ca9ae6b7/meval-2.5.tar.gz", hash = "sha256:a5aa481617f1fd07a5972076cd3aa14e38515ac84b3ff028efdf76371a856765", size = 2499, upload-time = "2019-11-27T15:36:19.801Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/95/a9/0fab3521980ff8a5cba771cbca2e0bf1c713a57b576fb82cc30f1a095e66/meval-2.5-py3-none-any.whl", hash = "sha256:24430865001b5596864a7c28f423294edadaac57af9ab6964dda3eabc8762577", size = 3584, upload-time = "2019-11-27T15:36:18.473Z" },
-]
-
-[[package]]
 name = "multidict"
 version = "6.6.4"
 source = { registry = "https://pypi.org/simple" }
@@ -1233,7 +1224,6 @@ dependencies = [
     { name = "aiofiles" },
     { name = "cachetools" },
     { name = "kurigram" },
-    { name = "meval" },
     { name = "ntgcalls" },
     { name = "pillow" },
     { name = "psutil" },
@@ -1259,7 +1249,6 @@ requires-dist = [
     { name = "black", marker = "extra == 'dev'" },
     { name = "cachetools", specifier = ">=6.2.0" },
     { name = "kurigram", specifier = ">=2.2.12" },
-    { name = "meval", specifier = ">=2.5" },
     { name = "ntgcalls", specifier = ">=2.0.6" },
     { name = "pillow", specifier = ">=11.3.0" },
     { name = "psutil", specifier = ">=7.1.0" },

@@ -9,8 +9,8 @@ from cachetools import TTLCache
 from pytdbot import types, Client
 
 from ._config import config
-from ._filters import Filter
 from ._database import db
+from ._filters import Filter
 
 admin_cache = TTLCache(maxsize=1000, ttl=60 * 60)
 

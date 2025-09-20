@@ -4,7 +4,9 @@
 
 import re
 from typing import Union
+
 from pytdbot import filters, types
+
 
 class Filter:
     @staticmethod

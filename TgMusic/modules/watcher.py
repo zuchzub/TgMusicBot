@@ -17,9 +17,8 @@ from TgMusic.core import (
     config,
     load_admin_cache,
 )
-
-from TgMusic.logger import LOGGER
 from TgMusic.core.buttons import add_me_markup
+from TgMusic.logger import LOGGER
 
 
 async def handle_non_supergroup(client: Client, chat_id: int) -> None:

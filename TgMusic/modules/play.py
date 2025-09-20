@@ -6,20 +6,21 @@ import re
 
 from pytdbot import Client, types
 
-from TgMusic.core import YouTubeData, DownloaderWrapper, db, call, tg
 from TgMusic.core import (
     CachedTrack,
     MusicTrack,
     PlatformTracks,
     chat_cache,
 )
-from TgMusic.logger import LOGGER
 from TgMusic.core import (
     Filter,
     SupportButton,
     control_buttons,
 )
+from TgMusic.core import YouTubeData, DownloaderWrapper, db, call, tg
 from TgMusic.core import admins_only
+from TgMusic.core.thumbnails import gen_thumb
+from TgMusic.logger import LOGGER
 from TgMusic.modules.utils import sec_to_min, get_audio_duration
 from TgMusic.modules.utils.play_helpers import (
     del_msg,
@@ -27,7 +28,6 @@ from TgMusic.modules.utils.play_helpers import (
     extract_argument,
     get_url,
 )
-from TgMusic.core.thumbnails import gen_thumb
 
 
 def _get_jiosaavn_url(track_id: str) -> str:
