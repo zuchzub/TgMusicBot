@@ -1088,12 +1088,13 @@ wheels = [
 
 [[package]]
 name = "pytdbot"
-version = "0.9.6"
-source = { git = "https://github.com/pytdbot/client.git#b15313f0c025d7d1208185081e7707e8d8697f9d" }
+version = "0.9.7"
+source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aio-pika" },
     { name = "deepdiff" },
 ]
+sdist = { url = "https://files.pythonhosted.org/packages/c4/12/0abe58cf21a8ba743fca9785d88cfd78cc61448dbd83b3719964595f56f3/pytdbot-0.9.7.tar.gz", hash = "sha256:5933753f2ffe964c9c4b3ca2b39725cbd166ffda89fa67eb5184ebad46e608d3", size = 487529, upload-time = "2025-09-21T08:08:58.77Z" }
 
 [package.optional-dependencies]
 tdjson = [
@@ -1257,7 +1258,7 @@ requires-dist = [
     { name = "pycryptodome", specifier = ">=3.23.0" },
     { name = "pydantic", specifier = ">=2.11.9" },
     { name = "pymongo", specifier = ">=4.15.1" },
-    { name = "pytdbot", extras = ["tdjson"], git = "https://github.com/pytdbot/client.git" },
+    { name = "pytdbot", extras = ["tdjson"], specifier = ">=0.9.7" },
     { name = "pytgcrypto", specifier = ">=1.2.11" },
     { name = "ujson", specifier = ">=5.11.0" },
     { name = "yt-dlp", specifier = ">=2025.9.5" },
