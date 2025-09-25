@@ -144,14 +144,15 @@ class InactiveCallManager:
             self.bot.logger.info(f"[leave_all] Completed in {duration:.2f}s")
 
     async def start(self):
-        if not self._vc_task or self._vc_task.done():
-            self._stop.clear()
+        """Start the background tasks."""
+        self._stop.clear()
+        if not config.NO_UPDATES:
             self._vc_task = asyncio.create_task(self._vc_loop())
-            self.bot.logger.info("VC inactivity auto-end loop started.")
-
-        if not self._leave_task or self._leave_task.done():
+            self.bot.logger.info("Started VC auto-end task")
+        
+        if config.AUTO_LEAVE:
             self._leave_task = asyncio.create_task(self._leave_loop())
-            self.bot.logger.info("Auto-leave loop started (3:00 AM daily).")
+            self.bot.logger.info("Started auto-leave task")
 
     async def stop(self):
         self._stop.set()

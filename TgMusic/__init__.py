@@ -11,7 +11,6 @@ from pytdbot import types, Client
 __version__ = "1.2.4"
 StartTime = datetime.now()
 
-
 from TgMusic.core import call, tg, db, config
 
 
@@ -44,18 +43,6 @@ class Bot(Client):
         self._start_time = StartTime
         self._version = __version__
 
-    async def start(self) -> None:
-        """Start the bot and all associated services with proper error handling."""
-        self.logger.info("Starting bot...")
-        try:
-            await self._initialize_components()
-            uptime = self._get_uptime()
-            self.logger.info(f"Bot started successfully in {uptime:.2f} seconds")
-            self.logger.info(f"Version: {self._version}")
-        except Exception as e:
-            self.logger.critical(f"Failed to start bot: {e}", exc_info=True)
-            raise
-
     async def start_clients(self) -> None:
         """Initialize all client sessions."""
         try:
@@ -68,7 +55,7 @@ class Bot(Client):
         except Exception as exc:
             raise SystemExit(1) from exc
 
-    async def _initialize_components(self) -> None:
+    async def initialize_components(self) -> None:
         from TgMusic.core import save_all_cookies
 
         await save_all_cookies(config.COOKIES_URL)
@@ -78,10 +65,11 @@ class Bot(Client):
         await self.call.register_decorators()
         await super().start()
         await self.call_manager.start()
-        self.logger.info("Bot started successfully")
+        uptime = self._get_uptime()
+        self.logger.info(f"Bot started successfully in {uptime:.2f} seconds")
+        self.logger.info(f"Version: {self._version}")
 
-
-    async def stop(self, graceful: bool = True) -> None:
+    async def stop_task(self) -> None:
         self.logger.info("Stopping bot...")
         try:
             shutdown_tasks = [
@@ -89,11 +77,7 @@ class Bot(Client):
                 self.call_manager.stop(),
                 self.call.stop_all_clients(),
             ]
-
-            if graceful:
-                await asyncio.gather(*shutdown_tasks, super().stop())
-            else:
-                await super().stop()
+            await asyncio.gather(*shutdown_tasks)
         except Exception as e:
             self.logger.error(f"Error during shutdown: {e}", exc_info=True)
             raise
@@ -102,4 +86,4 @@ class Bot(Client):
         """Calculate bot uptime in seconds."""
         return (datetime.now() - self._start_time).total_seconds()
 
-client: Client = Bot()
+client: Bot = Bot()

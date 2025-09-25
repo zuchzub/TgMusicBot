@@ -37,6 +37,7 @@ from ._cacher import (
     user_status_cache,
     chat_invite_cache,
 )
+from ._config import config
 from ._database import db
 from ._dataclass import CachedTrack
 from ._downloader import DownloaderWrapper
@@ -132,6 +133,7 @@ class Calls:
                 fetch_stories=False,
                 fetch_topics=False,
                 fetch_stickers=False,
+                no_updates=config.NO_UPDATES,
             )
             calls = PyTgCalls(user_bot, cache_duration=100)
             self.calls[client_name] = calls

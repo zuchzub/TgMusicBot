@@ -43,7 +43,7 @@ CHANNEL_BTN = types.InlineKeyboardButton(
 )
 
 GROUP_BTN = types.InlineKeyboardButton(
-    text="ꜱᴜᴘᴘᴏʀᴛ ɢʀᴏᴜᴘ", type=types.InlineKeyboardButtonTypeUrl(config.SUPPORT_GROUP)
+    text="ꜱᴜᴘᴘᴏʀᴛ", type=types.InlineKeyboardButtonTypeUrl(config.SUPPORT_GROUP)
 )
 
 HELP_BTN = types.InlineKeyboardButton(

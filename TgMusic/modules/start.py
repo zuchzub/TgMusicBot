@@ -154,9 +154,7 @@ async def callback_query_help(c: Client, message: types.UpdateNewCallbackQuery) 
             c.logger.error(f"Edit failed: {result.message}")
         return None
 
-    # Handle categories
-    category = HELP_CATEGORIES.get(data)
-    if category:
+    if category := HELP_CATEGORIES.get(data):
         await message.answer(f"📖 {category['title']}")
         text = f"<b>{category['title']}</b>\n\n{category['content']}\n\n🔙 <i>Use the buttons below to go back.</i>"
 

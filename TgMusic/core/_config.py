@@ -61,6 +61,7 @@ class BotConfig:
             "IGNORE_BACKGROUND_UPDATES", True
         )
         self.AUTO_LEAVE: bool = self._get_env_bool("AUTO_LEAVE", False)
+        self.NO_UPDATES: bool = self._get_env_bool("NO_UPDATES", False)
 
         # Cookies
         self.COOKIES_URL: list[str] = self._process_cookie_urls(
@@ -144,12 +145,19 @@ class BotConfig:
 
     def _validate_config(self) -> None:
         """Validate all required environment configuration values."""
-        missing = [
+        if missing := [
             name
-            for name in ("API_ID", "API_HASH", "TOKEN", "MONGO_URI", "LOGGER_ID", "DB_NAME", "START_IMG")
+            for name in (
+                "API_ID",
+                "API_HASH",
+                "TOKEN",
+                "MONGO_URI",
+                "LOGGER_ID",
+                "DB_NAME",
+                "START_IMG",
+            )
             if not getattr(self, name)
-        ]
-        if missing:
+        ]:
             raise ValueError(f"Missing required config: {', '.join(missing)}")
 
         if not isinstance(self.MONGO_URI, str):

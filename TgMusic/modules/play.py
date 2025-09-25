@@ -93,14 +93,12 @@ async def _update_msg_with_thumb(
     input_content = types.InputMessagePhoto(
         types.InputFileLocal(thumb), caption=parsed_text
     )
-    edit_result = await c.editMessageMedia(
+    return await c.editMessageMedia(
         chat_id=msg.chat_id,
         message_id=msg.id,
         input_message_content=input_content,
         reply_markup=button,
     )
-
-    return edit_result
 
 
 async def _handle_single_track(

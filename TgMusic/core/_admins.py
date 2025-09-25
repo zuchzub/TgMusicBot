@@ -122,10 +122,10 @@ async def is_admin(chat_id: int, user_id: int) -> bool:
     is_cached, user = await get_admin_cache_user(chat_id, user_id)
     if not user:
         return False
-    user_status = user["status"]["@type"]
     if chat_id == user_id:
         return True  # Anon Admin
 
+    user_status = user["status"]["@type"]
     return is_cached and user_status in [
         "chatMemberStatusCreator",
         "chatMemberStatusAdministrator",
