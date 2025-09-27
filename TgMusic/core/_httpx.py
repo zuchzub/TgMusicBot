@@ -35,10 +35,10 @@ class HttpxClient:
     BACKOFF_FACTOR = 1.0
 
     def __init__(
-        self,
-        timeout: int = DEFAULT_TIMEOUT,
-        download_timeout: int = DEFAULT_DOWNLOAD_TIMEOUT,
-        max_redirects: int = 0,
+            self,
+            timeout: int = DEFAULT_TIMEOUT,
+            download_timeout: int = DEFAULT_DOWNLOAD_TIMEOUT,
+            max_redirects: int = 0,
     ) -> None:
         self._timeout = timeout
         self._download_timeout = download_timeout
@@ -81,11 +81,11 @@ class HttpxClient:
         return response.text or "No error details provided"
 
     async def download_file(
-        self,
-        url: str,
-        file_path: Optional[Union[str, Path]] = None,
-        overwrite: bool = False,
-        **kwargs: Any,
+            self,
+            url: str,
+            file_path: Optional[Union[str, Path]] = None,
+            overwrite: bool = False,
+            **kwargs: Any,
     ) -> DownloadResult:
         if not url:
             error_msg = "Empty URL provided"
@@ -96,7 +96,7 @@ class HttpxClient:
 
         try:
             async with self._session.stream(
-                "GET", url, timeout=self._download_timeout, headers=headers
+                    "GET", url, timeout=self._download_timeout, headers=headers
             ) as response:
                 if not response.is_success:
                     error_msg = await self._parse_error_response(response)
@@ -177,11 +177,11 @@ class HttpxClient:
         return re.sub(r'[<>:"/\\|?*]', "", name).strip()
 
     async def make_request(
-        self,
-        url: str,
-        max_retries: int = MAX_RETRIES,
-        backoff_factor: float = BACKOFF_FACTOR,
-        **kwargs: Any,
+            self,
+            url: str,
+            max_retries: int = MAX_RETRIES,
+            backoff_factor: float = BACKOFF_FACTOR,
+            **kwargs: Any,
     ) -> Optional[Dict[str, Any]]:
         if not url:
             LOGGER.error("Empty URL provided")
@@ -208,7 +208,7 @@ class HttpxClient:
                     )
                     last_error = error_msg
                     if attempt < max_retries - 1:
-                        await asyncio.sleep(backoff_factor * (2**attempt))
+                        await asyncio.sleep(backoff_factor * (2 ** attempt))
                     continue
 
                 LOGGER.debug(
@@ -229,7 +229,7 @@ class HttpxClient:
                     last_error,
                 )
                 if attempt < max_retries - 1:
-                    await asyncio.sleep(backoff_factor * (2**attempt))
+                    await asyncio.sleep(backoff_factor * (2 ** attempt))
 
             except ValueError as e:
                 last_error = f"Invalid JSON response: {str(e)}"

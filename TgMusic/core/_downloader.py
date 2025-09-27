@@ -41,7 +41,7 @@ class DownloaderWrapper(MusicService):
 
         services = [YouTubeData, JiosaavnData, ApiData]
         if service := next(
-            (s(self.query) for s in services if s(self.query).is_valid()), None
+                (s(self.query) for s in services if s(self.query).is_valid()), None
         ):
             return service
 

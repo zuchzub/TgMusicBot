@@ -80,7 +80,7 @@ class ApiData(MusicService):
         return any(pattern.match(self.query) for pattern in self.URL_PATTERNS.values())
 
     async def _make_api_request(
-        self, endpoint: str, params: Optional[dict] = None
+            self, endpoint: str, params: Optional[dict] = None
     ) -> Optional[dict]:
         request_url = f"{self.api_url}/{endpoint.lstrip('/')}"
         return await self.client.make_request(request_url, params=params)
@@ -135,7 +135,7 @@ class ApiData(MusicService):
         )
 
     async def download_track(
-        self, track: TrackInfo, video: bool = False
+            self, track: TrackInfo, video: bool = False
     ) -> Union[Path, types.Error]:
         """Download a track to local storage.
 
@@ -181,7 +181,7 @@ class ApiData(MusicService):
 
     @staticmethod
     def _parse_tracks_response(
-        response_data: Optional[dict],
+            response_data: Optional[dict],
     ) -> Union[PlatformTracks, types.Error]:
         """Parse and validate API response data.
 

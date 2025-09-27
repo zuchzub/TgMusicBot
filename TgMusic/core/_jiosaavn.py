@@ -222,7 +222,7 @@ class JiosaavnData(MusicService):
         return None
 
     async def download_track(
-        self, track: TrackInfo, video: bool = False
+            self, track: TrackInfo, video: bool = False
     ) -> Union[Path, types.Error]:
         """Download audio track from JioSaavn.
 
@@ -308,7 +308,7 @@ class JiosaavnData(MusicService):
 
     @staticmethod
     def _create_platform_tracks(
-        data: dict[str, Any],
+            data: dict[str, Any],
     ) -> Union[PlatformTracks, types.Error]:
         """Create PlatformTracks object from raw API data.
 

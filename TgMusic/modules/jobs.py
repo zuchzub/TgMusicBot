@@ -149,7 +149,7 @@ class InactiveCallManager:
         if not config.NO_UPDATES:
             self._vc_task = asyncio.create_task(self._vc_loop())
             self.bot.logger.info("Started VC auto-end task")
-        
+
         if config.AUTO_LEAVE:
             self._leave_task = asyncio.create_task(self._leave_loop())
             self.bot.logger.info("Started auto-leave task")

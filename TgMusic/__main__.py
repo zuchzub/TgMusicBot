@@ -2,9 +2,10 @@
 #  Licensed under the GNU AGPL v3.0: https://www.gnu.org/licenses/agpl-3.0.html
 #  Part of the TgMusicBot project. All rights reserved where applicable.
 
-from TgMusic import client
 import asyncio
 import signal
+
+from TgMusic import client
 
 
 def handle_shutdown():

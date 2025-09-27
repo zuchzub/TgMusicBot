@@ -13,8 +13,9 @@ CLOSE_BTN = types.InlineKeyboardButton(
     text="Cʟᴏsᴇ", type=types.InlineKeyboardButtonTypeCallback(b"vcplay_close")
 )
 
+
 def control_buttons(
-    mode: Literal["play", "pause", "resume"],
+        mode: Literal["play", "pause", "resume"],
 ) -> types.ReplyMarkupInlineKeyboard:
     def btn(text: str, name: str) -> types.InlineKeyboardButton:
         return types.InlineKeyboardButton(
@@ -34,8 +35,6 @@ def control_buttons(
     }
 
     return types.ReplyMarkupInlineKeyboard(layouts.get(mode, [[CLOSE_BTN]]))
-
-
 
 
 CHANNEL_BTN = types.InlineKeyboardButton(

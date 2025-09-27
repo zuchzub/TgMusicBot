@@ -148,13 +148,13 @@ class BotConfig:
         if missing := [
             name
             for name in (
-                "API_ID",
-                "API_HASH",
-                "TOKEN",
-                "MONGO_URI",
-                "LOGGER_ID",
-                "DB_NAME",
-                "START_IMG",
+                    "API_ID",
+                    "API_HASH",
+                    "TOKEN",
+                    "MONGO_URI",
+                    "LOGGER_ID",
+                    "DB_NAME",
+                    "START_IMG",
             )
             if not getattr(self, name)
         ]:

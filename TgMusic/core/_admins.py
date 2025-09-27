@@ -27,16 +27,18 @@ ChatAdminPermissions = Literal[
 
 PermissionsType = Union[ChatAdminPermissions, List[ChatAdminPermissions], None]
 
+
 class AdminCache:
     def __init__(
-        self, chat_id: int, user_info: list[types.ChatMember], cached: bool = True
+            self, chat_id: int, user_info: list[types.ChatMember], cached: bool = True
     ):
         self.chat_id = chat_id
         self.user_info = user_info
         self.cached = cached
 
+
 async def load_admin_cache(
-    c: Client, chat_id: int, force_reload: bool = False
+        c: Client, chat_id: int, force_reload: bool = False
 ) -> Tuple[bool, AdminCache]:
     """
     Load the admin list from Telegram and cache it, unless already cached.
@@ -55,8 +57,9 @@ async def load_admin_cache(
     admin_cache[chat_id] = AdminCache(chat_id, admin_list["members"])
     return True, admin_cache[chat_id]
 
+
 async def get_admin_cache_user(
-    chat_id: int, user_id: int
+        chat_id: int, user_id: int
 ) -> Tuple[bool, Optional[dict]]:
     """
     Check if the user is an admin using cached data.
@@ -74,7 +77,9 @@ async def get_admin_cache_user(
         (False, None),
     )
 
+
 ANON = TTLCache(maxsize=250, ttl=60)
+
 
 def ensure_permissions_list(permissions: PermissionsType) -> List[ChatAdminPermissions]:
     """Ensures permissions are a list of strings."""
@@ -82,8 +87,9 @@ def ensure_permissions_list(permissions: PermissionsType) -> List[ChatAdminPermi
         return []
     return [permissions] if isinstance(permissions, str) else permissions
 
+
 async def check_permissions(
-    chat_id: int, user_id: int, permissions: PermissionsType
+        chat_id: int, user_id: int, permissions: PermissionsType
 ) -> bool:
     """
     Check if a user has specific permissions.
@@ -105,6 +111,7 @@ async def check_permissions(
     rights = user_info["status"]["rights"]
     return all(getattr(rights, perm, False) for perm in permissions_list)
 
+
 async def is_owner(chat_id: int, user_id: int) -> bool:
     """
     Check if the user is the owner of the chat.
@@ -114,6 +121,7 @@ async def is_owner(chat_id: int, user_id: int) -> bool:
         return False
     user_status = user["status"]["@type"]
     return is_cached and user_status == "chatMemberStatusCreator"
+
 
 async def is_admin(chat_id: int, user_id: int) -> bool:
     """
@@ -131,6 +139,7 @@ async def is_admin(chat_id: int, user_id: int) -> bool:
         "chatMemberStatusAdministrator",
     ]
 
+
 @Client.on_updateNewCallbackQuery(filters=Filter.regex("^anon."))
 async def verify_anonymous_admin(c: Client, callback: types.UpdateNewCallbackQuery) -> None:
     """Verify anonymous admin permissions."""
@@ -147,7 +156,7 @@ async def verify_anonymous_admin(c: Client, callback: types.UpdateNewCallbackQue
         return
 
     if not await check_permissions(
-        message.chat.id, callback.sender_user_id, permissions
+            message.chat.id, callback.sender_user_id, permissions
     ):
         await callback.answer(
             f"You lack required permissions: {', '.join(ensure_permissions_list(permissions))}",
@@ -158,27 +167,29 @@ async def verify_anonymous_admin(c: Client, callback: types.UpdateNewCallbackQue
     await c.deleteMessages(message.chat.id, [callback.message_id])
     await func(c, message)
 
+
 def admins_only(
-    permissions: PermissionsType = None,
-    is_bot: bool = False,
-    is_auth: bool = False,
-    is_user: bool = False,
-    is_both: bool = False,
-    only_owner: bool = False,
-    only_dev: bool = False,
-    allow_pm: bool = True,
-    no_reply: bool = False,
+        permissions: PermissionsType = None,
+        is_bot: bool = False,
+        is_auth: bool = False,
+        is_user: bool = False,
+        is_both: bool = False,
+        only_owner: bool = False,
+        only_dev: bool = False,
+        allow_pm: bool = True,
+        no_reply: bool = False,
 ) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
     """
     Decorator to check if the user is an admin before executing the command.
     """
+
     def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
         @wraps(func)
         async def wrapper(
-            c: Client,
-            message: Union[types.UpdateNewCallbackQuery, types.Message],
-            *args,
-            **kwargs,
+                c: Client,
+                message: Union[types.UpdateNewCallbackQuery, types.Message],
+                *args,
+                **kwargs,
         ) -> Optional[Any]:
             if message is None:
                 c.logger.warning("msg is none")
@@ -267,8 +278,8 @@ def admins_only(
                     return None
 
             if is_both and (
-                not await check_and_notify(user_id, "You")
-                or not await check_and_notify(c.me.id, "I")
+                    not await check_and_notify(user_id, "You")
+                    or not await check_and_notify(c.me.id, "I")
             ):
                 return None
 

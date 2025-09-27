@@ -86,4 +86,5 @@ class Bot(Client):
         """Calculate bot uptime in seconds."""
         return (datetime.now() - self._start_time).total_seconds()
 
+
 client: Bot = Bot()

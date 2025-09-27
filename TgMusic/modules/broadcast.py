@@ -28,7 +28,7 @@ async def get_broadcast_targets(target: str) -> tuple[list[int], list[int]]:
 
 
 async def send_message_with_retry(
-    target_id: int, message: types.Message, is_copy: bool
+        target_id: int, message: types.Message, is_copy: bool
 ) -> tuple[int, int]:
     """
     Try to send a message to one target with retries.
@@ -97,7 +97,7 @@ async def send_message_with_retry(
 
 
 async def broadcast_to_targets(
-    targets: list[int], message: types.Message, is_copy: bool
+        targets: list[int], message: types.Message, is_copy: bool
 ) -> tuple[int, int]:
     sent = failed = 0
 
@@ -179,9 +179,9 @@ async def broadcast(c: Client, message: types.Message) -> None:
 
     started = await message.reply_text(
         text=f"📣 Starting broadcast to {total_targets} target(s)...\n"
-        f"• Users: {len(users)}\n"
-        f"• Chats: {len(chats)}\n"
-        f"• Mode: {'Copy' if is_copy else 'Forward'}",
+             f"• Users: {len(users)}\n"
+             f"• Chats: {len(chats)}\n"
+             f"• Mode: {'Copy' if is_copy else 'Forward'}",
         disable_web_page_preview=True,
     )
 
@@ -197,13 +197,13 @@ async def broadcast(c: Client, message: types.Message) -> None:
 
     reply = await started.edit_text(
         text=f"✅ <b>Broadcast Summary</b>\n"
-        f"• Total Sent: {user_sent + chat_sent}\n"
-        f"  - Users: {user_sent}\n"
-        f"  - Chats: {chat_sent}\n"
-        f"• Total Failed: {user_failed + chat_failed}\n"
-        f"  - Users: {user_failed}\n"
-        f"  - Chats: {chat_failed}\n"
-        f"🕒 Time Taken: <code>{end_time - start_time:.2f} sec</code>",
+             f"• Total Sent: {user_sent + chat_sent}\n"
+             f"  - Users: {user_sent}\n"
+             f"  - Chats: {chat_sent}\n"
+             f"• Total Failed: {user_failed + chat_failed}\n"
+             f"  - Users: {user_failed}\n"
+             f"  - Chats: {chat_failed}\n"
+             f"🕒 Time Taken: <code>{end_time - start_time:.2f} sec</code>",
         disable_web_page_preview=True,
     )
 
