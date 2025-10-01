@@ -10,7 +10,7 @@ from TgMusic import client
 
 def handle_shutdown():
     client.logger.info("Shutting down...")
-    asyncio.create_task(shutdown())
+    asyncio.ensure_future(shutdown())
 
 
 async def shutdown():
@@ -27,8 +27,13 @@ def main() -> None:
     client.logger.info("Starting TgMusicBot...")
 
     # Set up signal handlers
-    for sig in (signal.SIGINT, signal.SIGTERM):
-        client.loop.add_signal_handler(sig, handle_shutdown)
+    try:
+        for sig in (signal.SIGINT, signal.SIGTERM):
+            client.loop.add_signal_handler(sig, handle_shutdown)
+    except (NotImplementedError, RuntimeError) as e:
+        client.logger.warning(f"Could not set up signal handler: {e}")
+        for sig in (signal.SIGINT, signal.SIGTERM):
+            signal.signal(sig, lambda s, f: handle_shutdown())
 
     try:
         client.loop.run_until_complete(client.initialize_components())
