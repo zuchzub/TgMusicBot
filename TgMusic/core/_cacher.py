@@ -3,6 +3,7 @@
 #  Part of the TgMusicBot project. All rights reserved where applicable.
 
 from collections import deque
+from pathlib import Path
 from typing import Any, Optional, TypeAlias, Union
 
 from cachetools import TTLCache
@@ -44,9 +45,21 @@ class ChatCacher:
         queue = self.chat_cache.get(chat_id, {}).get("queue")
         return queue[0] if queue else None
 
-    def remove_current_song(self, chat_id: int) -> Optional[CachedTrack]:
+    def remove_current_song(self, chat_id: int, disk_clear: bool = True) -> Optional[CachedTrack]:
         queue = self.chat_cache.get(chat_id, {}).get("queue")
-        return queue.popleft() if queue else None
+        if not queue:
+            return None
+
+        removed = queue.popleft()
+        if disk_clear and getattr(removed, "file_path", None):
+            try:
+                file_path = Path(removed.file_path) if isinstance(removed.file_path, str) else removed.file_path
+                file_path.unlink(missing_ok=True)
+                thumb_path = Path(f"database/photos/{removed.track_id}.png")
+                thumb_path.unlink(missing_ok=True)
+            except OSError:
+                pass
+        return removed
 
     def is_active(self, chat_id: int) -> bool:
         return self.chat_cache.get(chat_id, {}).get("is_active", False)
@@ -57,7 +70,16 @@ class ChatCacher:
         )
         data["is_active"] = active
 
-    def clear_chat(self, chat_id: int):
+    def clear_chat(self, chat_id: int, disk_clear: bool = True):
+        if disk_clear and chat_id in self.chat_cache:
+            queue = self.chat_cache[chat_id].get("queue", deque())
+            for track in queue:
+                if track.file_path:
+                    try:
+                        file_path = Path(track.file_path) if isinstance(track.file_path, str) else track.file_path
+                        file_path.unlink(missing_ok=True)
+                    except (OSError, TypeError, AttributeError, KeyError):
+                        pass
         self.chat_cache.pop(chat_id, None)
 
     def get_queue_length(self, chat_id: int) -> int:

@@ -13,8 +13,9 @@ CLOSE_BTN = types.InlineKeyboardButton(
     text="Cʟᴏsᴇ", type=types.InlineKeyboardButtonTypeCallback(b"vcplay_close")
 )
 
+
 def control_buttons(
-    mode: Literal["play", "pause", "resume"],
+        mode: Literal["play", "pause", "resume"],
 ) -> types.ReplyMarkupInlineKeyboard:
     def btn(text: str, name: str) -> types.InlineKeyboardButton:
         return types.InlineKeyboardButton(
@@ -36,14 +37,12 @@ def control_buttons(
     return types.ReplyMarkupInlineKeyboard(layouts.get(mode, [[CLOSE_BTN]]))
 
 
-
-
 CHANNEL_BTN = types.InlineKeyboardButton(
     text="ᴜᴘᴅᴀᴛᴇꜱ", type=types.InlineKeyboardButtonTypeUrl(config.SUPPORT_CHANNEL)
 )
 
 GROUP_BTN = types.InlineKeyboardButton(
-    text="ꜱᴜᴘᴘᴏʀᴛ ɢʀᴏᴜᴘ", type=types.InlineKeyboardButtonTypeUrl(config.SUPPORT_GROUP)
+    text="ꜱᴜᴘᴘᴏʀᴛ", type=types.InlineKeyboardButtonTypeUrl(config.SUPPORT_GROUP)
 )
 
 HELP_BTN = types.InlineKeyboardButton(

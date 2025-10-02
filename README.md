@@ -232,7 +232,7 @@ List of changes:
 1. **Start in tmux session** (keeps running after logout):
    ```sh
    tmux new -s musicbot
-   tgmusic
+   start
    ```
 
    **Tmux Cheatsheet**:
@@ -245,7 +245,7 @@ To restart the bot:
 ```sh
 tmux attach -t musicbot
 # Kill with Ctrl+C
-tgmusic
+start
 ```
 
 </details>
@@ -278,8 +278,9 @@ tgmusic
 | `DEFAULT_SERVICE`  | Default search platform (Options: youtube, spotify, jiosaavn)     | Default: youtube                                                                                                                                                        |
 | `SUPPORT_GROUP`    | Telegram Group Link                                               | Default: https://t.me/GuardxSupport                                                                                                                                     |
 | `SUPPORT_CHANNEL`  | Telegram Channel Link                                             | Default: https://t.me/FallenProjects                                                                                                                                    |
-| `AUTO_LEAVE`       | Leave all chats for all userbot clients                           | Default: True                                                                                                                                                           |
-| `START_IMG`        | Start Image URL                                                   | Default: [IMG](https://i.pinimg.com/1200x/e8/89/d3/e889d394e0afddfb0eb1df0ab663df95.jpg)                                                                                |                                                      |
+| `AUTO_LEAVE`       | Leave all chats for all userbot clients                           | Default: False                                                                                                                                                          |
+| `NO_UPDATES`       | Disable updates                                                   | Default: False                                                                                                                                                          |
+| `START_IMG`        | Start Image URL                                                   | Default: [IMG](https://i.pinimg.com/1200x/e8/89/d3/e889d394e0afddfb0eb1df0ab663df95.jpg)                                                                                |
 | `DEVS`             | User ID of the bot owner                                          | [@GuardxRobot](https://t.me/GuardxRobot) and type `/id`: e.g. `5938660179, 5956803759`                                                                                  |
 
 </details>

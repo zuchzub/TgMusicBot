@@ -4,14 +4,12 @@
 
 
 import asyncio
-import random
 from datetime import datetime
 
 from pytdbot import types, Client
 
-__version__ = "1.2.3"
+__version__ = "1.2.4"
 StartTime = datetime.now()
-
 
 from TgMusic.core import call, tg, db, config
 
@@ -32,7 +30,6 @@ class Bot(Client):
             database_encryption_key="",
             options={"ignore_background_updates": config.IGNORE_BACKGROUND_UPDATES},
         )
-
         self._initialize_services()
 
     def _initialize_services(self) -> None:
@@ -43,18 +40,6 @@ class Bot(Client):
         self.tg = tg
         self._start_time = StartTime
         self._version = __version__
-
-    async def start(self) -> None:
-        """Start the bot and all associated services with proper error handling."""
-        self.logger.info("Starting bot...")
-        try:
-            await self._initialize_components()
-            uptime = self._get_uptime()
-            self.logger.info(f"Bot started successfully in {uptime:.2f} seconds")
-            self.logger.info(f"Version: {self._version}")
-        except Exception as e:
-            self.logger.critical(f"Failed to start bot: {e}", exc_info=True)
-            raise
 
     async def start_clients(self) -> None:
         """Initialize all client sessions."""
@@ -68,7 +53,7 @@ class Bot(Client):
         except Exception as exc:
             raise SystemExit(1) from exc
 
-    async def _initialize_components(self) -> None:
+    async def initialize_components(self) -> None:
         from TgMusic.core import save_all_cookies
 
         await save_all_cookies(config.COOKIES_URL)
@@ -77,22 +62,18 @@ class Bot(Client):
         await self.call.add_bot(self)
         await self.call.register_decorators()
         await super().start()
+        uptime = self._get_uptime()
+        self.logger.info(f"Bot started successfully in {uptime:.2f} seconds")
+        self.logger.info(f"Version: {self._version}")
 
-        self.logger.info("Bot started successfully")
-        self.loop.create_task(self.watch_dog())
-
-    async def stop(self, graceful: bool = True) -> None:
+    async def stop_task(self) -> None:
         self.logger.info("Stopping bot...")
         try:
             shutdown_tasks = [
                 self.db.close(),
                 self.call.stop_all_clients(),
             ]
-
-            if graceful:
-                await asyncio.gather(*shutdown_tasks, super().stop())
-            else:
-                await super().stop()
+            await asyncio.gather(*shutdown_tasks)
         except Exception as e:
             self.logger.error(f"Error during shutdown: {e}", exc_info=True)
             raise
@@ -101,69 +82,5 @@ class Bot(Client):
         """Calculate bot uptime in seconds."""
         return (datetime.now() - self._start_time).total_seconds()
 
-    async def watch_dog(self):
-        consecutive_failures = 0
-        max_backoff = 300
-        while True:
-            try:
-                if not self.is_running:
-                    self.logger.warning("Bot not running, attempting restart...")
-                    await self._restart()
 
-                try:
-                    await self.call.health_check()
-                    consecutive_failures = 0
-                    await asyncio.sleep(300)
-                    continue
-                except Exception as e:
-                    self.logger.error(f"Health check failed: {e}", exc_info=True)
-                    consecutive_failures += 1
-
-                backoff = min(5 * (2 ** consecutive_failures), max_backoff)
-                backoff = backoff * (0.5 + random.random())
-                
-                self.logger.warning(
-                    f"Health check failed {consecutive_failures} times. "
-                    f"Retrying in {backoff:.1f}s..."
-                )
-
-                if consecutive_failures >= 3:
-                    await self._restart()
-                
-                await asyncio.sleep(backoff)
-                
-            except asyncio.CancelledError:
-                self.logger.info("Watchdog stopped by cancellation")
-                raise
-            except Exception as e:
-                self.logger.critical(
-                    f"Critical error in watchdog: {e}", 
-                    exc_info=True
-                )
-                await asyncio.sleep(100)
-    
-    async def _restart(self):
-        import traceback
-        
-        try:
-            self.logger.info("Initiating safe restart...")
-            await self.stop(graceful=True)
-            await asyncio.sleep(2)
-            if hasattr(self, 'call') and hasattr(self.call, 'pyrogram_clients'):
-                for _client in self.call.pyrogram_clients.values():
-                    try:
-                        if _client.is_connected:
-                            await client.stop()
-                    except Exception as e:
-                        self.logger.error(f"Error stopping client: {e}")
-            await self.start()
-            self.logger.info("Restart completed successfully")
-            
-        except Exception as e:
-            self.logger.critical(
-                f"Failed to restart: {e}\n{traceback.format_exc()}"
-            )
-            raise
-
-
-client: Client = Bot()
+client: Bot = Bot()

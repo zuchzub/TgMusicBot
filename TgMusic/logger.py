@@ -24,12 +24,12 @@ file_handler = RotatingFileHandler(
 file_handler.setFormatter(formatter)
 
 logging.basicConfig(
-    level=logging.INFO,  # root logger level
+    level=logging.INFO,
     handlers=[stream_handler, file_handler],
 )
 
 # quiet down noisy libraries
-for lib in ("httpx", "aiohttp", "pyrogram"):
+for lib in ("httpx", "aiohttp"):
     logging.getLogger(lib).setLevel(logging.WARNING)
 
 # selectively enable debug for these

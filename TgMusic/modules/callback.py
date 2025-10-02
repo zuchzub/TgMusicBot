@@ -99,7 +99,7 @@ async def callback_query(c: Client, message: types.UpdateNewCallbackQuery) -> No
         }
 
     async def send_response(
-        msg: str, alert: bool = False, delete: bool = False, reply_markup=None
+            msg: str, alert: bool = False, delete: bool = False, reply_markup=None
     ) -> None:
         """Helper function to send standardized responses."""
         if alert:

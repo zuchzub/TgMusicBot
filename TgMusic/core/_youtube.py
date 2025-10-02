@@ -60,8 +60,8 @@ class YouTubeUtils:
     def _extract_video_id(url: str) -> Optional[str]:
         """Extract video ID from various YouTube URL formats."""
         for pattern in (
-            YouTubeUtils.YOUTUBE_VIDEO_PATTERN,
-            YouTubeUtils.YOUTUBE_SHORTS_PATTERN,
+                YouTubeUtils.YOUTUBE_VIDEO_PATTERN,
+                YouTubeUtils.YOUTUBE_SHORTS_PATTERN,
         ):
             if match := pattern.match(url):
                 return match.group(1)
@@ -205,7 +205,7 @@ class YouTubeUtils:
 
     @staticmethod
     async def download_with_api(
-        video_id: str, is_video: bool = False
+            video_id: str, is_video: bool = False
     ) -> Union[None, Path]:
         """
         Download audio using the API.
@@ -250,10 +250,9 @@ class YouTubeUtils:
             return None
         return Path(file.path)
 
-
     @staticmethod
     def _build_ytdlp_params(
-        video_id: str, video: bool, cookie_file: Optional[str]
+            video_id: str, video: bool, cookie_file: Optional[str]
     ) -> list[str]:
         """Construct yt-dlp parameters based on video/audio requirements."""
         output_template = str(config.DOWNLOADS_DIR / "%(id)s.%(ext)s")
@@ -465,7 +464,7 @@ class YouTubeData(MusicService):
         return await YouTubeUtils.create_track_info(data["results"][0])
 
     async def download_track(
-        self, track: TrackInfo, video: bool = False
+            self, track: TrackInfo, video: bool = False
     ) -> Union[Path, types.Error]:
         """Download audio/video track from YouTube.
 

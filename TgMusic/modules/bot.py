@@ -13,7 +13,6 @@ from TgMusic.core import (
     Filter,
     load_admin_cache,
 )
-
 from TgMusic.modules.utils import sec_to_min
 
 
@@ -139,6 +138,7 @@ async def ping_cmd(client: Client, message: types.Message) -> None:
     """
     Handle the /ping command to check bot performance metrics.
     """
+
     response = await call.stats_call(message.chat_id if message.chat_id < 0 else 1)
     if isinstance(response, types.Error):
         call_ping = response.message

@@ -6,20 +6,21 @@ import re
 
 from pytdbot import Client, types
 
-from TgMusic.core import YouTubeData, DownloaderWrapper, db, call, tg
 from TgMusic.core import (
     CachedTrack,
     MusicTrack,
     PlatformTracks,
     chat_cache,
 )
-from TgMusic.logger import LOGGER
 from TgMusic.core import (
     Filter,
     SupportButton,
     control_buttons,
 )
+from TgMusic.core import YouTubeData, DownloaderWrapper, db, call, tg
 from TgMusic.core import admins_only
+from TgMusic.core.thumbnails import gen_thumb
+from TgMusic.logger import LOGGER
 from TgMusic.modules.utils import sec_to_min, get_audio_duration
 from TgMusic.modules.utils.play_helpers import (
     del_msg,
@@ -27,7 +28,6 @@ from TgMusic.modules.utils.play_helpers import (
     extract_argument,
     get_url,
 )
-from TgMusic.core.thumbnails import gen_thumb
 
 
 def _get_jiosaavn_url(track_id: str) -> str:
@@ -55,7 +55,7 @@ def _get_platform_url(platform: str, track_id: str) -> str:
 
 
 def build_song_selection_message(
-    user_by: str, tracks: list[MusicTrack]
+        user_by: str, tracks: list[MusicTrack]
 ) -> tuple[str, types.ReplyMarkupInlineKeyboard]:
     """Build interactive song selection message with inline keyboard."""
     greeting = f"{user_by}, select a track:" if user_by else "Select a track:"
@@ -74,11 +74,11 @@ def build_song_selection_message(
 
 
 async def _update_msg_with_thumb(
-    c: Client,
-    msg: types.Message,
-    text: str,
-    thumb: str,
-    button: types.ReplyMarkupInlineKeyboard,
+        c: Client,
+        msg: types.Message,
+        text: str,
+        thumb: str,
+        button: types.ReplyMarkupInlineKeyboard,
 ):
     """Update message with thumbnail if available."""
     if not thumb:
@@ -93,23 +93,21 @@ async def _update_msg_with_thumb(
     input_content = types.InputMessagePhoto(
         types.InputFileLocal(thumb), caption=parsed_text
     )
-    edit_result = await c.editMessageMedia(
+    return await c.editMessageMedia(
         chat_id=msg.chat_id,
         message_id=msg.id,
         input_message_content=input_content,
         reply_markup=button,
     )
 
-    return edit_result
-
 
 async def _handle_single_track(
-    c: Client,
-    msg: types.Message,
-    track: MusicTrack,
-    user_by: str,
-    file_path: str = None,
-    is_video: bool = False,
+        c: Client,
+        msg: types.Message,
+        track: MusicTrack,
+        user_by: str,
+        file_path: str = None,
+        is_video: bool = False,
 ):
     chat_id = msg.chat_id
     song = CachedTrack(
@@ -192,7 +190,7 @@ async def _handle_single_track(
 
 
 async def _handle_multiple_tracks(
-    msg: types.Message, tracks: list[MusicTrack], user_by: str
+        msg: types.Message, tracks: list[MusicTrack], user_by: str
 ):
     """Process and queue multiple tracks (playlist/album)."""
     chat_id = msg.chat_id
@@ -243,12 +241,12 @@ async def _handle_multiple_tracks(
 
 
 async def play_music(
-    c: Client,
-    msg: types.Message,
-    url_data: PlatformTracks,
-    user_by: str,
-    tg_file_path: str = None,
-    is_video: bool = False,
+        c: Client,
+        msg: types.Message,
+        url_data: PlatformTracks,
+        user_by: str,
+        tg_file_path: str = None,
+        is_video: bool = False,
 ):
     """Main music playback handler for both single tracks and playlists."""
     if not url_data or not url_data.tracks:
@@ -264,13 +262,25 @@ async def play_music(
 
 
 async def _handle_telegram_file(
-    c: Client, reply: types.Message, reply_message: types.Message, user_by: str
+        c: Client, reply: types.Message, reply_message: types.Message, user_by: str
 ):
     """Process Telegram audio/video file attachments."""
     content = reply.content
-    is_video = isinstance(content, (types.MessageVideo, types.Video)) or (
-        isinstance(content, (types.MessageDocument, types.Document))
-        and getattr(content, "mime_type", "").startswith("video/")
+    mime_type = None
+    if isinstance(content, types.MessageDocument):
+        mime_type = content.document.mime_type
+    elif isinstance(content, types.MessageVideo):
+        mime_type = content.video.mime_type
+    elif isinstance(content, types.Document):
+        mime_type = content.mime_type
+
+    is_video = (
+            isinstance(content, (types.MessageVideo, types.Video))
+            or (
+                    isinstance(content, (types.MessageDocument, types.Document))
+                    and mime_type
+                    and mime_type.startswith("video/")
+            )
     )
 
     # Download the attached file
@@ -304,10 +314,10 @@ async def _handle_telegram_file(
 
 
 async def _handle_text_search(
-    c: Client,
-    msg: types.Message,
-    wrapper: DownloaderWrapper,
-    user_by: str,
+        c: Client,
+        msg: types.Message,
+        wrapper: DownloaderWrapper,
+        user_by: str,
 ):
     """Handle text-based music searches."""
     chat_id = msg.chat_id
@@ -385,7 +395,7 @@ async def handle_play_command(c: Client, msg: types.Message, is_video: bool = Fa
         LOGGER.error("Failed to send status message: %s", status_msg)
         return None
 
-    c.loop.create_task(del_msg(msg)) # Clean up command message
+    c.loop.create_task(del_msg(msg))  # Clean up command message
 
     args = extract_argument(msg.text)
     # Initialize appropriate downloader
