@@ -7,13 +7,13 @@ from pathlib import Path
 from typing import Optional, Union
 
 from pytdbot import types
-
 from TgMusic.logger import LOGGER
+
 from ._config import config
-from ._dataclass import PlatformTracks, MusicTrack, TrackInfo
 from ._downloader import MusicService
 from ._httpx import HttpxClient
 from ._spotify_dl_helper import SpotifyDownload
+from ._dataclass import PlatformTracks, MusicTrack, TrackInfo
 
 
 class ApiData(MusicService):
@@ -80,7 +80,7 @@ class ApiData(MusicService):
         return any(pattern.match(self.query) for pattern in self.URL_PATTERNS.values())
 
     async def _make_api_request(
-            self, endpoint: str, params: Optional[dict] = None
+        self, endpoint: str, params: Optional[dict] = None
     ) -> Optional[dict]:
         request_url = f"{self.api_url}/{endpoint.lstrip('/')}"
         return await self.client.make_request(request_url, params=params)
@@ -135,7 +135,7 @@ class ApiData(MusicService):
         )
 
     async def download_track(
-            self, track: TrackInfo, video: bool = False
+        self, track: TrackInfo, video: bool = False
     ) -> Union[Path, types.Error]:
         """Download a track to local storage.
 
@@ -181,7 +181,7 @@ class ApiData(MusicService):
 
     @staticmethod
     def _parse_tracks_response(
-            response_data: Optional[dict],
+        response_data: Optional[dict],
     ) -> Union[PlatformTracks, types.Error]:
         """Parse and validate API response data.
 

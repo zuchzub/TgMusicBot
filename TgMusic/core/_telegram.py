@@ -8,7 +8,6 @@ from cachetools import TTLCache
 from pytdbot import types
 
 from TgMusic.logger import LOGGER
-from ._config import config
 
 
 class Telegram:
@@ -16,13 +15,13 @@ class Telegram:
     Helper class to validate and process playable Telegram media messages.
     """
 
+    MAX_FILE_SIZE = 500 * 1024 * 1024  # 500MB
     UNSUPPORTED_TYPES = (
         types.MessageText,
         types.MessagePhoto,
         types.MessageSticker,
         types.MessageAnimation,
     )
-    MAX_FILE_SIZE = config.MAX_FILE_SIZE
     DownloaderCache = TTLCache(maxsize=5000, ttl=600)
 
     def __init__(self):
@@ -71,7 +70,7 @@ class Telegram:
         return 0 < file_size <= self.MAX_FILE_SIZE
 
     async def download_msg(
-            self, dl_msg: types.Message, message: types.Message
+        self, dl_msg: types.Message, message: types.Message
     ) -> tuple[Union[types.Error, types.LocalFile], str]:
         if not self.is_valid(dl_msg):
             return (
@@ -94,7 +93,7 @@ class Telegram:
 
     @staticmethod
     def get_cached_metadata(
-            unique_id: str,
+        unique_id: str,
     ) -> Optional[dict[str, Union[int, str, str, int]]]:
         return Telegram.DownloaderCache.get(unique_id)
 

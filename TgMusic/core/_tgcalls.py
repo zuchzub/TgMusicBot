@@ -8,8 +8,7 @@ import re
 from pathlib import Path
 from typing import Optional, Union
 
-import ntgcalls
-from ntgcalls import ConnectionNotFound
+from ntgcalls import TelegramServerError, ConnectionNotFound
 from pyrogram import Client as PyroClient
 from pyrogram import errors
 from pytdbot import Client, types
@@ -37,7 +36,6 @@ from ._cacher import (
     user_status_cache,
     chat_invite_cache,
 )
-from ._config import config
 from ._database import db
 from ._dataclass import CachedTrack
 from ._downloader import DownloaderWrapper
@@ -102,18 +100,18 @@ class Calls:
             return types.Error(
                 code=500,
                 message="Client session not initialized properly. "
-                        "Please report this issue.",
+                "Please report this issue.",
             )
 
         if ub.me.is_bot:
             return types.Error(
                 code=500,
-                message="Client session is a bot account, Please use user account.",
+                message="Client session is a bot account. " "Please report this issue.",
             )
         return ub
 
     async def start_client(
-            self, api_id: int, api_hash: str, session_string: str
+        self, api_id: int, api_hash: str, session_string: str
     ) -> None:
         """Start a new pyrogram client session.
 
@@ -129,11 +127,6 @@ class Calls:
                 api_id=api_id,
                 api_hash=api_hash,
                 session_string=session_string,
-                fetch_replies=False,
-                fetch_stories=False,
-                fetch_topics=False,
-                fetch_stickers=False,
-                no_updates=config.NO_UPDATES,
             )
             calls = PyTgCalls(user_bot, cache_duration=100)
             self.calls[client_name] = calls
@@ -155,6 +148,20 @@ class Calls:
             except Exception as e:
                 LOGGER.error("Error stopping client %s: %s", name, e)
 
+    async def health_check(self) -> None:
+        for name, client in self.pyrogram_clients.items():
+            try:
+                await client.get_me()
+                await client.send_message("me", "Health check")
+                LOGGER.debug("Client %s is healthy", name)
+            except (errors.Flood, errors.FloodWait):
+                LOGGER.warning("Flood error while checking health of client %s", name)
+            except errors.RPCError as e:
+                LOGGER.error("Error checking health of client %s: %s", name, e)
+            except Exception as e:
+                LOGGER.error("Error checking health of client %s: %s", name, e)
+                raise RuntimeError(f"Failed to check health of client {name}: {str(e)}") from e
+
     async def register_decorators(self) -> None:
         """Register pytgcalls event handlers."""
         for _call in self.calls.values():
@@ -167,27 +174,21 @@ class Calls:
                     elif isinstance(update, UpdatedGroupCallParticipant):
                         return
                     elif isinstance(update, ChatUpdate) and (
-                            update.status.KICKED or update.status.LEFT_GROUP
+                        update.status.KICKED or update.status.LEFT_GROUP
                     ):
                         LOGGER.debug(
                             "Cleaning up chat %s after leaving", update.chat_id
                         )
                         chat_cache.clear_chat(update.chat_id)
-                    elif isinstance(update, ChatUpdate) and update.status.CLOSED_VOICE_CHAT:
-                        LOGGER.debug(
-                            "Cleaning up chat %s after leaving", update.chat_id
-                        )
-                        chat_cache.clear_chat(update.chat_id)
-                        await self.end(update.chat_id)
                 except Exception as e:
                     LOGGER.error("Error in general handler: %s", e, exc_info=True)
 
     async def play_media(
-            self,
-            chat_id: int,
-            file_path: Union[str, Path],
-            video: bool = False,
-            ffmpeg_parameters: Optional[str] = None,
+        self,
+        chat_id: int,
+        file_path: Union[str, Path],
+        video: bool = False,
+        ffmpeg_parameters: Optional[str] = None,
     ) -> Union[types.Ok, types.Error]:
         """Play media in a voice chat.
 
@@ -246,19 +247,13 @@ class Calls:
                 )
 
             return types.Ok()
-        except (exceptions.NoActiveGroupCall, ntgcalls.ConnectionNotFound):
+        except (exceptions.NoActiveGroupCall, ConnectionNotFound):
             return types.Error(
                 code=404,
                 message="No active voice chat found.\n\n"
-                        "Please start a voice chat and try again.",
+                "Please start a voice chat and try again.",
             )
-        except ntgcalls.ConnectionError as e:
-            LOGGER.error("Connection error during playback: %s", e)
-            return types.Error(
-                code=502,
-                message="Connection error detected. Please try again later.\nDid you just close the voice chat?",
-            )
-        except ntgcalls.TelegramServerError:
+        except TelegramServerError:
             LOGGER.warning("Telegram server error during playback")
             return types.Error(
                 code=502,
@@ -267,8 +262,6 @@ class Calls:
         except exceptions.NoAudioSourceFound as e:
             LOGGER.error("Audio source not found in chat %s: %s", chat_id, str(e))
             return types.Error(code=404, message="Audio source not found.")
-        except FileNotFoundError:
-            return types.Error(code=404, message="File not found.")
         except errors.RPCError as e:
             LOGGER.error("Playback failed in chat %s: %s", chat_id, str(e))
             return types.Error(code=e.CODE or 500, message=f"Playback error: {str(e)}")
@@ -302,7 +295,6 @@ class Calls:
             chat_cache.remove_current_song(chat_id)
             await self._play_song(chat_id, next_song)
         else:
-            chat_cache.remove_current_song(chat_id)
             await self._handle_no_songs(chat_id)
 
     async def _play_song(self, chat_id: int, song: CachedTrack) -> None:
@@ -443,14 +435,14 @@ class Calls:
                 return client
 
             chat_cache.clear_chat(chat_id)
+
             try:
                 await client.leave_call(chat_id)
             except (
-                    exceptions.NotInCallError,
-                    errors.GroupCallInvalid,
-                    exceptions.NoActiveGroupCall,
-                    ConnectionNotFound,
-                    errors.GroupcallForbidden
+                exceptions.NotInCallError,
+                errors.GroupCallInvalid,
+                exceptions.NoActiveGroupCall,
+                ConnectionNotFound,
             ):
                 pass  # Already not in call
 
@@ -462,12 +454,12 @@ class Calls:
             return types.Error(code=500, message=f"Failed to end call: {str(e)}")
 
     async def seek_stream(
-            self,
-            chat_id: int,
-            file_path_or_url: Union[str, Path],
-            to_seek: int,
-            duration: int,
-            is_video: bool,
+        self,
+        chat_id: int,
+        file_path_or_url: Union[str, Path],
+        to_seek: int,
+        duration: int,
+        is_video: bool,
     ) -> Union[types.Ok, types.Error]:
         """Seek to a position in the current stream.
 
@@ -485,7 +477,7 @@ class Calls:
             return types.Error(
                 code=400,
                 message="Invalid seek position or duration.\n"
-                        "Position must be positive and duration must be greater than 0.",
+                "Position must be positive and duration must be greater than 0.",
             )
 
         try:
@@ -504,7 +496,7 @@ class Calls:
             return types.Error(code=500, message=f"Seek operation failed: {str(e)}")
 
     async def speed_change(
-            self, chat_id: int, speed: float = 1.0
+        self, chat_id: int, speed: float = 1.0
     ) -> Union[types.Ok, types.Error]:
         """Change playback speed.
 
@@ -534,7 +526,7 @@ class Calls:
         )
 
     async def change_volume(
-            self, chat_id: int, volume: int
+        self, chat_id: int, volume: int
     ) -> Union[None, types.Error]:
         """Change playback volume.
 
@@ -732,7 +724,7 @@ class Calls:
             return types.Error(code=500, message=f"Failed to get stats: {str(e)}")
 
     async def check_user_status(
-            self, chat_id: int
+        self, chat_id: int
     ) -> Union[ChatMemberStatusResult, types.Error]:
         client = await self.get_client(chat_id)
         if isinstance(client, types.Error):
