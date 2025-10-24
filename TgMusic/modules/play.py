@@ -4,6 +4,7 @@
 
 import re
 from pytdbot import Client, types
+from pytdbot import filters
 
 from TgMusic.core import YouTubeData, DownloaderWrapper, db, call, tg
 from TgMusic.core import (
@@ -26,6 +27,10 @@ from TgMusic.modules.utils.play_helpers import (
 )
 from TgMusic.core.thumbnails import gen_thumb
 
+
+# ─────────────────────────────────────────────
+# 🔗 Yardımcı Fonksiyonlar
+# ─────────────────────────────────────────────
 
 def _get_jiosaavn_url(track_id: str) -> str:
     """JioSaavn şarkı kimliğinden URL üretir."""
@@ -85,6 +90,10 @@ async def _update_msg_with_thumb(c: Client, msg: types.Message, text: str, thumb
         reply_markup=buttons,
     )
 
+
+# ─────────────────────────────────────────────
+# 🎧 Oynatma İşlevleri
+# ─────────────────────────────────────────────
 
 async def _handle_single_track(c: Client, msg: types.Message, track: MusicTrack, user_by: str, file_path=None, is_video=False):
     """Tek bir şarkıyı oynatır veya kuyruğa ekler."""
@@ -193,6 +202,29 @@ async def _handle_multiple_tracks(msg: types.Message, tracks: list[MusicTrack], 
     await edit_text(msg, text, reply_markup=control_buttons("play"))
 
 
+# ─────────────────────────────────────────────
+# 🔍 Eksik Fonksiyon (Metin Arama)
+# ─────────────────────────────────────────────
+
+async def _handle_text_search(c: Client, msg: types.Message, wrapper, user_by: str):
+    """Metinle şarkı arar ve çalmaya başlatır."""
+    search = await wrapper.search()
+    if isinstance(search, types.Error):
+        return await edit_text(msg, text=f"🔍 Arama hatası: {search.message}", reply_markup=SupportButton)
+    if not search or not search.tracks:
+        return await edit_text(msg, text="❌ Hiç sonuç bulunamadı.", reply_markup=SupportButton)
+
+    info = await wrapper.get_info(search.tracks[0].url)
+    if isinstance(info, types.Error):
+        return await edit_text(msg, text=f"⚠️ Şarkı bilgisi alınamadı: {info.message}")
+
+    return await play_music(c, msg, info, user_by)
+
+
+# ─────────────────────────────────────────────
+# 🎶 Ana Oynatma Komutu
+# ─────────────────────────────────────────────
+
 async def play_music(c: Client, msg: types.Message, url_data: PlatformTracks, user_by: str, tg_file_path=None, is_video=False):
     """Ana müzik oynatma işlemi."""
     if not url_data or not url_data.tracks:
@@ -204,6 +236,10 @@ async def play_music(c: Client, msg: types.Message, url_data: PlatformTracks, us
         return await _handle_single_track(c, msg, url_data.tracks[0], user_by, tg_file_path, is_video)
     return await _handle_multiple_tracks(msg, url_data.tracks, user_by)
 
+
+# ─────────────────────────────────────────────
+# 📂 Telegram Dosya Oynatma
+# ─────────────────────────────────────────────
 
 async def _handle_telegram_file(c: Client, reply: types.Message, msg: types.Message, user_by: str):
     """Telegram üzerinden gönderilen ses/video dosyalarını işler."""
@@ -226,6 +262,10 @@ async def _handle_telegram_file(c: Client, reply: types.Message, msg: types.Mess
     ])
     await play_music(c, msg, track_data, user_by, file_path.path, is_video)
 
+
+# ─────────────────────────────────────────────
+# 🧩 Komut Yöneticisi
+# ─────────────────────────────────────────────
 
 async def handle_play_command(c: Client, msg: types.Message, is_video=False):
     """Ana /play ve /vplay komut yöneticisi."""
@@ -289,6 +329,10 @@ async def handle_play_command(c: Client, msg: types.Message, is_video=False):
         return await edit_text(status_msg, text=f"⚠️ Video oynatılamadı: {info.message}", reply_markup=SupportButton)
     return await play_music(c, status_msg, info, requester, is_video=True)
 
+
+# ─────────────────────────────────────────────
+# 🔘 Komut Kayıtları
+# ─────────────────────────────────────────────
 
 @Client.on_message(filters=Filter.command("oynat"), position=-5)
 async def play_audio(c: Client, msg: types.Message):
