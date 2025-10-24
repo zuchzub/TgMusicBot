@@ -203,7 +203,7 @@ async def _handle_multiple_tracks(msg: types.Message, tracks: list[MusicTrack], 
 
 
 # ─────────────────────────────────────────────
-# 🔍 Eksik Fonksiyon (Metin Arama)
+# 🔍 Arama Fonksiyonu (DÜZELTİLMİŞ)
 # ─────────────────────────────────────────────
 
 async def _handle_text_search(c: Client, msg: types.Message, wrapper, user_by: str):
@@ -214,7 +214,9 @@ async def _handle_text_search(c: Client, msg: types.Message, wrapper, user_by: s
     if not search or not search.tracks:
         return await edit_text(msg, text="❌ Hiç sonuç bulunamadı.", reply_markup=SupportButton)
 
-    info = await wrapper.get_info(search.tracks[0].url)
+    # ✅ Düzeltildi: get_info parametre hatası giderildi
+    top_url = search.tracks[0].url
+    info = await DownloaderWrapper(top_url).get_info()
     if isinstance(info, types.Error):
         return await edit_text(msg, text=f"⚠️ Şarkı bilgisi alınamadı: {info.message}")
 
@@ -222,7 +224,7 @@ async def _handle_text_search(c: Client, msg: types.Message, wrapper, user_by: s
 
 
 # ─────────────────────────────────────────────
-# 🎶 Ana Oynatma Komutu
+# 🎶 Ana Oynatma Fonksiyonu
 # ─────────────────────────────────────────────
 
 async def play_music(c: Client, msg: types.Message, url_data: PlatformTracks, user_by: str, tg_file_path=None, is_video=False):
