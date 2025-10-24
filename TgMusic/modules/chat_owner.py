@@ -1,30 +1,38 @@
-# Copyright (c) 2025 AshokShau
-# Licensed under the GNU AGPL v3.0: https://www.gnu.org/licenses/agpl-3.0.html
-# Part of the TgMusicBot project. All rights reserved where applicable.
+# Telif Hakkı (c) 2025 AshokShau
+# GNU AGPL v3.0 Lisansı altında lisanslanmıştır: https://www.gnu.org/licenses/agpl-3.0.html
+# TgMusicBot projesinin bir parçasıdır. Uygulanabilir yerlerde tüm hakları saklıdır.
 
 from pytdbot import Client, types
 
-from TgMusic.core import Filter, db, admins_only
+from TgMusic.core import Filter, db, is_owner
 from TgMusic.logger import LOGGER
 from TgMusic.modules.utils.play_helpers import extract_argument
 
 
 @Client.on_message(filters=Filter.command(["buttons"]))
-@admins_only(only_owner=True)
 async def buttons(_: Client, msg: types.Message) -> None:
-    """Toggle button controls."""
+    """Buton kontrol sistemini aç/kapat."""
     chat_id = msg.chat_id
     if chat_id > 0:
+        reply = await msg.reply_text("❌ Bu komut yalnızca gruplarda kullanılabilir.")
+        if isinstance(reply, types.Error):
+            LOGGER.warning(reply.message)
+        return
+
+    if not await is_owner(chat_id, msg.from_id):
+        reply = await msg.reply_text("⛔ Bu işlemi yalnızca **grup sahibi** gerçekleştirebilir.")
+        if isinstance(reply, types.Error):
+            LOGGER.warning(reply.message)
         return
 
     current = await db.get_buttons_status(chat_id)
     args = extract_argument(msg.text)
 
     if not args:
-        status = "enabled ✅" if current else "disabled ❌"
+        status = "aktif ✅" if current else "devre dışı ❌"
         reply = await msg.reply_text(
-            f"⚙️ <b>Button Control Status:</b> {status}\n\n"
-            "Usage: <code>/buttons [on|off|enable|disable]</code>"
+            f"⚙️ <b>Buton Kontrol Durumu:</b> {status}\n\n"
+            "Kullanım: <code>/buttons [on|off|enable|disable]</code>"
         )
         if isinstance(reply, types.Error):
             LOGGER.warning(reply.message)
@@ -33,35 +41,43 @@ async def buttons(_: Client, msg: types.Message) -> None:
     arg = args.lower()
     if arg in ["on", "enable"]:
         await db.set_buttons_status(chat_id, True)
-        reply = await msg.reply_text("✅ Button controls enabled.")
+        reply = await msg.reply_text("✅ Butonlar etkinleştirildi! Artık kontrol butonları aktif 🎵")
     elif arg in ["off", "disable"]:
         await db.set_buttons_status(chat_id, False)
-        reply = await msg.reply_text("❌ Button controls disabled.")
+        reply = await msg.reply_text("❌ Butonlar devre dışı bırakıldı. Kontrol butonları artık gizlenecek.")
     else:
         reply = await msg.reply_text(
-            "⚠️ Invalid command usage.\n"
-            "Correct usage: <code>/buttons [enable|disable|on|off]</code>"
+            "⚠️ Hatalı kullanım!\n"
+            "Doğru kullanım: <code>/buttons [enable|disable|on|off]</code>"
         )
     if isinstance(reply, types.Error):
         LOGGER.warning(reply.message)
 
 
 @Client.on_message(filters=Filter.command(["thumbnail", "thumb"]))
-@admins_only(only_owner=True)
 async def thumbnail(_: Client, msg: types.Message) -> None:
-    """Toggle thumbnail settings."""
+    """Küçük resim (thumbnail) ayarlarını aç/kapat."""
     chat_id = msg.chat_id
     if chat_id > 0:
+        reply = await msg.reply_text("❌ Bu komut yalnızca gruplarda kullanılabilir.")
+        if isinstance(reply, types.Error):
+            LOGGER.warning(reply.message)
+        return
+
+    if not await is_owner(chat_id, msg.from_id):
+        reply = await msg.reply_text("⛔ Bu işlemi yalnızca **grup sahibi** gerçekleştirebilir.")
+        if isinstance(reply, types.Error):
+            LOGGER.warning(reply.message)
         return
 
     current = await db.get_thumbnail_status(chat_id)
     args = extract_argument(msg.text)
 
     if not args:
-        status = "enabled ✅" if current else "disabled ❌"
+        status = "aktif ✅" if current else "devre dışı ❌"
         reply = await msg.reply_text(
-            f"🖼️ <b>Thumbnail Status:</b> {status}\n\n"
-            "Usage: <code>/thumbnail [on|off|enable|disable]</code>"
+            f"🖼️ <b>Küçük Resim Durumu:</b> {status}\n\n"
+            "Kullanım: <code>/thumbnail [on|off|enable|disable]</code>"
         )
         if isinstance(reply, types.Error):
             LOGGER.warning(reply.message)
@@ -70,14 +86,14 @@ async def thumbnail(_: Client, msg: types.Message) -> None:
     arg = args.lower()
     if arg in ["on", "enable"]:
         await db.set_thumbnail_status(chat_id, True)
-        reply = await msg.reply_text("✅ Thumbnails enabled.")
+        reply = await msg.reply_text("✅ Küçük resimler **etkinleştirildi!** Artık oynatma görselleri gösterilecek 🖼️")
     elif arg in ["off", "disable"]:
         await db.set_thumbnail_status(chat_id, False)
-        reply = await msg.reply_text("❌ Thumbnails disabled.")
+        reply = await msg.reply_text("❌ Küçük resimler **devre dışı bırakıldı.** Görseller gizlenecek.")
     else:
         reply = await msg.reply_text(
-            "⚠️ Invalid command usage.\n"
-            "Correct usage: <code>/thumbnail [enable|disable|on|off]</code>"
+            "⚠️ Hatalı kullanım!\n"
+            "Doğru kullanım: <code>/thumbnail [enable|disable|on|off]</code>"
         )
     if isinstance(reply, types.Error):
         LOGGER.warning(reply.message)

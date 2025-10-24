@@ -1,52 +1,55 @@
-#  Copyright (c) 2025 AshokShau
-#  Licensed under the GNU AGPL v3.0: https://www.gnu.org/licenses/agpl-3.0.html
-#  Part of the TgMusicBot project. All rights reserved where applicable.
-
+# Telif Hakkı (c) 2025 AshokShau
+# GNU AGPL v3.0 Lisansı altında: https://www.gnu.org/licenses/agpl-3.0.html
+# TgMusicBot projesinin bir parçasıdır. Tüm hakları saklıdır.
 
 import re
-
 from pytdbot import Client, types
-
-from TgMusic.core import Filter, chat_cache, call, admins_only
+from TgMusic.core import Filter, chat_cache, call
+from TgMusic.core.admins import is_admin
 
 
 def extract_number(text: str) -> float | None:
-    """Extract a numerical value from text."""
+    """Metinden sayısal bir değer çıkarır."""
     match = re.search(r"[-+]?\d*\.?\d+", text)
     return float(match.group()) if match else None
 
 
-@Client.on_message(filters=Filter.command("speed"))
-@admins_only(is_bot=True, is_auth=True)
+@Client.on_message(filters=Filter.command(["speed", "cspeed"]))
 async def change_speed(_: Client, msg: types.Message) -> None:
-    """Adjust the playback speed of the current track."""
+    """Geçerli parçanın oynatma hızını değiştirir."""
     chat_id = msg.chat_id
     if chat_id > 0:
+        return
+
+    # Yönetici kontrolü
+    if not await is_admin(chat_id, msg.from_id):
+        await msg.reply_text("⛔ Bu komutu yalnızca yöneticiler kullanabilir.")
         return
 
     args = extract_number(msg.text)
     if args is None:
         await msg.reply_text(
-            "ℹ️ <b>Usage:</b> <code>/speed [value]</code>\n"
-            "Example: <code>/speed 1.5</code> for 1.5x speed\n"
-            "Range: 0.5x to 4.0x"
+            "ℹ️ <b>Kullanım:</b> <code>/speed [değer]</code>\n"
+            "Örnek: <code>/speed 1.5</code> → 1.5x hız\n"
+            "Aralık: 0.5x ile 4.0x arası"
         )
         return
 
     if not chat_cache.is_active(chat_id):
-        await msg.reply_text("⏸ No track is currently playing.")
+        await msg.reply_text("⏸ Şu anda çalan bir parça yok.")
         return
 
     speed = round(float(args), 2)
     if speed < 0.5 or speed > 4.0:
-        await msg.reply_text("⚠️ Speed must be between 0.5x and 4.0x")
+        await msg.reply_text("⚠️ Hız değeri 0.5x ile 4.0x arasında olmalıdır.")
         return
 
     _change_speed = await call.speed_change(chat_id, speed)
     if isinstance(_change_speed, types.Error):
-        await msg.reply_text(f"⚠️ <b>Error:</b> {_change_speed.message}")
+        await msg.reply_text(f"⚠️ <b>Hata:</b> {_change_speed.message}")
         return
 
     await msg.reply_text(
-        f"🎚️ Playback speed set to <b>{speed}x</b> by {await msg.mention()}"
+        f"🎚️ Oynatma hızı <b>{speed}x</b> olarak ayarlandı.\n"
+        f"🎵 Ayarlayan: {await msg.mention()}"
     )

@@ -1,168 +1,172 @@
-#  Copyright (c) 2025 AshokShau
-#  Licensed under the GNU AGPL v3.0: https://www.gnu.org/licenses/agpl-3.0.html
-#  Part of the TgMusicBot project. All rights reserved where applicable.
+# Telif Hakkı (c) 2025 AshokShau
+# GNU AGPL v3.0 Lisansı altında: https://www.gnu.org/licenses/agpl-3.0.html
+# TgMusicBot projesinin bir parçasıdır. Tüm hakları saklıdır.
 
 from pytdbot import Client, types
-
 from TgMusic import __version__
-from TgMusic.core import (
-    config,
-    Filter,
-    SupportButton,
-)
+from TgMusic.core import config, Filter, SupportButton
 from TgMusic.core.buttons import add_me_markup, HelpMenu, BackHelpMenu
 
-START_TEXT = """
-ʜᴇʏ {};
+# ─────────────────────────────
+# 🎧 Başlangıç (Start) Mesajı
+# ─────────────────────────────
+startText = """
+★━━━━━━━━━━━━━━━━━━━━★
+🎶 <b>Selam {}</b>!
+Ben <b>{}</b> — hızlı, akıllı ve çok yönlü bir Telegram müzik botuyum.  
 
-◎ ᴛʜɪꜱ ɪꜱ {}!
-➻ ᴀ ꜰᴀꜱᴛ & ᴘᴏᴡᴇʀꜰᴜʟ ᴛᴇʟᴇɢʀᴀᴍ ᴍᴜꜱɪᴄ ᴘʟᴀʏᴇʀ ʙᴏᴛ ᴡɪᴛʜ ꜱᴏᴍᴇ ᴀᴡᴇꜱᴏᴍᴇ ꜰᴇᴀᴛᴜʀᴇꜱ.
+🎵 <b>Desteklenen Platformlar:</b>  
+🟥 YouTube ┃ 🟩 Spotify ┃ ☁️ SoundCloud ┃ 🍎 Apple Music
 
-ꜱᴜᴘᴘᴏʀᴛᴇᴅ ᴘʟᴀᴛꜰᴏʀᴍꜱ: ʏᴏᴜᴛᴜʙᴇ, ꜱᴘᴏᴛɪꜰʏ, ᴊɪᴏꜱᴀᴀᴠɴ, ᴀᴘᴘʟᴇ ᴍᴜꜱɪᴄ ᴀɴᴅ ꜱᴏᴜɴᴅᴄʟᴏᴜᴅ.
+⚙️ <b>Özellikler:</b>  
+• Mükemmel ses kalitesi  
+• Video ve sesli oynatma desteği  
+• Sıra yönetimi ve otomatik kontrol  
+• Modern arayüz, hızlı tepki
 
----
-◎ ᴄʟɪᴄᴋ ᴏɴ ᴛʜᴇ ʜᴇʟᴘ ʙᴜᴛᴛᴏɴ ᴛᴏ ɢᴇᴛ ɪɴꜰᴏʀᴍᴀᴛɪᴏɴ ᴀʙᴏᴜᴛ ᴍʏ ᴍᴏᴅᴜʟᴇꜱ ᴀɴᴅ ᴄᴏᴍᴍᴀɴᴅꜱ.
+💡 Tüm komutları görmek için “Yardım” butonuna dokun!
+★━━━━━━━━━━━━━━━━━━━━★
 """
 
-HELP_CATEGORIES = {
-    "help_user": {
-        "title": "🎧 User Commands",
-        "content": """
-<b>▶️ Playback:</b>
-• <code>/play [song]</code> — Play audio in VC
-• <code>/vplay [video]</code> — Play video in VC
-
-<b>🛠 Utilities:</b>
-• <code>/start</code> — Intro message
-• <code>/privacy</code> — Privacy policy
-• <code>/queue</code> — View track queue
-""",
-        "markup": BackHelpMenu,
-    },
-    "help_admin": {
-        "title": "⚙️ Admin Commands",
-        "content": """
-<b>🎛 Playback Controls:</b>
-• <code>/skip</code> — Skip current track
-• <code>/pause</code> — Pause playback
-• <code>/resume</code> — Resume playback
-• <code>/seek [sec]</code> — Jump to a position
-• <code>/volume [1-200]</code> — Set playback volume
-
-<b>📋 Queue Management:</b>
-• <code>/remove [x]</code> — Remove track number x
-• <code>/clear</code> — Clear the entire queue
-• <code>/loop [0-10]</code> — Repeat queue x times
-
-<b>👑 Permissions:</b>
-• <code>/auth [reply]</code> — Grant approval to use commands 
-• <code>/unauth [reply]</code> — Revoke authorization
-• <code>/authlist</code> — View authorized users
-""",
-        "markup": BackHelpMenu,
-    },
-    "help_owner": {
-        "title": "🔐 Owner Commands",
-        "content": """
-<b>⚙️ Settings:</b>
-• <code>/buttons</code> — Toggle control buttons
-• <code>/thumb</code> — Toggle thumbnail mode
-""",
-        "markup": BackHelpMenu,
-    },
-    "help_devs": {
-        "title": "🛠 Developer Tools",
-        "content": """
-<b>📊 System Tools:</b>
-• <code>/stats</code> — Show usage stats
-• <code>/logger</code> — Toggle log mode
-• <code>/broadcast</code> — Send a message to all
-
-<b>🧹 Maintenance:</b>
-• <code>/activevc</code> — Show active voice chats
-• <code>/clearallassistants</code> — Remove all assistants data from DB
-• <code>/autoend</code> — Enable auto-leave when VC is empty
-""",
-        "markup": BackHelpMenu,
-    },
-}
-
-
+# ─────────────────────────────
+# /start ve /help komutları
+# ─────────────────────────────
 @Client.on_message(filters=Filter.command(["start", "help"]))
-async def start_cmd(c: Client, message: types.Message) -> None:
-    """Handle /start and /help commands."""
+async def start_cmd(c: Client, message: types.Message):
     chat_id = message.chat_id
     bot_name = c.me.first_name
     mention = await message.mention()
 
-    if chat_id < 0:  # Group
+    if chat_id < 0:  # Grup sohbeti
         welcome_text = (
-            f"🎵 <b>Hello {mention}!</b>\n\n"
-            f"<b>{bot_name}</b> is now active in this group.\n"
-            "Here’s what I can do:\n"
-            "• High-quality music streaming\n"
-            "• Supports YouTube, Spotify, and more\n"
-            "• Powerful controls for seamless playback\n\n"
-            f"💬 <a href='{config.SUPPORT_GROUP}'>Need help? Join our Support Chat</a>"
+            f"👋 <b>Selam {mention}!</b>\n\n"
+            f"<b>{bot_name}</b> artık bu grupta aktif. 🎵\n\n"
+            "🎧 Müzik, video ve gelişmiş oynatma kontrolleriyle hizmette!\n"
+            "• YouTube, Spotify, SoundCloud ve daha fazlası\n"
+            "• Kolay kullanım, yüksek performans\n\n"
+            f"💬 Yardım: <a href='{config.SUPPORT_GROUP}'>Destek Sohbeti</a>"
         )
         reply = await message.reply_text(
             text=welcome_text,
             disable_web_page_preview=True,
             reply_markup=SupportButton,
         )
-    else:  # Private chat
+    else:  # Özel mesaj
+        bot_username = c.me.usernames.editable_username
         reply = await message.reply_photo(
             photo=config.START_IMG,
-            caption=START_TEXT.format(mention, bot_name),
-            reply_markup=add_me_markup(c.me.usernames.editable_username),
+            caption=startText.format(mention, bot_name),
+            reply_markup=add_me_markup(bot_username),
         )
 
     if isinstance(reply, types.Error):
-        c.logger.warning(f"Failed to send start/help reply: {reply.message}")
+        c.logger.warning(reply.message)
 
 
+# ─────────────────────────────
+# 🎛 Yardım Menüsü (Callback)
+# ─────────────────────────────
 @Client.on_updateNewCallbackQuery(filters=Filter.regex(r"help_\w+"))
 async def callback_query_help(c: Client, message: types.UpdateNewCallbackQuery) -> None:
-    """Handle help menu callback queries."""
     data = message.payload.data.decode()
 
     if data == "help_all":
         user = await c.getUser(message.sender_user_id)
-        await message.answer("📚 Opening Help Menu...")
+        await message.answer("📚 Yardım menüsü açılıyor...")
         text = (
-            f"👋 <b>Hello {user.first_name}!</b>\n\n"
-            f"Welcome to <b>{c.me.first_name}</b> — your ultimate music bot.\n"
-            f"<code>Version: v{__version__}</code>\n\n"
-            "💡 <b>What makes me special?</b>\n"
-            "• YouTube, Spotify, Apple Music, SoundCloud support\n"
-            "• Advanced queue and playback controls\n"
-            "• Private and group usage\n\n"
-            "🔍 <i>Select a help category below to continue.</i>"
+            f"👋 <b>Merhaba {user.first_name}!</b>\n\n"
+            f"<b>{c.me.first_name}</b> yardım merkezine hoş geldin.\n"
+            f"<code>Versiyon: v{__version__}</code>\n\n"
+            "✨ <b>Neler yapabilirim?</b>\n"
+            "🎵 YouTube, Spotify, Apple Music, SoundCloud desteği\n"
+            "⚙️ Gelişmiş kuyruk ve oynatma yönetimi\n"
+            "🧩 Grup ve özel sohbet desteği\n\n"
+            "🔽 Aşağıdan bir kategori seç:"
         )
-
-        result = await message.edit_message_caption(text, reply_markup=HelpMenu)
-        if isinstance(result, types.Error):
-            c.logger.error(f"Edit failed: {result.message}")
-        return None
+        edit = await message.edit_message_caption(text, reply_markup=HelpMenu)
+        if isinstance(edit, types.Error):
+            c.logger.error(f"Mesaj düzenlenemedi: {edit}")
+        return
 
     if data == "help_back":
-        await message.answer("🏠 Returning to home...")
+        await message.answer("🏠 Ana menüye dönülüyor...")
         user = await c.getUser(message.sender_user_id)
+        await message.edit_message_caption(
+            caption=startText.format(user.first_name, c.me.first_name),
+            reply_markup=add_me_markup(c.me.usernames.editable_username),
+        )
+        return
 
-        result = await message.edit_message_caption(START_TEXT.format(user.first_name, c.me.first_name),
-                                                    reply_markup=add_me_markup(c.me.usernames.editable_username))
-        if isinstance(result, types.Error):
-            c.logger.error(f"Edit failed: {result.message}")
-        return None
+    # ───── Yardım kategorileri ─────
+    help_categories = {
+        "help_user": {
+            "title": "🎧 Kullanıcı",
+            "content": (
+                "🎵 <b>Oynatma:</b>\n"
+                "• <code>/play [şarkı]</code> — Şarkı çalar\n"
+                "• <code>/vplay [video]</code> — Video çalar\n\n"
+                "🛠 <b>Yardımcı:</b>\n"
+                "• <code>/start</code> — Başlangıç mesajı\n"
+                "• <code>/queue</code> — Şarkı sırasını göster\n"
+                "• <code>/privacy</code> — Gizlilik bilgisi"
+            ),
+            "markup": BackHelpMenu,
+        },
+        "help_admin": {
+            "title": "⚙️ Yönetici",
+            "content": (
+                "🎛 <b>Kontroller:</b>\n"
+                "• <code>/skip</code> — Atla\n"
+                "• <code>/pause</code> — Durdur\n"
+                "• <code>/resume</code> — Devam et\n"
+                "• <code>/seek [sn]</code> — İleri sar\n"
+                "• <code>/volume [1-200]</code> — Ses düzeyi\n\n"
+                "📋 <b>Kuyruk:</b>\n"
+                "• <code>/remove [x]</code> — Şarkı sil\n"
+                "• <code>/clear</code> — Sırayı temizle\n"
+                "• <code>/loop [0-10]</code> — Döngü sayısı\n\n"
+                "👑 <b>Yetki:</b>\n"
+                "• <code>/auth</code> — Yetki ver\n"
+                "• <code>/unauth</code> — Yetkiyi kaldır\n"
+                "• <code>/authlist</code> — Yetkilileri gör"
+            ),
+            "markup": BackHelpMenu,
+        },
+        "help_owner": {
+            "title": "🔐 Sahip",
+            "content": (
+                "⚙️ <b>Ayarlar:</b>\n"
+                "• <code>/buttons</code> — Butonları aç/kapat\n"
+                "• <code>/thumb</code> — Kapak görselleri"
+            ),
+            "markup": BackHelpMenu,
+        },
+        "help_devs": {
+            "title": "🧠 Geliştirici",
+            "content": (
+                "📊 <b>Sistem:</b>\n"
+                "• <code>/stats</code> — İstatistik\n"
+                "• <code>/logger</code> — Log modu\n"
+                "• <code>/broadcast</code> — Duyuru\n\n"
+                "🧹 <b>Bakım:</b>\n"
+                "• <code>/activevc</code> — Aktif odalar\n"
+                "• <code>/clearallassistants</code> — Temizle\n"
+                "• <code>/autoend</code> — Otomatik çıkış"
+            ),
+            "markup": BackHelpMenu,
+        },
+    }
 
-    if category := HELP_CATEGORIES.get(data):
-        await message.answer(f"📖 {category['title']}")
-        text = f"<b>{category['title']}</b>\n\n{category['content']}\n\n🔙 <i>Use the buttons below to go back.</i>"
+    if category := help_categories.get(data):
+        await message.answer(f"📘 {category['title']}")
+        formatted_text = (
+            f"<b>{category['title']}</b>\n\n"
+            f"{category['content']}\n\n"
+            "🔙 <i>Geri dönmek için butonu kullan.</i>"
+        )
+        edit = await message.edit_message_caption(formatted_text, reply_markup=category["markup"])
+        if isinstance(edit, types.Error):
+            c.logger.error(f"Mesaj düzenlenemedi: {edit}")
+        return
 
-        result = await message.edit_message_caption(text, reply_markup=category["markup"])
-        if isinstance(result, types.Error):
-            c.logger.error(f"Edit failed: {result.message}")
-        return None
-
-    await message.answer("⚠️ Unknown command category.")
-    return None
+    await message.answer("⚠️ Bilinmeyen kategori.")

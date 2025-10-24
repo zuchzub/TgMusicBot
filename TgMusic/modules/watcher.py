@@ -1,9 +1,8 @@
-#  Copyright (c) 2025 AshokShau
-#  Licensed under the GNU AGPL v3.0: https://www.gnu.org/licenses/agpl-3.0.html
-#  Part of the TgMusicBot project. All rights reserved where applicable.
+# Telif Hakkı (c) 2025 AshokShau
+# GNU AGPL v3.0 Lisansı altında: https://www.gnu.org/licenses/agpl-3.0.html
+# TgMusicBot projesinin bir parçasıdır. Tüm hakları saklıdır.
 
 import asyncio
-
 from pytdbot import Client, types
 
 from TgMusic.core import (
@@ -15,22 +14,24 @@ from TgMusic.core import (
     db,
     SupportButton,
     config,
-    load_admin_cache,
 )
-from TgMusic.core.buttons import add_me_markup
 from TgMusic.logger import LOGGER
+from TgMusic.core.admins import load_admin_cache
+from TgMusic.core.buttons import add_me_markup
 
+
+# ───────────────────────────────
+# 💬 GRUP DOĞRULAMA ve BİLGİLENDİRME
+# ───────────────────────────────
 
 async def handle_non_supergroup(client: Client, chat_id: int) -> None:
-    """
-    Notify user that the chat is not a supergroup and leave.
-    """
+    """Grubun süpergrup olmadığı durumlarda kullanıcıyı bilgilendirir ve çıkar."""
     text = (
-        f"This chat ({chat_id}) is not a supergroup yet.\n"
-        "<b>⚠️ Please convert this chat to a supergroup and add me as admin.</b>\n\n"
-        "If you don't know how to convert, use this guide:\n"
-        "🔗 https://te.legra.ph/How-to-Convert-a-Group-to-a-Supergroup-01-02\n\n"
-        "If you have any questions, join our support group:"
+        f"⚠️ Bu sohbet ({chat_id}) henüz bir <b>süpergrup</b> değil!\n\n"
+        "🔹 Lütfen grubu süpergruba dönüştürün ve beni yönetici olarak ekleyin.\n"
+        "🔗 Nasıl yapılacağını bilmiyor musun? Rehber: "
+        "<a href='https://te.legra.ph/How-to-Convert-a-Group-to-a-Supergroup-01-02'>Tıkla</a>\n\n"
+        "Destek almak için grubumuza katılabilirsin:"
     )
     bot_username = client.me.usernames.editable_username
     await client.sendTextMessage(
@@ -39,59 +40,58 @@ async def handle_non_supergroup(client: Client, chat_id: int) -> None:
         reply_markup=add_me_markup(bot_username),
         disable_web_page_preview=True,
     )
-    await asyncio.sleep(1)
+    await asyncio.sleep(2)
     await client.leaveChat(chat_id)
 
 
 def is_valid_supergroup(chat_id: int) -> bool:
-    """
-    Check if a chat ID is for a supergroup.
-    """
+    """Chat ID'nin süpergrup formatında olup olmadığını kontrol eder."""
     return str(chat_id).startswith("-100")
 
 
+# ───────────────────────────────
+# 🚀 BOT GRUBA EKLENDİĞİNDE
+# ───────────────────────────────
+
 async def handle_bot_join(client: Client, chat_id: int) -> None:
-    """
-    Handle logic when bot is added to a new chat.
-    """
+    """Bot yeni bir gruba eklendiğinde çalışır."""
     _chat_id = int(str(chat_id)[4:]) if str(chat_id).startswith("-100") else chat_id
     chat_info = await client.getSupergroupFullInfo(_chat_id)
 
     if isinstance(chat_info, types.Error):
         client.logger.warning(
-            "Failed to get supergroup info for %s, %s", chat_id, chat_info.message
+            "❌ Süpergrup bilgisi alınamadı: %s - %s", chat_id, chat_info.message
         )
         return
 
+    # Minimum üye kontrolü
     if chat_info.member_count < config.MIN_MEMBER_COUNT:
         text = (
-            f"⚠️ This group has too few members ({chat_info.member_count}).\n\n"
-            "To prevent spam and ensure proper functionality, "
-            f"this bot only works in groups with at least {config.MIN_MEMBER_COUNT} members.\n"
-            "Please grow your community and add me again later.\n"
-            "If you have any questions, join our support group:"
+            f"⚠️ Bu grupta yeterli üye yok ({chat_info.member_count}).\n\n"
+            f"Botun sağlıklı çalışması için en az <b>{config.MIN_MEMBER_COUNT}</b> üye gereklidir.\n"
+            "Lütfen grubunuzu büyüttükten sonra beni tekrar ekleyin.\n\n"
+            "Destek almak için grubumuza katılabilirsiniz:"
         )
         await client.sendTextMessage(chat_id, text, reply_markup=SupportButton)
         await asyncio.sleep(1)
         await client.leaveChat(chat_id)
         await db.remove_chat(chat_id)
-        client.logger.info(
-            "Bot left chat %s due to insufficient members (only %d present).",
-            chat_id,
-            chat_info.member_count,
-        )
+        client.logger.info("Bot %s grubundan ayrıldı (yetersiz üye sayısı).", chat_id)
         return
 
     if invite_link := getattr(chat_info.invite_link, "invite_link", None):
         chat_invite_cache[chat_id] = invite_link
 
 
+# ───────────────────────────────
+# 👥 ÜYE DURUM GÜNCELLEMELERİ
+# ───────────────────────────────
+
 @Client.on_updateChatMember()
 async def chat_member(client: Client, update: types.UpdateChatMember) -> None:
-    """Handles member updates in the chat (joins, leaves, promotions, etc.)."""
+    """Üye katılımı, ayrılma, terfi veya yasaklanma gibi olayları yönetir."""
     chat_id = update.chat_id
 
-    # Early return for non-group chats
     if chat_id > 0 or not await _validate_chat(client, chat_id):
         return None
 
@@ -102,96 +102,87 @@ async def chat_member(client: Client, update: types.UpdateChatMember) -> None:
         if isinstance(new_member, types.MessageSenderUser)
         else new_member.chat_id
     )
+
     old_status = update.old_chat_member.status["@type"]
     new_status = update.new_chat_member.status["@type"]
 
-    # Handle different status change scenarios
     await _handle_status_changes(client, chat_id, user_id, old_status, new_status)
     return None
 
 
 async def _validate_chat(client: Client, chat_id: int) -> bool:
-    """Validate if chat is a supergroup and handle non-supergroups."""
+    """Grubun süpergrup olup olmadığını kontrol eder."""
     if not is_valid_supergroup(chat_id):
         await handle_non_supergroup(client, chat_id)
         return False
     return True
 
 
+# ───────────────────────────────
+# 🔄 DURUM DEĞİŞİMLERİNİ YÖNET
+# ───────────────────────────────
+
 async def _handle_status_changes(
-        client: Client, chat_id: int, user_id: int, old_status: str, new_status: str
+    client: Client, chat_id: int, user_id: int, old_status: str, new_status: str
 ) -> None:
-    """Route different status change scenarios to appropriate handlers."""
+    """Kullanıcıların durum değişimlerini yakalar ve işler."""
     if old_status == "chatMemberStatusLeft" and new_status in {
         "chatMemberStatusMember",
         "chatMemberStatusAdministrator",
     }:
         await _handle_join(client, chat_id, user_id)
-    elif (
-            old_status in {"chatMemberStatusMember", "chatMemberStatusAdministrator"}
-            and new_status == "chatMemberStatusLeft"
-    ):
+    elif old_status in {"chatMemberStatusMember", "chatMemberStatusAdministrator"} and new_status == "chatMemberStatusLeft":
         await _handle_leave_or_kick(chat_id, user_id)
     elif new_status == "chatMemberStatusBanned":
         if user_id == client.me.id:
             await call.end(chat_id)
         await _handle_ban(chat_id, user_id)
-    elif (
-            old_status == "chatMemberStatusBanned" and new_status == "chatMemberStatusLeft"
-    ):
+    elif old_status == "chatMemberStatusBanned" and new_status == "chatMemberStatusLeft":
         await _handle_unban(chat_id, user_id)
     else:
-        await _handle_promotion_demotion(
-            client, chat_id, user_id, old_status, new_status
-        )
+        await _handle_promotion_demotion(client, chat_id, user_id, old_status, new_status)
 
 
 async def _handle_join(client: Client, chat_id: int, user_id: int) -> None:
-    """Handle user/bot joining the chat."""
+    """Kullanıcı/bot gruba katıldığında tetiklenir."""
     if user_id == client.options["my_id"]:
         await handle_bot_join(client, chat_id)
-    LOGGER.debug("User %s joined the chat %s.", user_id, chat_id)
+    LOGGER.debug("👋 Kullanıcı %s gruba katıldı (%s).", user_id, chat_id)
 
 
 async def _handle_leave_or_kick(chat_id: int, user_id: int) -> None:
-    """Handle user leaving or being kicked from chat."""
-    LOGGER.debug("User %s left or was kicked from %s.", user_id, chat_id)
+    """Kullanıcı gruptan ayrıldığında veya atıldığında."""
+    LOGGER.debug("👋 Kullanıcı %s gruptan ayrıldı veya atıldı (%s).", user_id, chat_id)
     await _update_user_status_cache(chat_id, user_id, types.ChatMemberStatusLeft())
 
 
 async def _handle_ban(chat_id: int, user_id: int) -> None:
-    """Handle user being banned from chat."""
-    LOGGER.debug("User %s was banned in %s.", user_id, chat_id)
+    """Kullanıcı yasaklandığında."""
+    LOGGER.debug("🚫 Kullanıcı %s grupta yasaklandı (%s).", user_id, chat_id)
     await _update_user_status_cache(chat_id, user_id, types.ChatMemberStatusBanned())
 
 
 async def _handle_unban(chat_id: int, user_id: int) -> None:
-    """Handle user being unbanned from chat."""
-    LOGGER.debug("User %s was unbanned in %s.", user_id, chat_id)
+    """Kullanıcının yasağı kaldırıldığında."""
+    LOGGER.debug("✅ Kullanıcının yasağı kaldırıldı: %s (%s).", user_id, chat_id)
     await _update_user_status_cache(chat_id, user_id, types.ChatMemberStatusLeft())
 
 
 async def _handle_promotion_demotion(
-        client: Client, chat_id: int, user_id: int, old_status: str, new_status: str
+    client: Client, chat_id: int, user_id: int, old_status: str, new_status: str
 ) -> None:
-    """Handle user promotion/demotion in chat."""
-    is_promoted = (
-            old_status != "chatMemberStatusAdministrator"
-            and new_status == "chatMemberStatusAdministrator"
-    )
-    is_demoted = (
-            old_status == "chatMemberStatusAdministrator"
-            and new_status != "chatMemberStatusAdministrator"
-    )
+    """Kullanıcının terfi veya düşürülme durumunu yönetir."""
+    is_promoted = old_status != "chatMemberStatusAdministrator" and new_status == "chatMemberStatusAdministrator"
+    is_demoted = old_status == "chatMemberStatusAdministrator" and new_status != "chatMemberStatusAdministrator"
 
     if not (is_promoted or is_demoted):
         return
 
     if user_id == client.options["my_id"] and is_promoted:
-        LOGGER.info("Bot promoted in %s. Reloading admin cache.", chat_id)
+        LOGGER.info("🔼 Bot %s grubunda yönetici yapıldı, admin cache yenileniyor.", chat_id)
     else:
-        action = "promoted" if is_promoted else "demoted"
-        LOGGER.debug("User %s was %s in %s.", user_id, action, chat_id)
+        action = "terfi etti" if is_promoted else "yetkisi kaldırıldı"
+        LOGGER.debug("👤 Kullanıcı %s %s (%s).", user_id, action, chat_id)
 
     await load_admin_cache(client, chat_id, True)
     await asyncio.sleep(1)
@@ -199,13 +190,11 @@ async def _handle_promotion_demotion(
         await handle_bot_join(client, chat_id)
 
 
-async def _update_user_status_cache(
-        chat_id: int, user_id: int, status: ChatMemberStatus
-) -> None:
-    """Update the user status cache if the user is the bot."""
+async def _update_user_status_cache(chat_id: int, user_id: int, status: ChatMemberStatus) -> None:
+    """Kullanıcının durum önbelleğini günceller."""
     ub = await call.get_client(chat_id)
     if isinstance(ub, types.Error):
-        LOGGER.warning("Error getting client for chat %s: %s", chat_id, ub)
+        LOGGER.warning("⚠️ Chat %s için istemci alınamadı: %s", chat_id, ub)
         return
 
     if user_id == ub.me.id:
@@ -213,11 +202,13 @@ async def _update_user_status_cache(
         user_status_cache[cache_key] = status
 
 
+# ───────────────────────────────
+# 🎥 VİDEO SOHBET OLAYLARI
+# ───────────────────────────────
+
 @Client.on_updateNewMessage(position=1)
 async def new_message(client: Client, update: types.UpdateNewMessage) -> None:
-    """
-    Handle new messages for video chat events.
-    """
+    """Video sohbet başlatma/bitirme olaylarını dinler."""
     message = update.message
     if not message:
         return
@@ -225,26 +216,24 @@ async def new_message(client: Client, update: types.UpdateNewMessage) -> None:
     chat_id = message.chat_id
     content = message.content
 
-    # Run DB operation in the background
+    # Veritabanına kullanıcı/grup ekle
     if chat_id < 0:
         client.loop.create_task(db.add_chat(chat_id))
     else:
         client.loop.create_task(db.add_user(chat_id))
 
-    # Handle video chat events
+    # Video sohbet bittiğinde
     if isinstance(content, types.MessageVideoChatEnded):
-        LOGGER.info("Video chat ended in %s", chat_id)
+        LOGGER.info("🎬 Video sohbet sonlandı (%s).", chat_id)
         chat_cache.clear_chat(chat_id)
-        await client.sendTextMessage(chat_id, "Video chat ended!\nAll queues cleared")
+        await client.sendTextMessage(chat_id, "🎧 Video sohbet sona erdi.\nTüm müzik sırası temizlendi.")
         return
 
+    # Video sohbet başladığında
     if isinstance(content, types.MessageVideoChatStarted):
-        LOGGER.info("Video chat started in %s", chat_id)
-        await call.end(chat_id)
+        LOGGER.info("🎥 Video sohbet başlatıldı (%s).", chat_id)
         chat_cache.clear_chat(chat_id)
-        await client.sendTextMessage(
-            chat_id, "Video chat started!\nUse /play song name to play a song"
-        )
+        await client.sendTextMessage(chat_id, "🎶 Video sohbet başladı!\nMüzik çalmak için /play komutunu kullanabilirsin.")
         return
 
-    LOGGER.debug("New message in %s: %s", chat_id, message)
+    LOGGER.debug("Yeni mesaj (%s): %s", chat_id, message)

@@ -1,42 +1,38 @@
-#  Copyright (c) 2025 AshokShau
-#  Licensed under the GNU AGPL v3.0: https://www.gnu.org/licenses/agpl-3.0.html
-#  Part of the TgMusicBot project. All rights reserved where applicable.
+#  Telif Hakkı (c) 2025 AshokShau
+#  GNU AGPL v3.0 Lisansı altında lisanslanmıştır: https://www.gnu.org/licenses/agpl-3.0.html
+#  TgMusicBot projesinin bir parçasıdır. Uygulanabilir yerlerde tüm hakları saklıdır.
 
 import asyncio
-import random
 import time
-import random
 
 from pytdbot import Client, types
 
-from TgMusic.core import Filter, db, admins_only
+from TgMusic.core import Filter, config, db
 from TgMusic.logger import LOGGER
-from TgMusic.modules.utils.play_helpers import extract_argument
+from TgMusic.modules.utils.play_helpers import del_msg, extract_argument
 
-REQUEST_LIMIT = 8
-BATCH_SIZE = 100
-BATCH_DELAY = 5
+# Yayın sınırlamaları
+REQUEST_LIMIT = 30
+BATCH_SIZE = 400
+BATCH_DELAY = 2
 MAX_RETRIES = 2
 
+# Aynı anda en fazla 30 istek gönderilmesini sağlar
 semaphore = asyncio.Semaphore(REQUEST_LIMIT)
-VALID_TARGETS = {"all", "users", "chats"}
+VALID_TARGETS = {"all", "users", "chats"}  # Geçerli hedef türleri
 
 
 async def get_broadcast_targets(target: str) -> tuple[list[int], list[int]]:
+    """Belirtilen hedef türüne göre kullanıcıları ve sohbetleri döndürür."""
     users = await db.get_all_users() if target in {"all", "users"} else []
     chats = await db.get_all_chats() if target in {"all", "chats"} else []
     return users, chats
 
 
 async def send_message_with_retry(
-        target_id: int, message: types.Message, is_copy: bool
-) -> tuple[int, int]:
-    """
-    Try to send a message to one target with retries.
-    Returns (sent, global_wait) where:
-      - sent = 1 if success, 0 if failed
-      - global_wait = >0 if we need to pause the whole broadcast
-    """
+    target_id: int, message: types.Message, is_copy: bool
+) -> int:
+    """Bir mesajı hedefe gönderir; hata durumunda tekrar dener."""
     for attempt in range(1, MAX_RETRIES + 1):
         async with semaphore:
             result = await (
@@ -44,25 +40,14 @@ async def send_message_with_retry(
             )
 
             if isinstance(result, types.Error):
-                # FloodWait
-                if result.code == 429:
+                if result.code == 429:  # FloodWait hatası
                     retry_after = (
                         int(result.message.split("retry after ")[1])
                         if "retry after" in result.message
                         else 1
                     )
-
-                    # Distinguish between per-user and global
-                    if retry_after > 15:  # heuristic: long wait = global
-                        LOGGER.warning(
-                            "[Global FloodWait] Sleeping %ss (triggered by %s)",
-                            retry_after,
-                            target_id,
-                        )
-                        return 0, retry_after  # tell caller to pause all
-
                     LOGGER.warning(
-                        "[FloodWait] Retry %s/%s in %ss for %s",
+                        "[FloodWait] Deneme %s/%s: %ss bekleniyor → %s",
                         attempt,
                         MAX_RETRIES,
                         retry_after,
@@ -71,7 +56,7 @@ async def send_message_with_retry(
                     await asyncio.sleep(retry_after)
                     continue
 
-                # Remove dead/blocked users
+                # Yazma izni yoksa veya kullanıcı engellemişse
                 if result.code == 400 and result.message in {
                     "Have no write access to the chat",
                     "USER_IS_BLOCKED",
@@ -82,69 +67,72 @@ async def send_message_with_retry(
                         if target_id < 0
                         else await db.remove_user(target_id)
                     )
-                    return 0, 0
+                    return 0
 
-                # Other error
                 LOGGER.warning(
-                    "Message failed for %s: [%d] %s",
+                    "Mesaj gönderilemedi → %s: [%d] %s",
                     target_id,
                     result.code,
                     result.message,
                 )
-                return 0, 0
+                return 0
 
-            return 1, 0  # success
-    return 0, 0
+            return 1  # Başarılı gönderim
+    return 0  # Tüm denemeler başarısız oldu
 
 
 async def broadcast_to_targets(
-        targets: list[int], message: types.Message, is_copy: bool
+    targets: list[int], message: types.Message, is_copy: bool
 ) -> tuple[int, int]:
+    """Belirtilen hedeflere toplu yayın yapar."""
     sent = failed = 0
 
     async def process_batch(_batch: list[int], index: int):
         results = await asyncio.gather(
             *[send_message_with_retry(tid, message, is_copy) for tid in _batch]
         )
-        _batch_sent = sum(r[0] for r in results)
+        _batch_sent = sum(results)
         _batch_failed = len(_batch) - _batch_sent
-
-        # Check for global FloodWait
-        max_wait = max((r[1] for r in results), default=0)
-        if max_wait > 0:
-            LOGGER.warning("Pausing whole broadcast for %ss due to global FloodWait", max_wait)
-            await asyncio.sleep(max_wait)
-
         LOGGER.info(
-            "Batch %s sent: %s, failed: %s", index + 1, _batch_sent, _batch_failed
+            "Toplu işlem %s → Gönderilen: %s | Başarısız: %s",
+            index + 1,
+            _batch_sent,
+            _batch_failed,
         )
         return _batch_sent, _batch_failed
 
-    batches = [targets[i:i + BATCH_SIZE] for i in range(0, len(targets), BATCH_SIZE)]
+    # Hedefleri 400’lük parçalara ayırır
+    batches = [targets[i : i + BATCH_SIZE] for i in range(0, len(targets), BATCH_SIZE)]
     for idx, batch in enumerate(batches):
         LOGGER.info(
-            "Sending batch %s/%s (targets: %s)", idx + 1, len(batches), len(batch)
+            "Gönderiliyor (%s/%s) → %s hedef",
+            idx + 1,
+            len(batches),
+            len(batch),
         )
         batch_sent, batch_failed = await process_batch(batch, idx)
         sent += batch_sent
         failed += batch_failed
-
-        await asyncio.sleep(BATCH_DELAY + random.uniform(0.5, 1.5))
+        await asyncio.sleep(BATCH_DELAY)
 
     return sent, failed
 
 
 @Client.on_message(filters=Filter.command("broadcast"))
-@admins_only(only_dev=True)
 async def broadcast(c: Client, message: types.Message) -> None:
+    """Bot sahibinin tüm kullanıcı ve gruplara mesaj yayınlamasını sağlar."""
+    if int(message.from_id) != config.OWNER_ID:
+        await del_msg(message)
+        return None
+
     args = extract_argument(message.text)
     if not args:
         reply = await message.reply_text(
-            "Usage: <code>/broadcast [all|users|chats] [copy]</code>\n"
-            "• <b>all</b>: All users and chats\n"
-            "• <b>users</b>: Only users\n"
-            "• <b>chats</b>: Only groups/channels\n"
-            "• <b>copy</b>: Send as copy (no forward tag)"
+            "Kullanım: <code>/broadcast [all|users|chats] [copy]</code>\n"
+            "• <b>all</b>: Tüm kullanıcılar ve sohbetler\n"
+            "• <b>users</b>: Sadece kullanıcılar\n"
+            "• <b>chats</b>: Sadece gruplar/kanallar\n"
+            "• <b>copy</b>: Mesajı kopya olarak gönder (iletilmiş etiketi olmadan)"
         )
         if isinstance(reply, types.Error):
             c.logger.warning(reply.message)
@@ -156,7 +144,7 @@ async def broadcast(c: Client, message: types.Message) -> None:
 
     if not target:
         reply = await message.reply_text(
-            "Please specify a valid target: all, users, or chats."
+            "Lütfen geçerli bir hedef belirtin: all, users veya chats."
         )
         if isinstance(reply, types.Error):
             c.logger.warning(reply.message)
@@ -164,7 +152,7 @@ async def broadcast(c: Client, message: types.Message) -> None:
 
     reply = await message.getRepliedMessage() if message.reply_to_message_id else None
     if not reply or isinstance(reply, types.Error):
-        _reply = await message.reply_text("Please reply to a message to broadcast.")
+        _reply = await message.reply_text("Lütfen yayınlamak için bir mesaja yanıt verin.")
         if isinstance(_reply, types.Error):
             c.logger.warning(_reply.message)
         return None
@@ -173,22 +161,23 @@ async def broadcast(c: Client, message: types.Message) -> None:
     total_targets = len(users) + len(chats)
 
     if total_targets == 0:
-        _reply = await message.reply_text("No users or chats to broadcast to.")
+        _reply = await message.reply_text("Yayın yapılacak kullanıcı veya sohbet bulunamadı.")
         if isinstance(_reply, types.Error):
             c.logger.warning(_reply.message)
         return None
 
     started = await message.reply_text(
-        text=f"📣 Starting broadcast to {total_targets} target(s)...\n"
-             f"• Users: {len(users)}\n"
-             f"• Chats: {len(chats)}\n"
-             f"• Mode: {'Copy' if is_copy else 'Forward'}",
+        text=f"📣 <b>Yayın Başlatıldı!</b>\n"
+        f"• Toplam Hedef: {total_targets}\n"
+        f"• Kullanıcılar: {len(users)}\n"
+        f"• Sohbetler: {len(chats)}\n"
+        f"• Mod: {'Kopya' if is_copy else 'İletme'}",
         disable_web_page_preview=True,
     )
 
     if isinstance(started, types.Error):
-        c.logger.warning("Error starting broadcast: %s", started)
-        await message.reply_text(f"Failed to start broadcast.{started.message}")
+        c.logger.warning("Yayın başlatılamadı: %s", started)
+        await message.reply_text(f"Yayın başlatılamadı: {started.message}")
         return None
 
     start_time = time.monotonic()
@@ -197,17 +186,17 @@ async def broadcast(c: Client, message: types.Message) -> None:
     end_time = time.monotonic()
 
     reply = await started.edit_text(
-        text=f"✅ <b>Broadcast Summary</b>\n"
-             f"• Total Sent: {user_sent + chat_sent}\n"
-             f"  - Users: {user_sent}\n"
-             f"  - Chats: {chat_sent}\n"
-             f"• Total Failed: {user_failed + chat_failed}\n"
-             f"  - Users: {user_failed}\n"
-             f"  - Chats: {chat_failed}\n"
-             f"🕒 Time Taken: <code>{end_time - start_time:.2f} sec</code>",
+        text=f"✅ <b>Yayın Özeti</b>\n"
+        f"• Toplam Gönderilen: {user_sent + chat_sent}\n"
+        f"  ├ Kullanıcılar: {user_sent}\n"
+        f"  └ Sohbetler: {chat_sent}\n"
+        f"• Toplam Başarısız: {user_failed + chat_failed}\n"
+        f"  ├ Kullanıcılar: {user_failed}\n"
+        f"  └ Sohbetler: {chat_failed}\n"
+        f"🕒 Geçen Süre: <code>{end_time - start_time:.2f} saniye</code>",
         disable_web_page_preview=True,
     )
 
     if isinstance(reply, types.Error):
-        c.logger.warning("Error sending broadcast summary: %s", reply)
+        c.logger.warning("Yayın özeti gönderilemedi: %s", reply)
     return None

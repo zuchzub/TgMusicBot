@@ -11,63 +11,63 @@ from TgMusic.core import (
     chat_cache,
     call,
     Filter,
-    load_admin_cache,
 )
+from TgMusic.core.admins import load_admin_cache
 from TgMusic.modules.utils import sec_to_min
 
 
 @Client.on_message(filters=Filter.command("privacy"))
 async def privacy_handler(c: Client, message: types.Message):
     """
-    Handle the /privacy command to display privacy policy.
+    /privacy komutunu işleyerek gizlilik politikasını gösterir.
     """
     bot_name = c.me.first_name
     text = f"""
-    <u><b>Privacy Policy for {bot_name}:</b></u>
+    <u><b>{bot_name} için Gizlilik Politikası:</b></u>
 
-<b>1. Data Storage:</b>
-- {bot_name} does not store any personal data on the user's device.
-- We do not collect or store any data about your device or personal browsing activity.
+<b>1. Veri Saklama:</b>
+- {bot_name}, kullanıcının cihazında hiçbir kişisel veri saklamaz.
+- Cihazınız veya kişisel gezinme etkinliğiniz hakkında herhangi bir veri toplamayız veya saklamayız.
 
-<b>2. What We Collect:</b>
-- We only collect your Telegram <b>user ID</b> and <b>chat ID</b> to provide the music streaming and interaction functionalities of the bot.
-- No personal data such as your name, phone number, or location is collected.
+<b>2. Topladığımız Veriler:</b>
+- Yalnızca müzik oynatma ve etkileşim özelliklerini sağlayabilmek için Telegram <b>kullanıcı kimliğinizi (User ID)</b> ve <b>sohbet kimliğinizi (Chat ID)</b> toplarız.
+- Adınız, telefon numaranız veya konumunuz gibi kişisel bilgiler toplanmaz.
 
-<b>3. Data Usage:</b>
-- The collected data (Telegram UserID, ChatID) is used strictly to provide the music streaming and interaction functionalities of the bot.
-- We do not use this data for any marketing or commercial purposes.
+<b>3. Verilerin Kullanımı:</b>
+- Toplanan veriler (Telegram Kullanıcı ID, Sohbet ID) yalnızca botun müzik oynatma ve etkileşim özelliklerini sağlamak amacıyla kullanılır.
+- Bu veriler pazarlama veya ticari amaçlarla kullanılmaz.
 
-<b>4. Data Sharing:</b>
-- We do not share any of your personal or chat data with any third parties, organizations, or individuals.
-- No sensitive data is sold, rented, or traded to any outside entities.
+<b>4. Veri Paylaşımı:</b>
+- Kişisel veya sohbet verilerinizi hiçbir üçüncü taraf, kurum veya kişiyle paylaşmayız.
+- Hiçbir hassas veri satılmaz, kiralanmaz veya ticaret amacıyla devredilmez.
 
-<b>5. Data Security:</b>
-- We take reasonable security measures to protect the data we collect. This includes standard practices like encryption and safe storage.
-- However, we cannot guarantee the absolute security of your data, as no online service is 100% secure.
+<b>5. Veri Güvenliği:</b>
+- Topladığımız verileri korumak için makul güvenlik önlemleri alıyoruz. Buna şifreleme ve güvenli depolama gibi standart uygulamalar dâhildir.
+- Ancak hiçbir çevrimiçi hizmetin %100 güvenli olmadığı unutulmamalıdır.
 
-<b>6. Cookies and Tracking:</b>
-- {bot_name} does not use cookies or similar tracking technologies to collect personal information or track your behavior.
+<b>6. Çerezler ve Takip:</b>
+- {bot_name}, çerez veya benzeri takip teknolojilerini kullanarak kişisel bilgi toplamaz veya davranışınızı izlemez.
 
-<b>7. Third-Party Services:</b>
-- {bot_name} does not integrate with any third-party services that collect or process your personal information, aside from Telegram's own infrastructure.
+<b>7. Üçüncü Taraf Hizmetler:</b>
+- {bot_name}, Telegram’ın kendi altyapısı dışında kişisel verilerinizi toplayan veya işleyen üçüncü taraf hizmetlerle entegre değildir.
 
-<b>8. Your Rights:</b>
-- You have the right to request the deletion of your data. Since we only store your Telegram ID and chat ID temporarily to function properly, these can be removed upon request.
-- You may also revoke access to the bot at any time by removing or blocking it from your chats.
+<b>8. Haklarınız:</b>
+- Verilerinizin silinmesini talep etme hakkına sahipsiniz. Bot yalnızca Telegram ID ve Chat ID bilgilerini geçici olarak sakladığı için, bunlar isteğiniz üzerine kaldırılabilir.
+- Ayrıca botu kaldırarak veya engelleyerek erişimi istediğiniz zaman iptal edebilirsiniz.
 
-<b>9. Changes to the Privacy Policy:</b>
-- We may update this privacy policy from time to time. Any changes will be communicated through updates within the bot.
+<b>9. Gizlilik Politikasındaki Değişiklikler:</b>
+- Bu gizlilik politikası zaman zaman güncellenebilir. Herhangi bir değişiklik bot üzerinden duyurulacaktır.
 
-<b>10. Contact Us:</b>
-If you have any questions or concerns about our privacy policy, feel free to contact us at <a href="https://t.me/GuardxSupport">Support Group</a>
+<b>10. İletişim:</b>
+Gizlilik politikamızla ilgili herhangi bir sorunuz veya endişeniz varsa, <a href="https://t.me/GuardxSupport">Destek Grubu</a> üzerinden bizimle iletişime geçebilirsiniz.
 
 ──────────────────
-<b>Note:</b> This privacy policy is in place to help you understand how your data is handled and to ensure that your experience with {bot_name} is safe and respectful.
+<b>Not:</b> Bu gizlilik politikası, verilerinizin nasıl işlendiğini anlamanıza yardımcı olmak ve {bot_name} ile deneyiminizin güvenli ve saygılı olmasını sağlamak için hazırlanmıştır.
     """
 
     reply = await message.reply_text(text)
     if isinstance(reply, types.Error):
-        c.logger.warning(f"Error sending privacy policy message:{reply.message}")
+        c.logger.warning(f"Gizlilik politikası mesajı gönderilirken hata oluştu: {reply.message}")
     return
 
 
@@ -76,31 +76,31 @@ rate_limit_cache = TTLCache(maxsize=100, ttl=180)
 
 @Client.on_message(filters=Filter.command(["reload"]))
 async def reload_cmd(c: Client, message: types.Message) -> None:
-    """Handle the /reload command to reload the bot."""
+    """Botu yeniden yüklemek için /reload komutunu işler."""
     user_id = message.from_id
     chat_id = message.chat_id
     if chat_id > 0:
         reply = await message.reply_text(
-            "🚫 This command can only be used in SuperGroups only."
+            "🚫 Bu komut yalnızca süper gruplarda kullanılabilir."
         )
         if isinstance(reply, types.Error):
-            c.logger.warning(f"Error sending message: {reply} for chat {chat_id}")
+            c.logger.warning(f"Mesaj gönderme hatası: {reply} - Sohbet {chat_id}")
         return None
 
     if user_id in rate_limit_cache:
         last_used_time = rate_limit_cache[user_id]
         time_remaining = 180 - (datetime.now() - last_used_time).total_seconds()
         reply = await message.reply_text(
-            f"🚫 You can use this command again in ({sec_to_min(time_remaining)} Min)"
+            f"🚫 Bu komutu tekrar kullanmadan önce beklemeniz gereken süre: ({sec_to_min(time_remaining)} dakika)"
         )
         if isinstance(reply, types.Error):
-            c.logger.warning(f"Error sending message: {reply} for chat {chat_id}")
+            c.logger.warning(f"Mesaj gönderme hatası: {reply} - Sohbet {chat_id}")
         return None
 
     rate_limit_cache[user_id] = datetime.now()
-    reply = await message.reply_text("🔄 Reloading...")
+    reply = await message.reply_text("🔄 Yeniden yükleniyor...")
     if isinstance(reply, types.Error):
-        c.logger.warning(f"Error sending message: {reply} for chat {chat_id}")
+        c.logger.warning(f"Mesaj gönderme hatası: {reply} - Sohbet {chat_id}")
         return None
 
     ub = await call.get_client(chat_id)
@@ -122,27 +122,26 @@ async def reload_cmd(c: Client, message: types.Message) -> None:
 
     loaded = "✅" if load_admins else "❌"
     text = (
-        f"<b>Assistant Status:</b> {ub_stats.getType()}\n"
-        f"<b>Admins Loaded:</b> {loaded}\n"
-        f"<b>» Reloaded by:</b> {await message.mention()}"
+        f"<b>Asistan Durumu:</b> {ub_stats.getType()}\n"
+        f"<b>Yöneticiler Yüklendi:</b> {loaded}\n"
+        f"<b>» Yeniden yükleyen:</b> {await message.mention()}"
     )
 
     reply = await reply.edit_text(text)
     if isinstance(reply, types.Error):
-        c.logger.warning(f"Error sending message: {reply} for chat {chat_id}")
+        c.logger.warning(f"Mesaj gönderme hatası: {reply} - Sohbet {chat_id}")
     return None
 
 
 @Client.on_message(filters=Filter.command("ping"))
 async def ping_cmd(client: Client, message: types.Message) -> None:
     """
-    Handle the /ping command to check bot performance metrics.
+    /ping komutunu işleyerek botun performans durumunu gösterir.
     """
-
     response = await call.stats_call(message.chat_id if message.chat_id < 0 else 1)
     if isinstance(response, types.Error):
         call_ping = response.message
-        cpu_usage = "Unavailable"
+        cpu_usage = "Kullanılamıyor"
     else:
         call_ping, cpu_usage = response
     call_ping_info = f"{call_ping:.2f} ms"
@@ -150,16 +149,16 @@ async def ping_cmd(client: Client, message: types.Message) -> None:
     uptime = datetime.now() - StartTime
     uptime_str = str(uptime).split(".")[0]
     start_time = time.monotonic()
-    reply_msg = await message.reply_text("🏓 Pinging...")
-    latency = (time.monotonic() - start_time) * 1000  # ms
+    reply_msg = await message.reply_text("🏓 Ping ölçülüyor...")
+    latency = (time.monotonic() - start_time) * 1000  # ms cinsinden
     response = (
-        "📊 <b>System Performance Metrics</b>\n\n"
-        f"⏱️ <b>Bot Latency:</b> <code>{latency:.2f} ms</code>\n"
-        f"🕒 <b>Uptime:</b> <code>{uptime_str}</code>\n"
-        f"🧠 <b>CPU Usage:</b> <code>{cpu_info}</code>\n"
-        f"📞 <b>NTgCalls Ping:</b> <code>{call_ping_info}</code>\n"
+        "📊 <b>Sistem Performans Bilgileri</b>\n\n"
+        f"⏱️ <b>Bot Gecikmesi:</b> <code>{latency:.2f} ms</code>\n"
+        f"🕒 <b>Çalışma Süresi:</b> <code>{uptime_str}</code>\n"
+        f"🧠 <b>CPU Kullanımı:</b> <code>{cpu_info}</code>\n"
+        f"📞 <b>NTgCalls Gecikmesi:</b> <code>{call_ping_info}</code>\n"
     )
     done = await reply_msg.edit_text(response, disable_web_page_preview=True)
     if isinstance(done, types.Error):
-        client.logger.warning(f"Error sending message: {done}")
+        client.logger.warning(f"Mesaj gönderme hatası: {done}")
     return None

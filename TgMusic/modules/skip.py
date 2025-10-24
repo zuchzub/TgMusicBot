@@ -4,16 +4,19 @@
 
 from pytdbot import Client, types
 
-from TgMusic.core import Filter, call, chat_cache, admins_only
+from TgMusic.core import Filter, call
+from .funcs import is_admin_or_reply
 from .utils.play_helpers import del_msg
 
 
-@Client.on_message(filters=Filter.command("skip"))
-@admins_only(is_bot=True, is_auth=True)
-async def skip_song(_: Client, msg: types.Message) -> None:
-    chat_id = msg.chat_id
-    if not chat_cache.is_active(chat_id):
-        await msg.reply_text("⏸ No active playback session")
+@Client.on_message(filters=Filter.command(["atla", "catla"]))
+async def skip_song(c: Client, msg: types.Message) -> None:
+    chat_id = await is_admin_or_reply(msg)
+    if isinstance(chat_id, types.Error):
+        c.logger.warning(f"Error sending reply: {chat_id}")
+        return None
+
+    if isinstance(chat_id, types.Message):
         return None
 
     await del_msg(msg)
